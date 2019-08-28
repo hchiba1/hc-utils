@@ -26,17 +26,20 @@ getopts('lovq', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
+### get URL
 if (@ARGV != 1) {
     print STDERR $USAGE;
     exit 1;
 }
 my ($URL) = @ARGV;
+
 $URL = search_bookmark($URL);
 
 my $sha256 = sha256_hex($URL);
 my $sub_dir = substr($sha256, 0, 3);
 my $cache_file = "$CACHE_DIR/$sub_dir/$sha256";
 
+### exec
 if ($OPT{q}) {
     print STDERR $URL, "\n";
     exit;
