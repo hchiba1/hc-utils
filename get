@@ -2,6 +2,8 @@
 use strict;
 use File::Basename;
 use Getopt::Std;
+use File::Path;
+use Digest::SHA 'sha256_hex';
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
@@ -10,6 +12,8 @@ get URL | less
 get -o URL
 -v: verbose
 ";
+
+my $CACHE_DIR = "$ENV{HOME}/.get/cache";
 
 my %OPT;
 getopts('lov', \%OPT);
@@ -26,8 +30,29 @@ if ($URL =~ /\/$/) {
     if ($OPT{l}) {
 	system "$COMMAND -l $URL";
     } else {
-	my @list = `$COMMAND $URL`;
-	format_list(@list);
+	my $sha256 = sha256_hex($URL);
+	my $sub_dir = substr($sha256, 0, 3);
+	my $cache_file = "$CACHE_DIR/$sub_dir/$sha256";
+	# check cache
+	if (-e $cache_file) {
+	    open(CACHE_FILE, $cache_file) || die $!;
+	    my @result = <CACHE_FILE>;
+	    close(CACHE_FILE) || die $!;
+	    print @result;
+	} else {
+	    my @list = `$COMMAND $URL`;
+	    my $result = format_list(@list);
+	    
+	    # save cache
+	    if (! -e "$CACHE_DIR/$sub_dir") {
+		mkpath("$CACHE_DIR/$sub_dir") || die $!;
+	    }
+	    open(CACHE, ">$cache_file") || die $!;
+	    print CACHE $result;
+	    close(CACHE) || die $!;
+	    
+	    print $result;
+	}
     }
 } elsif ($OPT{o}) {
     system "$COMMAND -OR $URL";
@@ -68,6 +93,8 @@ sub format_list {
 	}
     }
 
+    my $result = "";
+    
     # for my $line (@dir, @file) {
     for my $line (@file, @dir) {
 	# if ($line =~ /^(\S+) +((\d+).*)/) {
@@ -83,7 +110,9 @@ sub format_list {
 	    my $f2_len_diff = $f2_len_max - $f2_len;
 	    my $padding1 = " " x $f1_len_diff;
 	    my $padding2 = " " x $f2_len_diff;
-	    print $1, " ", $padding1 , $2, $3, " ", $padding2, $4, $5, "\n";
+	    $result .= $1 . " " . $padding1  . $2 . $3 . " " . $padding2 . $4 . $5 . "\n";
 	}
     }
+
+    return $result;
 }
