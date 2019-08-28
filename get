@@ -11,20 +11,28 @@ get [-l] URL/ > LIST
 get URL | less
 get -o URL
 -v: verbose
+-q: print and quit
 ";
 
+my $COMMAND = "curl --max-time 100000 -Lf";
+my $BOOKMARK = "$ENV{HOME}/.get/bookmark";
 my $CACHE_DIR = "$ENV{HOME}/.get/cache";
 
 my %OPT;
-getopts('lov', \%OPT);
+getopts('lovq', \%OPT);
 
 if (@ARGV != 1) {
     print STDERR $USAGE;
     exit 1;
 }
 my ($URL) = @ARGV;
+$URL = search_bookmark($URL);
 
-my $COMMAND = "curl --max-time 100000 -Lf";
+if ($OPT{q}) {
+    print STDERR $URL, "\n";
+    exit;
+}
+
 !$OPT{v} and $COMMAND .= "sS";
 if ($URL =~ /\/$/) {
     if ($OPT{l}) {
@@ -63,6 +71,37 @@ if ($URL =~ /\/$/) {
 ################################################################################
 ### Functions ##################################################################
 ################################################################################
+sub search_bookmark {
+    my ($input) = @_;
+
+    my ($prefix, $suffix);
+    if ($input =~ /^([\w\.]+)$/) {
+	$prefix = "$1";
+	$suffix = "";
+    } elsif ($input =~ /^([\w\.]+)(\/.*)/) {
+	($prefix, $suffix) = ($1, $2);
+    } else {
+	return $input;
+    }
+    
+    if (-f $BOOKMARK) {
+	open(BOOKMARK, $BOOKMARK) || die $!;
+	while (<BOOKMARK>) {
+	    if (/^$prefix\s+(\S+)/) {
+		my $found = $1;
+		if ($suffix) {
+		    return "$found$suffix";
+		} else {
+		    return "$found/";
+		}
+	    }
+	}
+	close(BOOKMARK) || die $!;
+    }
+
+    return $input;
+}
+
 sub format_list {
     my (@list) = @_;
     chomp(@list);
