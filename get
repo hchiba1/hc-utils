@@ -19,6 +19,7 @@ my $COMMAND = "curl --max-time 100000 -Lf";
 my $BOOKMARK = "$ENV{HOME}/.get/bookmark";
 my $CACHE_DIR = "$ENV{HOME}/.get/cache";
 my $CACHE_TIME_LIMIT = 3600;
+my $CACHE_FILE_SIZE_LIMIT = 4096;
 
 my %OPT;
 getopts('lovq', \%OPT);
@@ -61,7 +62,7 @@ if ($URL =~ /\/$/) {
     	my $result = join("", @result);
     	print $result;
     	my $size = length($result);
-    	if ($size <= 4096) {
+    	if ($size <= $CACHE_FILE_SIZE_LIMIT) {
     	    save_cache($sub_dir, $cache_file, $result);
     	}
     }
