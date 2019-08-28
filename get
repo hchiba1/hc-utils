@@ -15,11 +15,11 @@ get -o URL
 -q: print and quit
 ";
 
-my $COMMAND = "curl --max-time 100000 -Lf";
-my $BOOKMARK = "$ENV{HOME}/.get/bookmark";
-my $CACHE_DIR = "$ENV{HOME}/.get/cache";
 my $CACHE_TIME_LIMIT = 3600;
 my $CACHE_FILE_SIZE_LIMIT = 4096;
+my $CACHE_DIR = "$ENV{HOME}/.get/cache";
+my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
+my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
 getopts('lovq', \%OPT);
@@ -56,7 +56,7 @@ if ($URL =~ /\/$/) {
 } elsif ($OPT{o}) {
     system "$COMMAND -OR $URL";
 } else {
-    # system "$COMMAND $URL";
+    # system "$COMMAND $URL"; #faster than below??
     if (! retrieve_cache($cache_file)) {
     	my @result = `$COMMAND $URL`;
     	my $result = join("", @result);
