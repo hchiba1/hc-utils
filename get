@@ -4,9 +4,10 @@ use File::Basename;
 use Getopt::Std;
 use File::Path;
 use Digest::SHA 'sha256_hex';
+use HTTP::Date;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM
+"Usage: $PROGRAM [OPTIONS] URL
 get [-l] URL/ > LIST
 get URL | less
 get -o URL
@@ -17,6 +18,7 @@ get -o URL
 my $COMMAND = "curl --max-time 100000 -Lf";
 my $BOOKMARK = "$ENV{HOME}/.get/bookmark";
 my $CACHE_DIR = "$ENV{HOME}/.get/cache";
+my $CACHE_TIME_LIMIT = 3600;
 
 my %OPT;
 getopts('lovq', \%OPT);
@@ -41,16 +43,10 @@ if ($URL =~ /\/$/) {
 	my $sha256 = sha256_hex($URL);
 	my $sub_dir = substr($sha256, 0, 3);
 	my $cache_file = "$CACHE_DIR/$sub_dir/$sha256";
-	# check cache
-	if (-e $cache_file) {
-	    open(CACHE_FILE, $cache_file) || die $!;
-	    my @result = <CACHE_FILE>;
-	    close(CACHE_FILE) || die $!;
-	    print @result;
-	} else {
+	if (! retrieve_cache($cache_file)) {
 	    my @list = `$COMMAND $URL`;
 	    my $result = format_list(@list);
-	    
+	    print $result;
 	    # save cache
 	    if (! -e "$CACHE_DIR/$sub_dir") {
 		mkpath("$CACHE_DIR/$sub_dir") || die $!;
@@ -58,8 +54,6 @@ if ($URL =~ /\/$/) {
 	    open(CACHE, ">$cache_file") || die $!;
 	    print CACHE $result;
 	    close(CACHE) || die $!;
-	    
-	    print $result;
 	}
     }
 } elsif ($OPT{o}) {
@@ -71,6 +65,29 @@ if ($URL =~ /\/$/) {
 ################################################################################
 ### Functions ##################################################################
 ################################################################################
+sub retrieve_cache {
+    my ($cache_file) = @_;
+
+    if (-e $cache_file) {
+	my @cache_stat = stat $cache_file;
+	my $cache_time = localtime($cache_stat[9]);
+	my $current_time = localtime;
+	my $diff_time = str2time($current_time) - str2time($cache_time);
+	if ($diff_time <= $CACHE_TIME_LIMIT) {
+	    if ($OPT{v}) {
+		print "Found results cached at: $cache_time\n";
+	    }
+	    open(CACHE_FILE, $cache_file) || die $!;
+	    my @result = <CACHE_FILE>;
+	    close(CACHE_FILE) || die $!;
+	    print @result;
+	    return 1;
+	}
+    }
+
+    return 0;
+}
+
 sub search_bookmark {
     my ($input) = @_;
 
