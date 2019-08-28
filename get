@@ -8,6 +8,7 @@ my $USAGE=
 get [-l] URL/ > LIST
 get URL | less
 get -o URL
+-v: verbose
 ";
 
 my %OPT;
