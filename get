@@ -23,6 +23,8 @@ my $CACHE_TIME_LIMIT = 3600;
 my %OPT;
 getopts('lovq', \%OPT);
 
+!$OPT{v} and $COMMAND .= "sS";
+
 if (@ARGV != 1) {
     print STDERR $USAGE;
     exit 1;
@@ -30,41 +32,55 @@ if (@ARGV != 1) {
 my ($URL) = @ARGV;
 $URL = search_bookmark($URL);
 
+my $sha256 = sha256_hex($URL);
+my $sub_dir = substr($sha256, 0, 3);
+my $cache_file = "$CACHE_DIR/$sub_dir/$sha256";
+
 if ($OPT{q}) {
     print STDERR $URL, "\n";
     exit;
 }
 
-!$OPT{v} and $COMMAND .= "sS";
 if ($URL =~ /\/$/) {
     if ($OPT{l}) {
 	system "$COMMAND -l $URL";
     } else {
-	my $sha256 = sha256_hex($URL);
-	my $sub_dir = substr($sha256, 0, 3);
-	my $cache_file = "$CACHE_DIR/$sub_dir/$sha256";
 	if (! retrieve_cache($cache_file)) {
 	    my @list = `$COMMAND $URL`;
 	    my $result = format_list(@list);
 	    print $result;
-	    # save cache
-	    if (! -e "$CACHE_DIR/$sub_dir") {
-		mkpath("$CACHE_DIR/$sub_dir") || die $!;
-	    }
-	    open(CACHE, ">$cache_file") || die $!;
-	    print CACHE $result;
-	    close(CACHE) || die $!;
+	    save_cache($sub_dir, $cache_file, $result);
 	}
     }
 } elsif ($OPT{o}) {
     system "$COMMAND -OR $URL";
 } else {
-    system "$COMMAND $URL";
+    # system "$COMMAND $URL";
+    if (! retrieve_cache($cache_file)) {
+    	my @result = `$COMMAND $URL`;
+    	my $result = join("", @result);
+    	print $result;
+    	my $size = length($result);
+    	if ($size <= 4096) {
+    	    save_cache($sub_dir, $cache_file, $result);
+    	}
+    }
 }
 
 ################################################################################
 ### Functions ##################################################################
 ################################################################################
+sub save_cache {
+    my ($sub_dir, $cache_file, $result) = @_;
+
+    if (! -e "$CACHE_DIR/$sub_dir") {
+	mkpath("$CACHE_DIR/$sub_dir") || die $!;
+    }
+    open(CACHE, ">$cache_file") || die $!;
+    print CACHE $result;
+    close(CACHE) || die $!;
+}
+
 sub retrieve_cache {
     my ($cache_file) = @_;
 
