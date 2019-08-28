@@ -1,0 +1,87 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+get [-l] URL/ > LIST
+get URL | less
+get -o URL
+";
+
+my %OPT;
+getopts('lov', \%OPT);
+
+if (@ARGV != 1) {
+    die $USAGE;
+}
+my ($URL) = @ARGV;
+
+my $COMMAND = "curl --max-time 100000 -Lf";
+!$OPT{v} and $COMMAND .= "sS";
+if ($URL =~ /\/$/) {
+    if ($OPT{l}) {
+	system "$COMMAND -l $URL";
+    } else {
+	my @list = `$COMMAND $URL`;
+	format_list(@list);
+    }
+} elsif ($OPT{o}) {
+    system "$COMMAND -OR $URL";
+} else {
+    system "$COMMAND $URL";
+}
+
+################################################################################
+### Functions ##################################################################
+################################################################################
+sub format_list {
+    my (@list) = @_;
+    chomp(@list);
+
+    my @file = ();
+    my @dir = ();
+
+    my $f1_len_max = 0;
+    my $f2_len_max = 0;
+    for my $line (@list) {
+	# my @f = split(/\s+/, $line);
+	if ($line =~ /^.*? +(\d+) +.*? +(\d+) +/) {
+	    # my $f1_len = length($f[1]);
+	    my ($f1, $f2) = ($1, $2);
+	    my $f1_len = length($f1);
+	    if ($f1_len > $f1_len_max) {
+		$f1_len_max = $f1_len;
+	    }
+	    my $f2_len = length($f2);
+	    if ($f2_len > $f2_len_max) {
+		$f2_len_max = $f2_len;
+	    }
+	    if ($line =~ /^d/) {
+		push @dir, "$line/";
+	    } else {
+		push @file, "$line";
+	    }
+	}
+    }
+
+    # for my $line (@dir, @file) {
+    for my $line (@file, @dir) {
+	# if ($line =~ /^(\S+) +((\d+).*)/) {
+	if ($line =~ /^(.*?) +(\d+)( +.*?) +(\d+)( +.*)/) {
+	    # my $f1_len = length($3);
+	    # my $f1_len_diff = $f1_len_max - $f1_len;
+	    # my $padding = " " x $f1_len_diff;
+	    # print $1, " ", $padding , $2, "\n";
+
+	    my $f1_len = length($2);
+	    my $f2_len = length($4);
+	    my $f1_len_diff = $f1_len_max - $f1_len;
+	    my $f2_len_diff = $f2_len_max - $f2_len;
+	    my $padding1 = " " x $f1_len_diff;
+	    my $padding2 = " " x $f2_len_diff;
+	    print $1, " ", $padding1 , $2, $3, " ", $padding2, $4, $5, "\n";
+	}
+    }
+}
