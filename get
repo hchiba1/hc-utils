@@ -15,7 +15,8 @@ my %OPT;
 getopts('lov', \%OPT);
 
 if (@ARGV != 1) {
-    die $USAGE;
+    print STDERR $USAGE;
+    exit 1;
 }
 my ($URL) = @ARGV;
 
