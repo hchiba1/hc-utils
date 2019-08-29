@@ -45,7 +45,12 @@ if ($USER_REPO =~ /^([-\w]+)\/([-\w]+)$/) {
     if (-d $repo) {
 	chdir($repo) || die;
 	if ($OPT{r}) {
-	    system "git.revert.timestamp.pl";
+	    if (-x "git.revert.timestamp.pl") {
+		system "git.revert.timestamp.pl";
+	    } else {
+		print STDERR "WARNING: cannot find git.revert.timestamp.pl";
+		exit 1;
+	    }
 	}
     }
 } else {
