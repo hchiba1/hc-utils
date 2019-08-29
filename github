@@ -8,10 +8,16 @@ my $USAGE=
 -d DIR: change current directory
 -u: make github username directory
 -r: revert time stamp
+-l: ls local github repositories
 ";
 
 my %OPT;
-getopts('rd:u', \%OPT);
+getopts('d:url', \%OPT);
+
+if ($OPT{l}) {
+    system "cd ~/github; ls -d1 */*";
+    exit 0;
+}
 
 if (@ARGV != 1) {
     print STDERR $USAGE;
@@ -26,7 +32,6 @@ if ($OPT{d}) {
     }
     chdir($dir)
 }
-
 
 if ($USER_REPO =~ /^([-\w]+)\/([-\w]+)$/) {
     my ($user, $repo) = ($1, $2);
