@@ -9,6 +9,12 @@ my $USAGE=
 -u: make github username directory
 -r: revert time stamp
 -l: list local repositories
+
+ex.)
+ \$ $PROGRAM -d ~/github -u -r user/repos
+
+Dependency: 
+  need git.revert.timestamp.pl for -r option
 ";
 
 my %OPT;
