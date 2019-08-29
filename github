@@ -8,7 +8,7 @@ my $USAGE=
 -d DIR: change current directory
 -u: make github username directory
 -r: revert time stamp
--l: ls local github repositories
+-l: list local repositories
 ";
 
 my %OPT;
