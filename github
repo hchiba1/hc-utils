@@ -17,6 +17,8 @@ Dependency:
   need git.revert.timestamp.pl for -r option
 ";
 
+my $SCRIPT_REVERT = "git.revert.timestamp.pl";
+
 my %OPT;
 getopts('d:url', \%OPT);
 
@@ -51,10 +53,10 @@ if ($USER_REPO =~ /^([-\w]+)\/([-\w]+)$/) {
     if (-d $repo) {
 	chdir($repo) || die;
 	if ($OPT{r}) {
-	    if (-x "git.revert.timestamp.pl") {
-		system "git.revert.timestamp.pl";
+	    if (-x $SCRIPT_REVERT) {
+		system $SCRIPT_REVERT;
 	    } else {
-		print STDERR "WARNING: cannot find git.revert.timestamp.pl";
+		print STDERR "WARNING: cannot find $SCRIPT_REVERT\n";
 		exit 1;
 	    }
 	}
