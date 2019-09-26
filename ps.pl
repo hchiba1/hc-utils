@@ -51,17 +51,10 @@ for my $line (@LINE) {
     my $command = substr($line, $POS{COMMAND}{start});
     $command =~ s/^ +//;
 
-    # my $start = substr($line, $POS{TIME}{end}, $POS{COMMAND}{start} - $POS{TIME}{end});
     my $start = substr($line, $POS{TIME}{end});
     $start =~ s/^\S+//; #previous column
     $start =~ s/^ +//;  #padding
     $start =~ s/^(START\S+).*/$1/; #header
-    # $start =~ s/ +$//;
-    # $start =~ s/^[A-Z][a-z][a-z] //;
-    # $start =~ s/ \d+$//;
-    # $start =~ s/^([A-Z][a-z][a-z])  (\d)/${1}0$2/;
-    # $start =~ s/^([A-Z][a-z][a-z]) (\d\d)/$1$2/;
-    # $start =~ s/^(\S+) (\S+)$/$1:$2/;
     $start =~ s/^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+).*/$4-$1$2-$3/;
     $start =~ s/ /0/;
 
@@ -91,7 +84,6 @@ for my $line (@LINE) {
     } elsif ($phys =~ /\d+/) {
 	$phys = format_size($phys) . "G";
     } else {
-	# $phys = "PHYSMEM";
 	$phys = "PHYS";
     }
 
@@ -99,7 +91,6 @@ for my $line (@LINE) {
     } elsif ($virt =~ /\d+/) {
 	$virt = format_size($virt) . "G";
     } else {
-	# $virt = "VIRTMEM";
 	$virt = "VIRT";
     }
 
