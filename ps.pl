@@ -191,6 +191,7 @@ sub print_process_rec {
     }
     
     if($pid eq "1") {
+	# do not show pid=1 when it does not match keyword
 	if (process_contains_keyword(1, $ARGV[0])) {
 	    print_process_meta_data($pid);
 	    print $PROCESS{$pid}{COMMAND};
