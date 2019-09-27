@@ -130,15 +130,14 @@ for my $line (@LINE) {
 # header
 print_process_rec("PID", "", 0);
 
+# set flags for print, when keyword is specified
 my %FLAG = ();
 if (@ARGV) {
     for my $pid (keys %PROCESS) {
 	if ($pid eq $$) {
 	    next;
 	}
-	# if ($PROCESS{$pid}{COMMAND} =~ /$ARGV[0]/i ||
-	#     $PROCESS{$pid}{USER} =~ /$ARGV[0]/i) {
-	if (process_contains_keyword($pid, $ARGV[0])) {
+	if (process_contains_keyword($pid, @ARGV)) {
 	    trace_back($pid);
 	}
     }
@@ -156,8 +155,9 @@ if ($OPT{a}) {
 ################################################################################
 
 sub process_contains_keyword {
-    my ($pid, $keyword) = @_;
+    my ($pid, @argv) = @_;
     
+    my $keyword = $argv[0];
     if ($PROCESS{$pid}{COMMAND} =~ /$keyword/i ||
 	$PROCESS{$pid}{USER} =~ /$keyword/i) {
 	return 1;
@@ -192,7 +192,7 @@ sub print_process_rec {
     
     if($pid eq "1") {
 	# do not show pid=1 when it does not match keyword
-	if (process_contains_keyword(1, $ARGV[0])) {
+	if (process_contains_keyword(1, @ARGV)) {
 	    print_process_meta_data($pid);
 	    print $PROCESS{$pid}{COMMAND};
 	    print "\n";
