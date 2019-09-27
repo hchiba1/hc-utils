@@ -6,7 +6,7 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
 -d: debug
--a: all procecces including kernel threads
+-a: show kernel threads too
 -p: show PPID
 -v: show VIRT
 -s: show STARTED
@@ -136,8 +136,9 @@ if (@ARGV) {
 	if ($pid eq $$) {
 	    next;
 	}
-	if ($PROCESS{$pid}{COMMAND} =~ /$ARGV[0]/i ||
-	    $PROCESS{$pid}{USER} =~ /$ARGV[0]/i) {
+	# if ($PROCESS{$pid}{COMMAND} =~ /$ARGV[0]/i ||
+	#     $PROCESS{$pid}{USER} =~ /$ARGV[0]/i) {
+	if (process_contains_keyword($pid, $ARGV[0])) {
 	    trace_back($pid);
 	}
     }
@@ -154,6 +155,17 @@ if ($OPT{a}) {
 ### Function ###################################################################
 ################################################################################
 
+sub process_contains_keyword {
+    my ($pid, $keyword) = @_;
+    
+    if ($PROCESS{$pid}{COMMAND} =~ /$keyword/i ||
+	$PROCESS{$pid}{USER} =~ /$keyword/i) {
+	return 1;
+    } else {
+	return 0;
+    }
+}
+
 sub trace_back {
     my ($pid) = @_;
 
@@ -166,6 +178,7 @@ sub trace_back {
 
 sub print_process_rec {
     my ($pid, $pad, $last_child) = @_;
+    my $ppid = $PROCESS{$pid}{PPID};
 
     if (%FLAG) {
 	if (! $FLAG{$pid}) {
@@ -177,18 +190,25 @@ sub print_process_rec {
 	return;
     }
     
-    my $ppid = $PROCESS{$pid}{PPID};
-    print_process_meta_data($pid);
-    if ($ppid eq "PPID" || $ppid eq "0" || $ppid eq "1") {
+    if($pid eq "1") {
+	if (process_contains_keyword(1, $ARGV[0])) {
+	    print_process_meta_data($pid);
+	    print $PROCESS{$pid}{COMMAND};
+	    print "\n";
+	}
+    } elsif ($ppid eq "PPID" || $ppid eq "0" || $ppid eq "1") {
+	print_process_meta_data($pid);
     	print $PROCESS{$pid}{COMMAND};
+	print "\n";
     } else {
+	print_process_meta_data($pid);
 	if ($last_child) {
 	    print $pad . "`- " . $PROCESS{$pid}{COMMAND};
 	} else {
 	    print $pad . "|- " . $PROCESS{$pid}{COMMAND};
 	}
+	print "\n";
     }
-    print "\n";
     
     if ($CHILD{$pid}) {
 	my @child = @{$CHILD{$pid}};
