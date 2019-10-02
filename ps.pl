@@ -49,6 +49,7 @@ my %PROCESS = ();
 my %LEN = ();
 for my $line (@LINE) {
     my $command = substr($line, $POS{COMMAND}{start});
+    $command =~ s/^\S*//;
     $command =~ s/^ +//;
 
     my $start = substr($line, $POS{TIME}{end});
