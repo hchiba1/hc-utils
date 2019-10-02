@@ -48,7 +48,7 @@ my %CHILD = ();
 my %PROCESS = ();
 my %LEN = ();
 for my $line (@LINE) {
-    my $command = substr($line, $POS{COMMAND}{start});
+    my $command = substr($line, $POS{COMMAND}{start}-1);
     $command =~ s/^\S*//;
     $command =~ s/^ +//;
 
@@ -56,9 +56,9 @@ for my $line (@LINE) {
     $start =~ s/^\S+//; #previous column
     $start =~ s/^ +//;  #padding
     $start =~ s/^(START\S+).*/$1/; #header
-    # $start =~ s/^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+).*/$4-$1$2-$3/;
-    $start =~ s/^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+) +(.*)/$4-$1$2-$3/;
-    $command = $5;
+    $start =~ s/^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+).*/$4-$1$2-$3/;
+    # $start =~ s/^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+) +(.*)/$4-$1$2-$3/;
+    # $command = $5;
     $start =~ s/ /0/;
 
     $line =~ s/^ +//;
