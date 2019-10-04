@@ -15,8 +15,8 @@ get -o URL
 -q: print and quit
 ";
 
-my $CACHE_TIME_LIMIT = 3600;
-my $CACHE_FILE_SIZE_LIMIT = 4096;
+my $CACHE_TIME_LIMIT = 3600; # one hour
+my $CACHE_FILE_SIZE_LIMIT = 4096; # 4KiB
 my $CACHE_DIR = "$ENV{HOME}/.get/cache";
 my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
