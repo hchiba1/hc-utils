@@ -156,9 +156,16 @@ if ($OPT{a}) {
     print_process_rec(2, "", 0);
 }
 
+print_ledgends();
+
 ################################################################################
 ### Function ###################################################################
 ################################################################################
+
+sub print_ledgends {
+    print "- sleep, L locked, 1 session leader, = multi-threaded, * foreground";
+    print "\n";
+}
 
 sub process_contains_keyword {
     my ($pid, @argv) = @_;
