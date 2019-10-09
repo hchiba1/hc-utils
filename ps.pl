@@ -131,10 +131,12 @@ for my $line (@LINE) {
 }
 
 # header
-print_process_rec("PID", "", 0);
+print_process_meta_data("PID");
+print $PROCESS{"PID"}{COMMAND};
+print "\n";
 
-# set flags for print, when keyword is specified
 my %FLAG = ();
+# If the keyword is specified, set flags for print.
 if (@ARGV) {
     for my $pid (keys %PROCESS) {
 	if ($pid eq $$) {
@@ -146,6 +148,7 @@ if (@ARGV) {
     }
 }
 
+# print
 print_process_rec(1, "", 0);
 
 # kernel thread
@@ -159,7 +162,11 @@ if ($OPT{a}) {
 
 sub process_contains_keyword {
     my ($pid, @argv) = @_;
-    
+
+    if (!@argv) {
+	return 1;
+    }
+
     my $keyword = $argv[0];
     if ($PROCESS{$pid}{COMMAND} =~ /$keyword/i ||
 	$PROCESS{$pid}{USER} =~ /$keyword/i) {
@@ -183,7 +190,8 @@ sub print_process_rec {
     my ($pid, $pad, $last_child) = @_;
     my $ppid = $PROCESS{$pid}{PPID};
 
-    if (%FLAG) {
+    # if (%FLAG) {
+    if (@ARGV) {
 	if (! $FLAG{$pid}) {
 	    return;
 	}
