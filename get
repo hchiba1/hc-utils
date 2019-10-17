@@ -11,6 +11,7 @@ my $USAGE=
 get [-l] URL/ > LIST
 get URL | less
 get -o URL
+get -f OUT_FILE URL
 -v: verbose
 -q: print and quit
 ";
@@ -22,7 +23,7 @@ my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('lovq', \%OPT);
+getopts('lof:vq', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
@@ -58,6 +59,8 @@ if ($URL =~ /\/$/) {
     }
 } elsif ($OPT{o}) {
     system "$COMMAND -OR $URL";
+} elsif ($OPT{f}) {
+    system "$COMMAND -o $OPT{f} $URL";
 } else {
     # system "$COMMAND $URL"; #faster than below??
     if (! retrieve_cache($cache_file)) {
