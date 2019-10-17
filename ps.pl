@@ -156,9 +156,16 @@ if ($OPT{a}) {
     print_process_rec(2, "", 0);
 }
 
+print_ledgends();
+
 ################################################################################
 ### Function ###################################################################
 ################################################################################
+
+sub print_ledgends {
+    print "- sleep, L locked, 1 session leader, = multi-threaded, * foreground";
+    print "\n";
+}
 
 sub process_contains_keyword {
     my ($pid, @argv) = @_;
@@ -190,25 +197,17 @@ sub print_process_rec {
     my ($pid, $pad, $last_child) = @_;
     my $ppid = $PROCESS{$pid}{PPID};
 
-    # if (%FLAG) {
-    if (@ARGV) {
-	if (! $FLAG{$pid}) {
-	    return;
-	}
+    if (@ARGV && !$FLAG{$pid} || # did not match the keyword
+	$pid eq $$) {            # this process
+	return;                  # do not show
     }
     
-    if ($pid eq $$) {
-	return;
-    }
-    
-    if($pid eq "1") {
-	# do not show pid=1 when it does not match keyword
-	if (process_contains_keyword(1, @ARGV)) {
-	    print_process_meta_data($pid);
-	    print $PROCESS{$pid}{COMMAND};
-	    print "\n";
-	}
-    } elsif ($ppid eq "PPID" || $ppid eq "0" || $ppid eq "1") {
+    if($pid eq "1" and process_contains_keyword(1, @ARGV)) { # pid=1 is a special process: hide it when it does not match keyword
+	print_process_meta_data($pid);
+	print $PROCESS{$pid}{COMMAND};
+	print "\n";
+    } elsif ($ppid eq "0" || # pid=1 or 2
+	     $ppid eq "1") { # children of pid=1
 	print_process_meta_data($pid);
     	print $PROCESS{$pid}{COMMAND};
 	print "\n";
