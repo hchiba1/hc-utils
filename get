@@ -10,8 +10,8 @@ my $USAGE=
 "Usage: $PROGRAM [OPTIONS] URL
 get [-l] URL/ > LIST
 get URL | less
-get -o URL
-get -f OUT_FILE URL
+get -f URL
+get -o OUT_FILE URL
 -v: verbose
 -q: print and quit
 ";
@@ -23,7 +23,7 @@ my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('lof:vq', \%OPT);
+getopts('lfo:vq', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
@@ -57,10 +57,10 @@ if ($URL =~ /\/$/) {
 	    save_cache($sub_dir, $cache_file, $result);
 	}
     }
-} elsif ($OPT{o}) {
-    system "$COMMAND -OR $URL";
 } elsif ($OPT{f}) {
-    system "$COMMAND -o $OPT{f} $URL";
+    system "$COMMAND -OR $URL";
+} elsif ($OPT{o}) {
+    system "$COMMAND -o $OPT{o} $URL";
 } else {
     # system "$COMMAND $URL"; #faster than below??
     if (! retrieve_cache($cache_file)) {
