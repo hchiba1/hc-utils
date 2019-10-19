@@ -368,6 +368,8 @@ sub format_size {
 }
 
 sub print_ledgends {
-    print "- sleep, L locked, 1 session leader, = multi-threaded, * foreground";
+    print "\n";
+    # print "- sleep, L locked, 1 session leader, = multi-threaded, * foreground";
+    print "-sleep, 1 leader, =multi, *fore";
     print "\n";
 }
