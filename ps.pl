@@ -315,31 +315,6 @@ sub add_child {
     }
 }
 
-sub parse_header_column_pos {
-    my ($header) = @_;
-    
-    my @field = split(/ +/, $header);
-    for (my $i=0; $i<@field; $i++) {
-        my ($start, $end) = get_column_pos($header, $field[$i]);
-        $POS{$field[$i]}{start} = $start;
-        $POS{$field[$i]}{end} = $end;
-        $POS{$field[$i]}{length} = $end - $start + 1;
-        $POS{$field[$i]}{colnum} = $i;
-    }
-}
-
-sub get_column_pos {
-    my ($line, $column) = @_;
-    
-    if ($line =~ /^((.*)$column)/) {
-        my $start_pos = length($2);
-        my $end_pos = length($1);
-        return ($start_pos, $end_pos);
-    } else {
-        die "cannot found $column";
-    }
-}
-
 sub sava_info {
     my ($pid, $name, $val) = @_;
 
@@ -365,6 +340,31 @@ sub format_size {
     my $giga = $kilo / 1024 / 1024;
 
     return substr(sprintf("%f", $giga), 0, 5);
+}
+
+sub parse_header_column_pos {
+    my ($header) = @_;
+    
+    my @field = split(/ +/, $header);
+    for (my $i=0; $i<@field; $i++) {
+        my ($start, $end) = get_column_pos($header, $field[$i]);
+        $POS{$field[$i]}{start} = $start;
+        $POS{$field[$i]}{end} = $end;
+        $POS{$field[$i]}{length} = $end - $start + 1;
+        $POS{$field[$i]}{colnum} = $i;
+    }
+}
+
+sub get_column_pos {
+    my ($line, $column) = @_;
+    
+    if ($line =~ /^((.*)$column)/) {
+        my $start_pos = length($2);
+        my $end_pos = length($1);
+        return ($start_pos, $end_pos);
+    } else {
+        die "cannot found $column";
+    }
 }
 
 sub print_ledgends {
