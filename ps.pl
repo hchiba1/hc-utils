@@ -70,46 +70,46 @@ for my $line (@LINE) {
 
     # kernel thread
     if ($ppid eq "2" || $pid eq "2") {
-	if (!$OPT{a}) {
-	    next;
-	}
+        if (!$OPT{a}) {
+            next;
+        }
     }
 
     if ($mem !~ /%/) {
-	$mem .= "%";
+        $mem .= "%";
     }
 
     if ($cpu !~ /%/) {
-	$cpu .= "%";
+        $cpu .= "%";
     }
 
     if ($phys eq "0") {
     } elsif ($phys =~ /\d+/) {
-	$phys = format_size($phys) . "G";
+        $phys = format_size($phys) . "G";
     } else {
-	$phys = "PHYS";
+        $phys = "PHYS";
     }
 
     if ($virt eq "0") {
     } elsif ($virt =~ /\d+/) {
-	$virt = format_size($virt) . "G";
+        $virt = format_size($virt) . "G";
     } else {
-	$virt = "VIRT";
+        $virt = "VIRT";
     }
 
     if ($tty eq "TT") {
-	$tty = "TTY";
+        $tty = "TTY";
     }
 
     if ($stat ne "STAT") {
-	$stat =~ s/</>/; #high-priority
-	$stat =~ s/N/</; #low-priority
-	$stat =~ s/\+/*/; #foreground
-	$stat =~ s/\+/!/; #foreground
-	$stat =~ s/S/-/; #sleep
-	$stat =~ s/D/O/; #IO
-	$stat =~ s/l/=/; #multi-thread
-	$stat =~ s/s/1/; #session leader
+        $stat =~ s/</>/; #high-priority
+        $stat =~ s/N/</; #low-priority
+        $stat =~ s/\+/*/; #foreground
+        $stat =~ s/\+/!/; #foreground
+        $stat =~ s/S/-/; #sleep
+        $stat =~ s/D/O/; #IO
+        $stat =~ s/l/=/; #multi-thread
+        $stat =~ s/s/1/; #session leader
     }
 
     $time =~ s/^00://;
@@ -139,12 +139,12 @@ my %FLAG = ();
 # If the keyword is specified, set flags for print.
 if (@ARGV) {
     for my $pid (keys %PROCESS) {
-	if ($pid eq $$) {
-	    next;
-	}
-	if (process_contains_keyword($pid, @ARGV)) {
-	    trace_back($pid);
-	}
+        if ($pid eq $$) {
+            next;
+        }
+        if (process_contains_keyword($pid, @ARGV)) {
+            trace_back($pid);
+        }
     }
 }
 
@@ -162,24 +162,19 @@ print_ledgends();
 ### Function ###################################################################
 ################################################################################
 
-sub print_ledgends {
-    print "- sleep, L locked, 1 session leader, = multi-threaded, * foreground";
-    print "\n";
-}
-
 sub process_contains_keyword {
     my ($pid, @argv) = @_;
 
     if (!@argv) {
-	return 1;
+        return 1;
     }
 
     my $keyword = $argv[0];
     if ($PROCESS{$pid}{COMMAND} =~ /$keyword/i ||
-	$PROCESS{$pid}{USER} =~ /$keyword/i) {
-	return 1;
+        $PROCESS{$pid}{USER} =~ /$keyword/i) {
+        return 1;
     } else {
-	return 0;
+        return 0;
     }
 }
 
@@ -188,8 +183,8 @@ sub trace_back {
 
     $FLAG{$pid} = 1;
     while ($PARENT{$pid}) {
-	$pid = $PARENT{$pid};
-	$FLAG{$pid} = 1;
+        $pid = $PARENT{$pid};
+        $FLAG{$pid} = 1;
     }
 }
 
@@ -198,48 +193,48 @@ sub print_process_rec {
     my $ppid = $PROCESS{$pid}{PPID};
 
     if (@ARGV && !$FLAG{$pid} || # did not match the keyword
-	$pid eq $$) {            # this process
-	return;                  # do not show
+        $pid eq $$) {            # this process
+        return;                  # do not show
     }
     
     if($pid eq "1" and process_contains_keyword(1, @ARGV)) { # pid=1 is a special process: hide it when it does not match keyword
-	print_process_meta_data($pid);
-	print $PROCESS{$pid}{COMMAND};
-	print "\n";
+        print_process_meta_data($pid);
+        print $PROCESS{$pid}{COMMAND};
+        print "\n";
     } elsif ($ppid eq "0" || # pid=1 or 2
-	     $ppid eq "1") { # children of pid=1
-	print_process_meta_data($pid);
+             $ppid eq "1") { # children of pid=1
+        print_process_meta_data($pid);
     	print $PROCESS{$pid}{COMMAND};
-	print "\n";
+        print "\n";
     } else {
-	print_process_meta_data($pid);
-	if ($last_child) {
-	    print $pad . "`- " . $PROCESS{$pid}{COMMAND};
-	} else {
-	    print $pad . "|- " . $PROCESS{$pid}{COMMAND};
-	}
-	print "\n";
+        print_process_meta_data($pid);
+        if ($last_child) {
+            print $pad . "`- " . $PROCESS{$pid}{COMMAND};
+        } else {
+            print $pad . "|- " . $PROCESS{$pid}{COMMAND};
+        }
+        print "\n";
     }
     
     if ($CHILD{$pid}) {
-	my @child = @{$CHILD{$pid}};
-	for (my $i=0; $i<@child; $i++) {
-	    my $next_pad = "";
-	    if ($ppid == 0 || $ppid == 1) {
-		$next_pad = "";
-	    } else {
-		if ($last_child) {
-		    $next_pad = $pad . "   ";
-		} else {
-		    $next_pad = $pad . "|  ";
-		}
-	    }
-	    my $last_child = 0;
-	    if ($i == @child - 1) {
-		$last_child = 1;
-	    }
-	    print_process_rec($child[$i], $next_pad, $last_child);
-	}
+        my @child = @{$CHILD{$pid}};
+        for (my $i=0; $i<@child; $i++) {
+            my $next_pad = "";
+            if ($ppid == 0 || $ppid == 1) {
+                $next_pad = "";
+            } else {
+                if ($last_child) {
+                    $next_pad = $pad . "   ";
+                } else {
+                    $next_pad = $pad . "|  ";
+                }
+            }
+            my $last_child = 0;
+            if ($i == @child - 1) {
+                $last_child = 1;
+            }
+            print_process_rec($child[$i], $next_pad, $last_child);
+        }
     }
 }
 
@@ -247,35 +242,35 @@ sub print_process_meta_data {
     my ($pid) = @_;
     
     if ($OPT{p}) {
-	padding_and_print_info($pid, "PPID");
-	print " ";
+        padding_and_print_info($pid, "PPID");
+        print " ";
     }
     padding_and_print_info($pid, "PID");
     print " ";
     padding_and_print_info($pid, "CPU");
     if ($OPT{m}) {
-	print " ";
-	padding_and_print_info($pid, "MEM");
+        print " ";
+        padding_and_print_info($pid, "MEM");
     }
     print " ";
     padding_and_print_info($pid, "PHYS");
     if ($OPT{v}) {
-	print " ";
-	padding_and_print_info($pid, "VIRT");
+        print " ";
+        padding_and_print_info($pid, "VIRT");
     }
     print " ";
     print_info_and_padding($pid, "STAT");
     if ($OPT{w}) {
-	print " ";
-	print_info_and_padding($pid, "WCHAN");
+        print " ";
+        print_info_and_padding($pid, "WCHAN");
     }
     if ($OPT{s}) {
-	print " ";
-	print_info_and_padding($pid, "START");
+        print " ";
+        print_info_and_padding($pid, "START");
     }
     if ($OPT{t}) {
-	print " ";
-	padding_and_print_info($pid, "TIME");
+        print " ";
+        padding_and_print_info($pid, "TIME");
     }
     print " ";
     print_info_and_padding($pid, "TTY");
@@ -291,9 +286,9 @@ sub padding_and_print_info {
     my $len = $LEN{$name};
 
     if ($len > length($val)) {
-	print " " x ($len - length($val)) . $val;
+        print " " x ($len - length($val)) . $val;
     } else {
-	print $val;
+        print $val;
     }
 }
 
@@ -304,9 +299,9 @@ sub print_info_and_padding {
     my $len = $LEN{$name};
 
     if ($len > length($val)) {
-	print $val . " " x ($len - length($val));
+        print $val . " " x ($len - length($val));
     } else {
-	print $val;
+        print $val;
     }
 }
 
@@ -314,9 +309,9 @@ sub add_child {
     my ($parent, $child) = @_;
 
     if ($CHILD{$parent}) {
-	push @{$CHILD{$parent}}, $child;
+        push @{$CHILD{$parent}}, $child;
     } else {
-	$CHILD{$parent} = [$child];
+        $CHILD{$parent} = [$child];
     }
 }
 
@@ -325,11 +320,11 @@ sub parse_header_column_pos {
     
     my @field = split(/ +/, $header);
     for (my $i=0; $i<@field; $i++) {
-	my ($start, $end) = get_column_pos($header, $field[$i]);
-	$POS{$field[$i]}{start} = $start;
-	$POS{$field[$i]}{end} = $end;
-	$POS{$field[$i]}{length} = $end - $start + 1;
-	$POS{$field[$i]}{colnum} = $i;
+        my ($start, $end) = get_column_pos($header, $field[$i]);
+        $POS{$field[$i]}{start} = $start;
+        $POS{$field[$i]}{end} = $end;
+        $POS{$field[$i]}{length} = $end - $start + 1;
+        $POS{$field[$i]}{colnum} = $i;
     }
 }
 
@@ -337,11 +332,11 @@ sub get_column_pos {
     my ($line, $column) = @_;
     
     if ($line =~ /^((.*)$column)/) {
-	my $start_pos = length($2);
-	my $end_pos = length($1);
-	return ($start_pos, $end_pos);
+        my $start_pos = length($2);
+        my $end_pos = length($1);
+        return ($start_pos, $end_pos);
     } else {
-	die "cannot found $column";
+        die "cannot found $column";
     }
 }
 
@@ -356,7 +351,7 @@ sub update_max_len {
     my ($name, $value) = @_;
 
     if (!$LEN{$name} || length($value) > $LEN{$name}) {
-	$LEN{$name} = length($value);
+        $LEN{$name} = length($value);
     }
 }
 
@@ -364,10 +359,15 @@ sub format_size {
     my ($kilo) = @_;
 
     if ($kilo eq "0") {
-	return "0";
+        return "0";
     }
 
     my $giga = $kilo / 1024 / 1024;
 
     return substr(sprintf("%f", $giga), 0, 5);
+}
+
+sub print_ledgends {
+    print "- sleep, L locked, 1 session leader, = multi-threaded, * foreground";
+    print "\n";
 }
