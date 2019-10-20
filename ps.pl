@@ -109,8 +109,10 @@ sub print_process_rec {
         return;                  # do not show
     }
     
-    if ($pid eq "1" and process_contains_keyword(1, @ARGV)) { # pid=1 is a special process: hide it when it does not match keyword
-        print_process($pid);
+    if ($pid eq "1") { # pid=1 is a special process
+        if (process_contains_keyword(1, @ARGV)) { # hide it when it does not match keyword
+            print_process($pid);
+        }
     } elsif ($ppid eq "0" || $ppid eq "1") { # pid=1,2 || children of pid=1
         print_process($pid);
     } else {
