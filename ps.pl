@@ -19,27 +19,22 @@ my $USAGE=
 my %OPT;
 getopts('dapmvstweM', \%OPT);
 
-my $PS = "ps ";
-if ($OPT{e}) {
-    $PS .= "e";
-}
-if ($OPT{M}) {
-    $PS .= "M";
-}
-$PS .= " -A";
-my $OPTION_COLUMNS = "-o ppid,pid,pcpu,pmem,rss,vsz,tty,stat,wchan,user,time,lstart,command";
+### Execute ###
+my $PS_OPT = "";
+$PS_OPT .= "e" if $OPT{e};
+$PS_OPT .= "M" if $OPT{M};
+$PS_OPT .= " -A -o ppid,pid,pcpu,pmem,rss,vsz,tty,stat,wchan,user,time,lstart,command";
 # stime or lstart
 # bsdtime or time
-my $COMMAND = "$PS $OPTION_COLUMNS";
 
 if ($OPT{d} || $OPT{M}) {
-    system "$COMMAND | less -S";
+    system "ps $PS_OPT | less -S";
     exit(1);
 }
-
-my @LINE = `$COMMAND`;
+my @LINE = `ps $PS_OPT`;
 chomp(@LINE);
 
+### Parse ###
 my %POS = ();
 parse_header_column_pos($LINE[0]);
 
@@ -48,114 +43,31 @@ my %CHILD = ();
 my %PROCESS = ();
 my %LEN = ();
 for my $line (@LINE) {
-    my $command = substr($line, $POS{COMMAND}{start}-1);
-    $command =~ s/^\S*//;
-    $command =~ s/^ +//;
+    my ($pid, $ppid) = extract_columns($line);
+    # skip kernel threads
+    # if ($pid eq "2" || $ppid eq "2") {
+    #     next if !$OPT{a};
+    # }
 
-    my $start = substr($line, $POS{TIME}{end});
-    $start =~ s/^\S+//; #previous column
-    $start =~ s/^ +//;  #padding
-    $start =~ s/^(START\S+).*/$1/; #header
-    $start =~ s/^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+).*/$4-$1$2-$3/;
-    # $start =~ s/^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+) +(.*)/$4-$1$2-$3/;
-    # $command = $5;
-    $start =~ s/ /0/;
-
-    $line =~ s/^ +//;
-    my @f = split(/ +/, $line);
-    my ($ppid, $pid, $cpu, $mem, $phys, $virt, $tty, $stat, $wchan, $user, $time) = @f;
-
-    $PARENT{$pid} = $ppid;
-    add_child($ppid, $pid);
-
-    # kernel thread
-    if ($ppid eq "2" || $pid eq "2") {
-        if (!$OPT{a}) {
-            next;
-        }
-    }
-
-    if ($mem !~ /%/) {
-        $mem .= "%";
-    }
-
-    if ($cpu !~ /%/) {
-        $cpu .= "%";
-    }
-
-    if ($phys eq "0") {
-    } elsif ($phys =~ /\d+/) {
-        $phys = format_size($phys) . "G";
-    } else {
-        $phys = "PHYS";
-    }
-
-    if ($virt eq "0") {
-    } elsif ($virt =~ /\d+/) {
-        $virt = format_size($virt) . "G";
-    } else {
-        $virt = "VIRT";
-    }
-
-    if ($tty eq "TT") {
-        $tty = "TTY";
-    }
-
-    if ($stat ne "STAT") {
-        $stat =~ s/</>/; #high-priority
-        $stat =~ s/N/</; #low-priority
-        $stat =~ s/\+/*/; #foreground
-        $stat =~ s/\+/!/; #foreground
-        $stat =~ s/S/-/; #sleep
-        $stat =~ s/D/O/; #IO
-        $stat =~ s/l/=/; #multi-thread
-        $stat =~ s/s/1/; #session leader
-    }
-
-    $time =~ s/^00://;
-    $time =~ s/^0(\d:)/$1/;
-
-    sava_info($pid, "PPID", $ppid);
-    sava_info($pid, "PID", $pid);
-    sava_info($pid, "CPU", $cpu);
-    sava_info($pid, "MEM", $mem);
-    sava_info($pid, "PHYS", $phys);
-    sava_info($pid, "VIRT", $virt);
-    sava_info($pid, "TTY", $tty);
-    sava_info($pid, "STAT", $stat);
-    sava_info($pid, "WCHAN", $wchan);
-    sava_info($pid, "USER", $user);
+    my $start = extract_start($line);
+    my $command = extract_command($line);
     sava_info($pid, "START", $start);
-    sava_info($pid, "TIME", $time);
     sava_info($pid, "COMMAND", $command);
 }
 
-# header
-print_process_meta_data("PID");
-print $PROCESS{"PID"}{COMMAND};
-print "\n";
-
-my %FLAG = ();
-# If the keyword is specified, set flags for print.
+### Print ###
+print_header();
+my %FLAG = (); # Set flags for print, if keyword specified.
 if (@ARGV) {
     for my $pid (keys %PROCESS) {
-        if ($pid eq $$) {
-            next;
-        }
+        next if ($pid eq $$ || $PROCESS{$pid}{PPID} eq $$);
         if (process_contains_keyword($pid, @ARGV)) {
             trace_back($pid);
         }
     }
 }
-
-# print
 print_process_rec(1, "", 0);
-
-# kernel thread
-if ($OPT{a}) {
-    print_process_rec(2, "", 0);
-}
-
+print_process_rec(2, "", 0) if $OPT{a}; # kernel threads
 print_ledgends();
 
 ################################################################################
@@ -192,20 +104,15 @@ sub print_process_rec {
     my ($pid, $pad, $last_child) = @_;
     my $ppid = $PROCESS{$pid}{PPID};
 
-    if (@ARGV && !$FLAG{$pid} || # did not match the keyword
+    if (@ARGV && !$FLAG{$pid} || # did not match keyword
         $pid eq $$) {            # this process
         return;                  # do not show
     }
     
-    if($pid eq "1" and process_contains_keyword(1, @ARGV)) { # pid=1 is a special process: hide it when it does not match keyword
-        print_process_meta_data($pid);
-        print $PROCESS{$pid}{COMMAND};
-        print "\n";
-    } elsif ($ppid eq "0" || # pid=1 or 2
-             $ppid eq "1") { # children of pid=1
-        print_process_meta_data($pid);
-    	print $PROCESS{$pid}{COMMAND};
-        print "\n";
+    if ($pid eq "1" and process_contains_keyword(1, @ARGV)) { # pid=1 is a special process: hide it when it does not match keyword
+        print_process($pid);
+    } elsif ($ppid eq "0" || $ppid eq "1") { # pid=1,2 || children of pid=1
+        print_process($pid);
     } else {
         print_process_meta_data($pid);
         if ($last_child) {
@@ -305,6 +212,67 @@ sub print_info_and_padding {
     }
 }
 
+sub extract_columns {
+    my ($line) = @_;
+    $line =~ s/^ +//;
+
+    my ($ppid, $pid, $cpu, $mem, $phys, $virt, $tty, $stat, $wchan, $user, $time) = split(/ +/, $line);
+    $PARENT{$pid} = $ppid;
+    add_child($ppid, $pid);
+
+    if ($mem !~ /%/) {
+        $mem .= "%";
+    }
+    if ($cpu !~ /%/) {
+        $cpu .= "%";
+    }
+    
+    if ($phys eq "0") {
+    } elsif ($phys =~ /\d+/) {
+        $phys = format_size($phys) . "G";
+    } else {
+        $phys = "PHYS";
+    }
+    if ($virt eq "0") {
+    } elsif ($virt =~ /\d+/) {
+        $virt = format_size($virt) . "G";
+    } else {
+        $virt = "VIRT";
+    }
+
+    if ($tty eq "TT") {
+        $tty = "TTY";
+    }
+
+    if ($stat ne "STAT") {
+        $stat =~ s/</>/; #high-priority
+        $stat =~ s/N/</; #low-priority
+        $stat =~ s/\+/*/; #foreground
+        $stat =~ s/\+/!/; #foreground
+        $stat =~ s/S/-/; #sleep
+        $stat =~ s/D/O/; #IO
+        $stat =~ s/l/=/; #multi-thread
+        $stat =~ s/s/1/; #session leader
+    }
+
+    $time =~ s/^00://;
+    $time =~ s/^0(\d:)/$1/;
+    
+    sava_info($pid, "PPID", $ppid);
+    sava_info($pid, "PID", $pid);
+    sava_info($pid, "CPU", $cpu);
+    sava_info($pid, "MEM", $mem);
+    sava_info($pid, "PHYS", $phys);
+    sava_info($pid, "VIRT", $virt);
+    sava_info($pid, "TTY", $tty);
+    sava_info($pid, "STAT", $stat);
+    sava_info($pid, "WCHAN", $wchan);
+    sava_info($pid, "USER", $user);
+    sava_info($pid, "TIME", $time);
+
+    return ($pid, $ppid);
+}
+
 sub add_child {
     my ($parent, $child) = @_;
 
@@ -313,6 +281,18 @@ sub add_child {
     } else {
         $CHILD{$parent} = [$child];
     }
+}
+
+sub format_size {
+    my ($kilo) = @_;
+
+    if ($kilo eq "0") {
+        return "0";
+    }
+
+    my $giga = $kilo / 1024 / 1024;
+
+    return substr(sprintf("%f", $giga), 0, 5);
 }
 
 sub sava_info {
@@ -330,16 +310,29 @@ sub update_max_len {
     }
 }
 
-sub format_size {
-    my ($kilo) = @_;
+sub extract_start {
+    my ($line) = @_;
+    
+    my $start = substr($line, $POS{TIME}{end});
+    $start =~ s/^\S+//; #previous column
+    $start =~ s/^ +//;  #padding
+    $start =~ s/^(START\S+).*/$1/; #header
+    $start =~ s/^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+).*/$4-$1$2-$3/;
+    # $start =~ s/^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+) +(.*)/$4-$1$2-$3/;
+    # $command = $5;
+    $start =~ s/ /0/;
 
-    if ($kilo eq "0") {
-        return "0";
-    }
+    return $start;
+}
 
-    my $giga = $kilo / 1024 / 1024;
+sub extract_command {
+    my ($line) = @_;
 
-    return substr(sprintf("%f", $giga), 0, 5);
+    my $command = substr($line, $POS{COMMAND}{start}-1);
+    $command =~ s/^\S*//;
+    $command =~ s/^ +//;
+
+    return $command;
 }
 
 sub parse_header_column_pos {
@@ -365,6 +358,18 @@ sub get_column_pos {
     } else {
         die "cannot found $column";
     }
+}
+
+sub print_header {
+    print_process("PID");
+}
+
+sub print_process {
+    my ($pid) = @_;
+
+    print_process_meta_data($pid);
+    print $PROCESS{$pid}{COMMAND};
+    print "\n";
 }
 
 sub print_ledgends {
