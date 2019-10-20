@@ -43,12 +43,7 @@ my %CHILD = ();
 my %PROCESS = ();
 my %LEN = ();
 for my $line (@LINE) {
-    my ($pid, $ppid) = extract_columns($line);
-    # skip kernel threads
-    # if ($pid eq "2" || $ppid eq "2") {
-    #     next if !$OPT{a};
-    # }
-
+    my $pid = extract_columns($line);
     my $start = extract_start($line);
     my $command = extract_command($line);
     sava_info($pid, "START", $start);
@@ -110,7 +105,7 @@ sub print_process_rec {
     }
     
     if ($pid eq "1") { # pid=1 is a special process
-        if (process_contains_keyword(1, @ARGV)) { # hide it when it does not match keyword
+        if (process_contains_keyword($pid, @ARGV)) { # hide it when it does not match keyword
             print_process($pid);
         }
     } elsif ($ppid eq "0" || $ppid eq "1") { # pid=1,2 || children of pid=1
@@ -272,7 +267,7 @@ sub extract_columns {
     sava_info($pid, "USER", $user);
     sava_info($pid, "TIME", $time);
 
-    return ($pid, $ppid);
+    return $pid;
 }
 
 sub add_child {
