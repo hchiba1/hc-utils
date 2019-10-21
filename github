@@ -37,7 +37,7 @@ my ($USER_REPO) = @ARGV;
 if ($OPT{d}) {
     my $dir = $OPT{d};
     if (!-e $dir) {
-	mkdir($dir) || die;
+        mkdir($dir) || die;
     }
     chdir($dir)
 }
@@ -45,22 +45,22 @@ if ($OPT{d}) {
 if ($USER_REPO =~ /^([-\w\.]+)\/([-\w\.]+)$/) {
     my ($user, $repo) = ($1, $2);
     if ($OPT{r}) {
-	if (!-e $user) {
-	    mkdir($user) || die;
-	}
-	chdir($user) || die;
+        if (!-e $user) {
+            mkdir($user) || die;
+        }
+        chdir($user) || die;
     }
     system "git clone git\@github.com:$USER_REPO";
     if (-d $repo) {
-	chdir($repo) || die;
-	if ($OPT{p}) {
-	    # if (-x File::Spec->rel2abs($SCRIPT_REVERT)) {
-		system $SCRIPT_REVERT;
-	    # } else {
-	    # 	print STDERR "WARNING: cannot find $SCRIPT_REVERT\n";
-	    # 	exit 1;
-	    # }
-	}
+        chdir($repo) || die;
+        if ($OPT{p}) {
+            # if (-x File::Spec->rel2abs($SCRIPT_REVERT)) {
+            system $SCRIPT_REVERT;
+            # } else {
+            # 	print STDERR "WARNING: cannot find $SCRIPT_REVERT\n";
+            # 	exit 1;
+            # }
+        }
     }
 } else {
     die $USER_REPO;
