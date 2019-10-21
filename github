@@ -6,22 +6,22 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [OPTIONS] user/repos
+-p: preserve time stamp
+-r: make github username directory
 -d DIR: change current directory
--u: make github username directory
--r: revert time stamp
 -l: list local repositories
 
 ex.)
  \$ $PROGRAM -d ~/github -u -r user/repos
 
 Dependency: 
-  need git.revert.timestamp.pl for -r option
+  need git.revert.timestamp.pl for -p option
 ";
 
 my $SCRIPT_REVERT = "git.revert.timestamp.pl";
 
 my %OPT;
-getopts('d:url', \%OPT);
+getopts('prd:l', \%OPT);
 
 if ($OPT{l}) {
     system "cd ~/github; ls -d1 */*";
@@ -44,7 +44,7 @@ if ($OPT{d}) {
 
 if ($USER_REPO =~ /^([-\w\.]+)\/([-\w\.]+)$/) {
     my ($user, $repo) = ($1, $2);
-    if ($OPT{u}) {
+    if ($OPT{r}) {
 	if (!-e $user) {
 	    mkdir($user) || die;
 	}
@@ -53,7 +53,7 @@ if ($USER_REPO =~ /^([-\w\.]+)\/([-\w\.]+)$/) {
     system "git clone git\@github.com:$USER_REPO";
     if (-d $repo) {
 	chdir($repo) || die;
-	if ($OPT{r}) {
+	if ($OPT{p}) {
 	    # if (-x File::Spec->rel2abs($SCRIPT_REVERT)) {
 		system $SCRIPT_REVERT;
 	    # } else {
