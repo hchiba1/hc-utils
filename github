@@ -9,6 +9,7 @@ my $USAGE=
 -p: preserve time stamp
 -r: make github username directory
 -d DIR: change current directory
+-h: make ~/github directory
 -l: list local repositories
 
 ex.)
@@ -21,7 +22,7 @@ Dependency:
 my $SCRIPT_REVERT = "git.revert.timestamp.pl";
 
 my %OPT;
-getopts('prd:l', \%OPT);
+getopts('prd:hl', \%OPT);
 
 if ($OPT{l}) {
     system "cd ~/github; ls -d1 */*";
@@ -34,7 +35,13 @@ if (@ARGV != 1) {
 }
 my ($USER_REPO) = @ARGV;
 
-if ($OPT{d}) {
+if ($OPT{h}) {
+    my $dir = "~/github";
+    if (!-e $dir) {
+        mkdir($dir) || die;
+    }
+    chdir($dir)
+} elsif ($OPT{d}) {
     my $dir = $OPT{d};
     if (!-e $dir) {
         mkdir($dir) || die;
