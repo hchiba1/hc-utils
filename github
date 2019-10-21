@@ -1,0 +1,67 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+# use File::Spec;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM [OPTIONS] user/repos
+-d DIR: change current directory
+-u: make github username directory
+-r: revert time stamp
+-l: list local repositories
+
+ex.)
+ \$ $PROGRAM -d ~/github -u -r user/repos
+
+Dependency: 
+  need git.revert.timestamp.pl for -r option
+";
+
+my $SCRIPT_REVERT = "git.revert.timestamp.pl";
+
+my %OPT;
+getopts('d:url', \%OPT);
+
+if ($OPT{l}) {
+    system "cd ~/github; ls -d1 */*";
+    exit 0;
+}
+
+if (@ARGV != 1) {
+    print STDERR $USAGE;
+    exit 1;
+}
+my ($USER_REPO) = @ARGV;
+
+if ($OPT{d}) {
+    my $dir = $OPT{d};
+    if (!-e $dir) {
+	mkdir($dir) || die;
+    }
+    chdir($dir)
+}
+
+if ($USER_REPO =~ /^([-\w\.]+)\/([-\w\.]+)$/) {
+    my ($user, $repo) = ($1, $2);
+    if ($OPT{u}) {
+	if (!-e $user) {
+	    mkdir($user) || die;
+	}
+	chdir($user) || die;
+    }
+    system "git clone git\@github.com:$USER_REPO";
+    if (-d $repo) {
+	chdir($repo) || die;
+	if ($OPT{r}) {
+	    # if (-x File::Spec->rel2abs($SCRIPT_REVERT)) {
+		system $SCRIPT_REVERT;
+	    # } else {
+	    # 	print STDERR "WARNING: cannot find $SCRIPT_REVERT\n";
+	    # 	exit 1;
+	    # }
+	}
+    }
+} else {
+    die $USER_REPO;
+}

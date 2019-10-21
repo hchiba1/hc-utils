@@ -1,0 +1,49 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+# use IPC::Open3;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM FILE
+";
+
+my %OPT;
+getopts('v', \%OPT);
+
+if (!@ARGV) {
+    print STDERR $USAGE;
+    exit 1;
+}
+my $FILE = shift @ARGV;
+
+my ($NIM_FILE, $EXEC_FILE);
+if ($FILE =~ /^(.+)\.nim$/) {
+    $EXEC_FILE = $1;
+    $NIM_FILE = $FILE;
+} else {
+    $EXEC_FILE = $FILE;
+    $NIM_FILE = "$FILE.nim";
+}
+
+if ($EXEC_FILE =~ /^\//) {
+} else {
+    $EXEC_FILE = "./" . $EXEC_FILE;
+}
+
+if (! -f $EXEC_FILE && ! -f $NIM_FILE) {
+    print STDERR "ERROR: cannot find $EXEC_FILE nor $NIM_FILE\n";
+    exit 1;
+} elsif ($OPT{v}) {
+    system "nim compile --run $FILE @ARGV";
+} elsif (-f $EXEC_FILE && ! -f $NIM_FILE ||
+	 -f $EXEC_FILE && -f $NIM_FILE && (stat $EXEC_FILE)[9] > (stat $NIM_FILE)[9]) {
+    system "$EXEC_FILE @ARGV";
+} else {
+    my $result = `nim compile $FILE 2>&1`;
+    if ($? >> 8) {
+	print STDERR $result;
+	exit($? >> 8);
+    }
+    system "$EXEC_FILE @ARGV";
+}

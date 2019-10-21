@@ -1,0 +1,123 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('fv', \%OPT);
+
+if (-f "/etc/system-release") {
+    system "cat /etc/system-release";
+} elsif (-f "/etc/os-release") {
+    open(RELEASE, "/etc/os-release") || die;
+    while (<RELEASE>) {
+	chomp;
+	if (/^PRETTY_NAME="(.*)"/) {
+	    print $1, "\n";
+	}
+    }
+    close(RELEASE);
+}
+
+system "uname -sr";
+
+# system "arch";
+
+# system "uname -n";
+
+# print "CPU: ";
+# system "uname -m";
+
+# print "cpu architecture: ";
+# system "uname -p";
+
+if (-f "/proc/cpuinfo") {
+    my @line = `cat /proc/cpuinfo`;
+
+    my ($cache) = extract("cache size", @line);
+    if ($cache =~ /^(\d+) KB$/) {
+	my $kb = $1;
+	my $mb = $kb / 1024;
+	$cache = sprintf "%d MB", $mb;
+    }
+    print extract("model name", @line), ", $cache cache\n";
+
+    my @physical_id = extract("physical id", @line);
+    my @processor = extract("processor", @line);
+    my @cpu_core = extract("cpu cores", @line);
+    my $cpus = scalar(@physical_id);
+    my $threads = scalar(@processor);
+    if (@cpu_core == 1) {
+	my $cores = $cpu_core[0] * $cpus;
+	if ($cores == $threads) {
+	    print "$cpus CPU, $cores core\n";
+	} else {
+	    print "$cpus CPU, $cores core ($threads threads)\n";
+	}
+    } elsif (@cpu_core > 1) {
+    } elsif (@cpu_core == 0) {
+    }
+
+    if ($OPT{f}) {
+	print extract("flags", @line), "\n";
+    }
+
+    if ($OPT{v}) {
+	print @line;
+    }
+}
+
+# print "\n";
+if (-f "/proc/meminfo") {
+    my $meminfo = `cat /proc/meminfo`;
+    if ($meminfo =~ /^MemTotal:\s*(\d+) kB/) {
+	my $kb = $1;
+	# my $gb = $kb / 1024 / 1024;
+	my $gb = $kb / 1000 / 1000;
+	# printf "Memory: %d GB \n", $gb;
+	printf "%d GB RAM\n", $gb;
+    }
+    # print "\n";
+}
+
+if (system("which system_profiler > /dev/null 2>&1") == 0) {
+    my @info = `system_profiler SPHardwareDataType`;
+    # @info = map { / *(.*)/ and "$1\n" } grep { ! /^ +Hardware Overview:$/ } grep { ! /^Hardware:$/ } grep { /./ } @info;
+    # @info = grep { ! /^ +Hardware Overview:$/ } grep { ! /^Hardware:$/ } grep { /./ } @info;
+    @info = grep { ! /^ +Hardware Overview:$/ } grep { /./ } @info;
+    print @info;
+}
+
+
+################################################################################
+### Functions ##################################################################
+################################################################################
+
+sub extract {
+    my ($pattern, @line) = @_;
+
+    my @val = ();
+    for my $line (@line) {
+	chomp($line);
+	if ($line =~ /^$pattern\s*:\s*(.*)/) {
+	    push @val, $1;
+	}
+    }
+
+    return uniq(@val);
+}
+
+sub uniq {
+    my @x = @_;
+
+    my %hash = ();
+    for my $x (@x) {
+	$hash{$x} = 1;
+    }
+
+    return sort {$a cmp $b} keys(%hash);
+}

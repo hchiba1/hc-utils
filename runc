@@ -1,0 +1,77 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM SOURCE.c [OPT...] [ARG...]
+Usage: $PROGRAM -e 'SOURCE' [OPT...] [ARG...]
+";
+
+my %OPT;
+getopts('e:dO:W:o:', \%OPT);
+
+### Settings
+my $COMPILER = "gcc";
+my $HOSTNAME = $ENV{HOSTNAME} || "tmp";
+my $SOURCE_TMP = "$HOSTNAME.$PROGRAM.$$.c";
+my $OBJECT_TMP = "$HOSTNAME.$PROGRAM.$$.o";
+if ($OPT{O}) {
+    $COMPILER .= " -O$OPT{O}";
+}
+if ($OPT{W}) {
+    $COMPILER .= " -W$OPT{W}";
+}
+
+### Read and save the source code
+if ($OPT{e}) {
+    open(SOURCE_TMP, ">$SOURCE_TMP") || die;
+    print SOURCE_TMP "#include <stdio.h>", "\n";
+    print SOURCE_TMP "#include <$ENV{HOME}/.runc>", "\n";
+    print SOURCE_TMP "int main (int argc, char *argv[]){", "\n";
+    print SOURCE_TMP $OPT{e}, ";\n";
+    print SOURCE_TMP "return(0);\n";
+    print SOURCE_TMP "}\n";
+    close(SOURCE_TMP);
+} elsif (@ARGV != 0) {
+    my $source = shift @ARGV;
+    if ($source =~ /\.cpp$/) {
+	$COMPILER = "g++";
+    }
+    open(SOURCE, $source) || die "$PROGRAM: $!: $source\n";
+    my @source = <SOURCE>;
+    close(SOURCE);
+    if ($source[0] =~ /^#!/) {
+	shift @source;
+    }
+    open(SOURCE_TMP, ">$SOURCE_TMP") || die;
+    print SOURCE_TMP @source;
+    close(SOURCE_TMP);
+} else {
+    print STDERR $USAGE;
+    exit 1;
+}
+
+if ($OPT{d}) {
+    system "cat $SOURCE_TMP";
+}
+
+### Execute the source code
+if ($OPT{o}) {
+    system "$COMPILER -o $OPT{o} $SOURCE_TMP -lm";
+    exit;
+}
+system "$COMPILER -o $OBJECT_TMP $SOURCE_TMP -lm";
+my $EXIT_STATUS = $? >> 8;
+if ($EXIT_STATUS == 0) {
+    system "./$OBJECT_TMP @ARGV";
+    $EXIT_STATUS = $? >> 8;
+}
+exit($EXIT_STATUS);
+
+END {
+    $SOURCE_TMP && -f $SOURCE_TMP and
+	unlink $SOURCE_TMP;
+    $OBJECT_TMP && -f $OBJECT_TMP and
+	unlink $OBJECT_TMP;
+}

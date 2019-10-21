@@ -1,0 +1,83 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+-p: show permission info
+-u: show user info
+-g: show group info
+-s: show file size
+-h: show file size (human readable)
+-f: show full info
+-d: show only directory
+-D: show directory first
+-l: follow symbolic links
+-t: show time
+-T: sort by time
+-N N: limit file numbers
+-L L: limit levels
+-v: verbose
+-c: classical format
+";
+
+my %OPT;
+getopts('hspugfdDltTN:L:vc', \%OPT);
+
+my $OPTIONS = '-F';
+
+if ($OPT{p}) {
+    $OPTIONS .= ' -p';
+}
+if ($OPT{u}) {
+    $OPTIONS .= ' -pu';
+}
+if ($OPT{g}) {
+    $OPTIONS .= ' -pug';
+}
+if ($OPT{s}) {
+    $OPTIONS .= ' -s --du';
+}
+if ($OPT{h}) {
+    $OPTIONS .= ' -h --du';
+}
+if ($OPT{f}) {
+    $OPTIONS .= ' -pugh --du';
+}
+
+if ($OPT{d}) {
+    $OPTIONS .= ' -d'
+}
+if ($OPT{D}) {
+    $OPTIONS .= ' --dirsfirst';
+}
+
+if ($OPT{l}) {
+    $OPTIONS .= ' -l';
+}
+
+if ($OPT{t}) {
+    $OPTIONS .= ' --timefmt "%Y-%m-%d %H:%M"';
+}
+if ($OPT{T}) {
+    $OPTIONS .= ' --timefmt "%Y-%m-%d %H:%M" -t';
+}
+
+if ($OPT{N}) {
+    $OPTIONS .= " --filelimit $OPT{N}";
+}
+if ($OPT{L}) {
+    $OPTIONS .= " -L $OPT{L}";
+}
+
+if ($OPT{v}) {
+} else {
+    $OPTIONS .= ' --noreport';
+}
+
+if ($OPT{c}) {
+    system "tree $OPTIONS @ARGV | less";
+} else {
+    system "tree -A $OPTIONS @ARGV | less -r";
+}

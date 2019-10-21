@@ -1,0 +1,146 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('asu', \%OPT);
+
+# my $OS = `uname`;
+# chomp($OS);
+my $OS = $^O;
+
+my $COMMAND = "df -h";
+# if ($OS ne "Darwin") {
+if ($OS eq "linux") {
+    $COMMAND .= " -T"
+}
+
+my @line = `$COMMAND @ARGV`;
+chomp(@line);
+    
+print sort_by_size(@line);
+
+################################################################################
+### Functions ##################################################################
+################################################################################
+
+sub sort_by_size {
+    my @line = @_;
+
+    my $max_len = length($line[1]);
+    my $min_pref_len = length($line[1]);
+    my $size_pos = get_column_end_pos($line[0], "Size");
+    my @size = ();
+    for (my $i=1; $i<@line; $i++) {
+	my $first = substr($line[$i], 0, $size_pos);
+	my $suf = substr($line[$i], $size_pos);
+	if ($first =~ /(.* )(\S+)$/) {
+	    my ($pref, $size) = ($1, $2);
+	    $size[$i] = get_size($size, 1024);
+	    if (length($pref) < $min_pref_len) {
+		$min_pref_len = length($pref);
+	    }
+	    if (length($line[$i]) > $max_len) {
+		$max_len = length($line[$i]);
+	    }
+	} else {
+	    die;
+	}
+    }
+
+    my @ind = 1..$#line;
+    my @sorted_ind = sort { $size[$b]<=>$size[$a] } @ind;
+    
+    my @out = ();
+    push @out, $line[0];
+    for my $i (@sorted_ind) {
+	push @out, $line[$i];
+    }
+
+    return change_columns($max_len, $min_pref_len, $size_pos, @out);
+}
+
+sub change_columns {
+    my ($max_len, $min_pref_len, $size_pos, @line) = @_;
+
+    my $used_pos = get_column_end_pos($line[0], "Used");
+    my $avail_pos = get_column_end_pos($line[0], "Avail");
+    my $mounted_pos = get_column_start_pos($line[0], "Mounted on");
+
+    for (my $i=0; $i<@line; $i++) {
+	my $device_col = substr($line[$i], 0, $min_pref_len);
+	my $size_col = substr($line[$i], $min_pref_len, $size_pos - $min_pref_len);
+	my $used_col = substr($line[$i], $size_pos, $used_pos - $size_pos);
+	my $avail_col = substr($line[$i], $used_pos, $avail_pos - $used_pos);
+	my $others_col = substr($line[$i], $avail_pos, $mounted_pos - $avail_pos);
+	my $mounted_col = substr($line[$i], $mounted_pos);
+	my $padd = " " x ($max_len - length($line[$i]));
+	$device_col =~ s/ +$//;
+
+	$line[$i] = "$mounted_col$padd $size_col$used_col ";
+	$line[$i] .= "$avail_col " if $OPT{a};
+	$line[$i] .= "$others_col$device_col\n";
+    }
+
+    return @line;
+}
+
+sub get_column_start_pos {
+    my ($line, $column) = @_;
+    
+    my $column_pos;
+    if ($line =~ /^(.* +)$column/) {
+	$column_pos = length($1);
+    } else {
+	die;
+    }
+
+    return $column_pos;
+}
+
+sub get_column_end_pos {
+    my ($line, $column) = @_;
+    
+    my $column_pos;
+    if ($line =~ /^(.* +$column)/) {
+	$column_pos = length($1);
+    } else {
+	die;
+    }
+
+    return $column_pos;
+}
+
+sub get_size {
+    my ($size, $base) = @_;
+
+    if ($size =~ /(\S*\d)(\S+)/) {
+	my ($num, $unit) = ($1, $2);
+	return get_multiplied_size($num, $unit, $base);
+    } else {
+	return $size;
+    }
+}
+
+sub get_multiplied_size {
+    my ($num, $unit, $base) = @_;
+    
+    my $multiple = 1;
+
+    if ($unit =~ /K/) {
+	$multiple *= $base
+    } elsif ($unit =~ /M/) {
+	$multiple *= $base ** 2
+    } elsif ($unit =~ /G/) {
+	$multiple *= $base ** 3
+    } elsif ($unit =~ /T/) {
+	$multiple *= $base ** 4
+    }
+
+    return $num * $multiple;
+}

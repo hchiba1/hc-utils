@@ -1,0 +1,25 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('a', \%OPT);
+
+if ($^O eq "darwin") {
+    print STDERR "Only for Linux\n";
+    exit(1);
+}
+
+my @FREE = `free`;
+chomp(@FREE);
+
+my ($mem, $total, $used, $free, $shared, $buff_cache, $available) = split(/ +/, $FREE[1]);
+
+printf("%-6s%8.3f GB\n", "Total:", $total/1024/1024);
+printf("%-6s%8.3f GB\n", "Used:", $used/1024/1024);
+printf("%-6s%8.3f GB\n", "Avail:", $available/1024/1024);
