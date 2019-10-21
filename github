@@ -6,14 +6,14 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [OPTIONS] user/repos
--p: preserve time stamp
--r: make github username directory
--d DIR: change current directory
--h: make ~/github directory
 -l: list local repositories
+-h: make ~/github directory
+-d DIR: make directory
+-r: make subdirectory of username
+-p: preserve time stamp
 
 ex.)
- \$ $PROGRAM -d ~/github -u -r user/repos
+ \$ $PROGRAM -prh user/repos
 
 Dependency: 
   need git.revert.timestamp.pl for -p option
