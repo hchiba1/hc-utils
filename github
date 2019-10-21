@@ -36,9 +36,9 @@ if (@ARGV != 1) {
 my ($USER_REPO) = @ARGV;
 
 if ($OPT{h}) {
-    my $dir = "~/github";
+    my $dir = "$ENV{HOME}/github";
     if (!-e $dir) {
-        mkdir($dir) || die;
+        mkdir($dir) || die "ERROR: $dir: $!";
     }
     chdir($dir)
 } elsif ($OPT{d}) {
