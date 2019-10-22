@@ -55,6 +55,8 @@ if ($URL =~ /\/$/) {
     } else {
         if ($OPT{q}) {
             print "$COMMAND $URL\n";
+        } elsif ($OPT{d}) {
+            system "$COMMAND $URL";
         } else {
             my $retrieved = retrieve_cache($CACHE_FILE);
             if (! $retrieved) {
@@ -189,7 +191,7 @@ sub format_list {
 
     ### format list (add padding for each column)
     my $result = "";
-    for my $line (@file, @dir) {
+    for my $line (@file, @dir) { ## show files first, then directories
         if ($line =~ /^(.*?) +(\d+)( +.*?) +(\d+)( +.*)/) {
             my $f1_len = length($2);
             my $f2_len = length($4);
