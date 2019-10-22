@@ -41,12 +41,13 @@ my $sha256 = sha256_hex($URL);
 my $sub_dir = substr($sha256, 0, 3);
 my $CACHE_FILE = "$CACHE_DIR/$sub_dir/$sha256";
 
-### exec
+### debug
 if ($OPT{q}) {
     print STDERR $URL, "\n";
     exit;
 }
 
+### get directory contents
 if ($URL =~ /\/$/) {
     if ($OPT{l}) {
         exec_command("$COMMAND -l $URL");
@@ -62,7 +63,11 @@ if ($URL =~ /\/$/) {
             }
         }
     }
-} elsif ($OPT{f}) {
+    exit;
+}
+
+### get file contents
+if ($OPT{f}) {
     exec_command("$COMMAND -OR $URL");
 } elsif ($OPT{o}) {
     exec_command("$COMMAND -o $OPT{o} $URL");
