@@ -152,6 +152,7 @@ sub format_list {
 
     my @file = ();
     my @dir = ();
+    my @all = ();
 
     ### find max length for each column
     my $f1_len_max = 0;
@@ -165,17 +166,20 @@ sub format_list {
             if ($f1_len > $f1_len_max) {
                 $f1_len_max = $f1_len;
             }
-            my $f2_len = length($f2);
+            # my $f2_len = length($f2);
+            my $f2_len = length(format_size($f2));
             if ($f2_len > $f2_len_max) {
                 $f2_len_max = $f2_len;
             }
             if ($line =~ /^d/) {
                 push @dir, "$line/";
+                push @all, "$line/";
                 if (! -e "$TREE_DIR/$URL$name") {
                     mkpath("$TREE_DIR/$URL$name") || warn $!;
                 }
             } else {
                 push @file, "$line";
+                push @all, "$line";
                 # utime(undef, undef, "$TREE_DIR/$URL$name") || warn "$TREE_DIR/$URL$name: $!";
                 open(FILE, ">$TREE_DIR/$URL$name") || die;
                 close(FILE) || die;
@@ -185,15 +189,18 @@ sub format_list {
 
     ### format list (add padding for each column)
     my $result = "";
-    for my $line (@file, @dir) { ## show files first, then directories
+    for my $line (@all) {
+    # for my $line (@file, @dir) { ## show files first, then directories
         if ($line =~ /^(.*?) +(\d+)( +.*?) +(\d+)( +.*)/) {
             my $f1_len = length($2);
-            my $f2_len = length($4);
+            # my $f2_len = length($4);
+            my $f2_len = length(format_size($4));
             my $f1_len_diff = $f1_len_max - $f1_len;
             my $f2_len_diff = $f2_len_max - $f2_len;
             my $padding1 = " " x $f1_len_diff;
             my $padding2 = " " x $f2_len_diff;
-            $result .= $1 . " " . $padding1  . $2 . $3 . " " . $padding2 . $4 . $5 . "\n";
+            # $result .= $1 . " " . $padding1  . $2 . $3 . " " . $padding2 . $4 . $5 . "\n";
+            $result .= $1 . " " . $padding1  . $2 . $3 . " " . $padding2 . format_size($4) . $5 . "\n";
         }
     }
 
@@ -208,6 +215,27 @@ sub exec_command {
     } else {
         system "$command";
     }
+}
+
+sub format_size {
+    my ($byte) = @_;
+
+    if ($byte < 1024) {
+        return $byte;
+    }
+
+    my $kilo = $byte / 1024;
+    if ($kilo < 1024) {
+        return(sprintf("%.1f", $kilo) . "K");
+    }
+
+    my $mega = $kilo / 1024;
+    if ($mega < 1024) {
+        return(sprintf("%.1f", $mega) . "M");
+    }
+
+    my $giga = $mega / 1024;
+    return(sprintf("%.1f", $giga) . "G");
 }
 
 ### For caching ###
