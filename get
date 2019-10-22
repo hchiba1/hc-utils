@@ -164,12 +164,11 @@ sub format_list {
     my @file = ();
     my @dir = ();
 
+    ### find max length for each column
     my $f1_len_max = 0;
     my $f2_len_max = 0;
     for my $line (@list) {
-        # my @f = split(/\s+/, $line);
         if ($line =~ /^.*? +(\d+) +.*? +(\d+) +/) {
-            # my $f1_len = length($f[1]);
             my ($f1, $f2) = ($1, $2);
             my $f1_len = length($f1);
             if ($f1_len > $f1_len_max) {
@@ -187,17 +186,10 @@ sub format_list {
         }
     }
 
+    ### format list (add padding for each column)
     my $result = "";
-    
-    # for my $line (@dir, @file) {
     for my $line (@file, @dir) {
-        # if ($line =~ /^(\S+) +((\d+).*)/) {
         if ($line =~ /^(.*?) +(\d+)( +.*?) +(\d+)( +.*)/) {
-            # my $f1_len = length($3);
-            # my $f1_len_diff = $f1_len_max - $f1_len;
-            # my $padding = " " x $f1_len_diff;
-            # print $1, " ", $padding , $2, "\n";
-
             my $f1_len = length($2);
             my $f2_len = length($4);
             my $f1_len_diff = $f1_len_max - $f1_len;
