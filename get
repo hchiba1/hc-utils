@@ -13,7 +13,8 @@ get URL | less
 get -f URL
 get -o OUT_FILE URL
 -v: verbose
--q: print and quit
+-q: print URL and quit
+-d: debug
 ";
 
 my $CACHE_TIME_LIMIT = 3600; # one hour
@@ -23,7 +24,7 @@ my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('lfo:vq', \%OPT);
+getopts('lfo:vqd', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
@@ -48,29 +49,36 @@ if ($OPT{q}) {
 
 if ($URL =~ /\/$/) {
     if ($OPT{l}) {
-	system "$COMMAND -l $URL";
+        exec_command("$COMMAND -l $URL");
     } else {
-	if (! retrieve_cache($cache_file)) {
-	    my @list = `$COMMAND $URL`;
-	    my $result = format_list(@list);
-	    print $result;
-	    save_cache($sub_dir, $cache_file, $result);
-	}
+        if (! retrieve_cache($cache_file)) {
+            if ($OPT{d}) {
+                print "$COMMAND $URL\n";
+            } else {
+                my @list = `$COMMAND $URL`;
+                my $result = format_list(@list);
+                print $result;
+                save_cache($sub_dir, $cache_file, $result);
+            }
+        }
     }
 } elsif ($OPT{f}) {
-    system "$COMMAND -OR $URL";
+    exec_command("$COMMAND -OR $URL");
 } elsif ($OPT{o}) {
-    system "$COMMAND -o $OPT{o} $URL";
+    exec_command("$COMMAND -o $OPT{o} $URL");
 } else {
-    # system "$COMMAND $URL"; #faster than below??
     if (! retrieve_cache($cache_file)) {
-    	my @result = `$COMMAND $URL`;
-    	my $result = join("", @result);
-    	print $result;
-    	my $size = length($result);
-    	if ($size <= $CACHE_FILE_SIZE_LIMIT) {
-    	    save_cache($sub_dir, $cache_file, $result);
-    	}
+        if ($OPT{d}) {
+            print "$COMMAND $URL\n";
+        } else {
+            my @result = `$COMMAND $URL`;
+            my $result = join("", @result);
+            print $result;
+            my $size = length($result);
+            if ($size <= $CACHE_FILE_SIZE_LIMIT) {
+                save_cache($sub_dir, $cache_file, $result);
+            }
+        }
     }
 }
 
@@ -81,7 +89,7 @@ sub save_cache {
     my ($sub_dir, $cache_file, $result) = @_;
 
     if (! -e "$CACHE_DIR/$sub_dir") {
-	mkpath("$CACHE_DIR/$sub_dir") || die $!;
+        mkpath("$CACHE_DIR/$sub_dir") || die $!;
     }
     open(CACHE, ">$cache_file") || die $!;
     print CACHE $result;
@@ -92,20 +100,20 @@ sub retrieve_cache {
     my ($cache_file) = @_;
 
     if (-e $cache_file) {
-	my @cache_stat = stat $cache_file;
-	my $cache_time = localtime($cache_stat[9]);
-	my $current_time = localtime;
-	my $diff_time = str2time($current_time) - str2time($cache_time);
-	if ($diff_time <= $CACHE_TIME_LIMIT) {
-	    if ($OPT{v}) {
-		print "Found results cached at: $cache_time\n";
-	    }
-	    open(CACHE_FILE, $cache_file) || die $!;
-	    my @result = <CACHE_FILE>;
-	    close(CACHE_FILE) || die $!;
-	    print @result;
-	    return 1;
-	}
+        my @cache_stat = stat $cache_file;
+        my $cache_time = localtime($cache_stat[9]);
+        my $current_time = localtime;
+        my $diff_time = str2time($current_time) - str2time($cache_time);
+        if ($diff_time <= $CACHE_TIME_LIMIT) {
+            if ($OPT{v}) {
+                print "Found results cached at: $cache_time\n";
+            }
+            open(CACHE_FILE, $cache_file) || die $!;
+            my @result = <CACHE_FILE>;
+            close(CACHE_FILE) || die $!;
+            print @result;
+            return 1;
+        }
     }
 
     return 0;
@@ -116,27 +124,27 @@ sub search_bookmark {
 
     my ($prefix, $suffix);
     if ($input =~ /^([\w\.]+)$/) {
-	$prefix = "$1";
-	$suffix = "";
+        $prefix = "$1";
+        $suffix = "";
     } elsif ($input =~ /^([\w\.]+)(\/.*)/) {
-	($prefix, $suffix) = ($1, $2);
+        ($prefix, $suffix) = ($1, $2);
     } else {
-	return $input;
+        return $input;
     }
     
     if (-f $BOOKMARK) {
-	open(BOOKMARK, $BOOKMARK) || die $!;
-	while (<BOOKMARK>) {
-	    if (/^$prefix\s+(\S+)/) {
-		my $found = $1;
-		if ($suffix) {
-		    return "$found$suffix";
-		} else {
-		    return "$found/";
-		}
-	    }
-	}
-	close(BOOKMARK) || die $!;
+        open(BOOKMARK, $BOOKMARK) || die $!;
+        while (<BOOKMARK>) {
+            if (/^$prefix\s+(\S+)/) {
+                my $found = $1;
+                if ($suffix) {
+                    return "$found$suffix";
+                } else {
+                    return "$found/";
+                }
+            }
+        }
+        close(BOOKMARK) || die $!;
     }
 
     return $input;
@@ -152,46 +160,59 @@ sub format_list {
     my $f1_len_max = 0;
     my $f2_len_max = 0;
     for my $line (@list) {
-	# my @f = split(/\s+/, $line);
-	if ($line =~ /^.*? +(\d+) +.*? +(\d+) +/) {
-	    # my $f1_len = length($f[1]);
-	    my ($f1, $f2) = ($1, $2);
-	    my $f1_len = length($f1);
-	    if ($f1_len > $f1_len_max) {
-		$f1_len_max = $f1_len;
-	    }
-	    my $f2_len = length($f2);
-	    if ($f2_len > $f2_len_max) {
-		$f2_len_max = $f2_len;
-	    }
-	    if ($line =~ /^d/) {
-		push @dir, "$line/";
-	    } else {
-		push @file, "$line";
-	    }
-	}
+        # my @f = split(/\s+/, $line);
+        if ($line =~ /^.*? +(\d+) +.*? +(\d+) +/) {
+            # my $f1_len = length($f[1]);
+            my ($f1, $f2) = ($1, $2);
+            my $f1_len = length($f1);
+            if ($f1_len > $f1_len_max) {
+                $f1_len_max = $f1_len;
+            }
+            my $f2_len = length($f2);
+            if ($f2_len > $f2_len_max) {
+                $f2_len_max = $f2_len;
+            }
+            if ($line =~ /^d/) {
+                push @dir, "$line/";
+            } else {
+                push @file, "$line";
+            }
+        }
     }
 
     my $result = "";
     
     # for my $line (@dir, @file) {
     for my $line (@file, @dir) {
-	# if ($line =~ /^(\S+) +((\d+).*)/) {
-	if ($line =~ /^(.*?) +(\d+)( +.*?) +(\d+)( +.*)/) {
-	    # my $f1_len = length($3);
-	    # my $f1_len_diff = $f1_len_max - $f1_len;
-	    # my $padding = " " x $f1_len_diff;
-	    # print $1, " ", $padding , $2, "\n";
+        # if ($line =~ /^(\S+) +((\d+).*)/) {
+        if ($line =~ /^(.*?) +(\d+)( +.*?) +(\d+)( +.*)/) {
+            # my $f1_len = length($3);
+            # my $f1_len_diff = $f1_len_max - $f1_len;
+            # my $padding = " " x $f1_len_diff;
+            # print $1, " ", $padding , $2, "\n";
 
-	    my $f1_len = length($2);
-	    my $f2_len = length($4);
-	    my $f1_len_diff = $f1_len_max - $f1_len;
-	    my $f2_len_diff = $f2_len_max - $f2_len;
-	    my $padding1 = " " x $f1_len_diff;
-	    my $padding2 = " " x $f2_len_diff;
-	    $result .= $1 . " " . $padding1  . $2 . $3 . " " . $padding2 . $4 . $5 . "\n";
-	}
+            my $f1_len = length($2);
+            my $f2_len = length($4);
+            my $f1_len_diff = $f1_len_max - $f1_len;
+            my $f2_len_diff = $f2_len_max - $f2_len;
+            my $padding1 = " " x $f1_len_diff;
+            my $padding2 = " " x $f2_len_diff;
+            $result .= $1 . " " . $padding1  . $2 . $3 . " " . $padding2 . $4 . $5 . "\n";
+        }
     }
 
     return $result;
+}
+
+################################################################################
+### Functions ##################################################################
+################################################################################
+sub exec_command {
+    my ($command) = @_;
+
+    if ($OPT{d}) {
+        print "$command\n";
+    } else {
+        system "$command";
+    }
 }
