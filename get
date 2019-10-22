@@ -55,7 +55,8 @@ if ($URL =~ /\/$/) {
         if ($OPT{d}) {
             print "$COMMAND $URL\n";
         } else {
-            if (! retrieve_cache($CACHE_FILE)) {
+            my $retrieved = retrieve_cache($CACHE_FILE);
+            if (! $retrieved) {
                 my @list = `$COMMAND $URL`;
                 my $result = format_list(@list);
                 print $result;
@@ -75,7 +76,8 @@ if ($OPT{f}) {
     if ($OPT{d}) {
         print "$COMMAND $URL\n";
     } else {
-        if (! retrieve_cache($CACHE_FILE)) {
+        my $retrieved = retrieve_cache($CACHE_FILE);
+        if (! $retrieved) {
             my @result = `$COMMAND $URL`;
             my $result = join("", @result);
             print $result;
