@@ -13,6 +13,7 @@ get URL | less
 get -f URL
 get -o OUT_FILE URL
 -v: verbose
+-n: do not use cache
 -u: print URL and quit
 -q: print command and quit
 -d: debug
@@ -21,11 +22,12 @@ get -o OUT_FILE URL
 my $CACHE_TIME_LIMIT = 3600; # one hour
 my $CACHE_FILE_SIZE_LIMIT = 4096; # 4KiB
 my $CACHE_DIR = "$ENV{HOME}/.get/cache";
+my $TREE_DIR = "$ENV{HOME}/.get/tree";
 my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('lfo:vuqd', \%OPT);
+getopts('lfo:vnuqd', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
@@ -60,6 +62,9 @@ if ($URL =~ /\/$/) {
         } else {
             my $retrieved = retrieve_cache($CACHE_FILE);
             if (! $retrieved) {
+                if (! -e "$TREE_DIR/$URL") {
+                    mkpath("$TREE_DIR/$URL") || warn $!;
+                }
                 my @list = `$COMMAND $URL`;
                 my $result = format_list(@list);
                 print $result;
@@ -138,6 +143,8 @@ sub format_list {
     my $f1_len_max = 0;
     my $f2_len_max = 0;
     for my $line (@list) {
+        my @f = split(/\s+/, $line);
+        my $name = $f[8];
         if ($line =~ /^.*? +(\d+) +.*? +(\d+) +/) {
             my ($f1, $f2) = ($1, $2);
             my $f1_len = length($f1);
@@ -148,10 +155,16 @@ sub format_list {
             if ($f2_len > $f2_len_max) {
                 $f2_len_max = $f2_len;
             }
-            if ($line =~ /^d/) {
-                push @dir, "$line/";
-            } else {
+            if ($line =~ /^-/) {
                 push @file, "$line";
+                # if (! -e "$TREE_DIR/$URL$name") {
+                #     mkpath("$TREE_DIR/$URL$name") || warn $!;
+                # }
+            } else {
+                push @dir, "$line/";
+            }
+            if (! -e "$TREE_DIR/$URL$name") {
+                mkpath("$TREE_DIR/$URL$name") || warn $!;
             }
         }
     }
@@ -199,6 +212,10 @@ sub save_cache {
 sub retrieve_cache {
     my ($cache_file) = @_;
 
+    if ($OPT{n}) {
+        return 0;
+    }
+    
     if (-e $cache_file) {
         my @cache_stat = stat $cache_file;
         my $cache_time = localtime($cache_stat[9]);
