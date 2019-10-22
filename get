@@ -39,7 +39,7 @@ $URL = search_bookmark($URL);
 
 my $sha256 = sha256_hex($URL);
 my $sub_dir = substr($sha256, 0, 3);
-my $cache_file = "$CACHE_DIR/$sub_dir/$sha256";
+my $CACHE_FILE = "$CACHE_DIR/$sub_dir/$sha256";
 
 ### exec
 if ($OPT{q}) {
@@ -51,14 +51,14 @@ if ($URL =~ /\/$/) {
     if ($OPT{l}) {
         exec_command("$COMMAND -l $URL");
     } else {
-        if (! retrieve_cache($cache_file)) {
-            if ($OPT{d}) {
-                print "$COMMAND $URL\n";
-            } else {
+        if ($OPT{d}) {
+            print "$COMMAND $URL\n";
+        } else {
+            if (! retrieve_cache($CACHE_FILE)) {
                 my @list = `$COMMAND $URL`;
                 my $result = format_list(@list);
                 print $result;
-                save_cache($sub_dir, $cache_file, $result);
+                save_cache($sub_dir, $CACHE_FILE, $result);
             }
         }
     }
@@ -67,16 +67,16 @@ if ($URL =~ /\/$/) {
 } elsif ($OPT{o}) {
     exec_command("$COMMAND -o $OPT{o} $URL");
 } else {
-    if (! retrieve_cache($cache_file)) {
-        if ($OPT{d}) {
-            print "$COMMAND $URL\n";
-        } else {
+    if ($OPT{d}) {
+        print "$COMMAND $URL\n";
+    } else {
+        if (! retrieve_cache($CACHE_FILE)) {
             my @result = `$COMMAND $URL`;
             my $result = join("", @result);
             print $result;
             my $size = length($result);
             if ($size <= $CACHE_FILE_SIZE_LIMIT) {
-                save_cache($sub_dir, $cache_file, $result);
+                save_cache($sub_dir, $CACHE_FILE, $result);
             }
         }
     }
