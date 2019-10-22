@@ -13,7 +13,8 @@ get URL | less
 get -f URL
 get -o OUT_FILE URL
 -v: verbose
--q: print URL and quit
+-u: print URL and quit
+-q: print command and quit
 -d: debug
 ";
 
@@ -24,7 +25,7 @@ my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('lfo:vqd', \%OPT);
+getopts('lfo:vuqd', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
@@ -42,7 +43,7 @@ my $sub_dir = substr($sha256, 0, 3);
 my $CACHE_FILE = "$CACHE_DIR/$sub_dir/$sha256";
 
 ### debug
-if ($OPT{q}) {
+if ($OPT{u}) {
     print STDERR $URL, "\n";
     exit;
 }
@@ -52,7 +53,7 @@ if ($URL =~ /\/$/) {
     if ($OPT{l}) {
         exec_command("$COMMAND -l $URL");
     } else {
-        if ($OPT{d}) {
+        if ($OPT{q}) {
             print "$COMMAND $URL\n";
         } else {
             my $retrieved = retrieve_cache($CACHE_FILE);
@@ -73,7 +74,7 @@ if ($OPT{f}) {
 } elsif ($OPT{o}) {
     exec_command("$COMMAND -o $OPT{o} $URL");
 } else {
-    if ($OPT{d}) {
+    if ($OPT{q}) {
         print "$COMMAND $URL\n";
     } else {
         my $retrieved = retrieve_cache($CACHE_FILE);
@@ -209,7 +210,7 @@ sub format_list {
 sub exec_command {
     my ($command) = @_;
 
-    if ($OPT{d}) {
+    if ($OPT{q}) {
         print "$command\n";
     } else {
         system "$command";
