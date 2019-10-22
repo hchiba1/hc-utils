@@ -37,6 +37,7 @@ if (@ARGV != 1) {
     exit 1;
 }
 my ($URL) = @ARGV;
+$URL =~ s/^ftp:\/\///;
 
 $URL = search_bookmark($URL);
 
@@ -155,16 +156,16 @@ sub format_list {
             if ($f2_len > $f2_len_max) {
                 $f2_len_max = $f2_len;
             }
-            if ($line =~ /^-/) {
-                push @file, "$line";
-                # if (! -e "$TREE_DIR/$URL$name") {
-                #     mkpath("$TREE_DIR/$URL$name") || warn $!;
-                # }
-            } else {
+            if ($line =~ /^d/) {
                 push @dir, "$line/";
-            }
-            if (! -e "$TREE_DIR/$URL$name") {
-                mkpath("$TREE_DIR/$URL$name") || warn $!;
+                if (! -e "$TREE_DIR/$URL$name") {
+                    mkpath("$TREE_DIR/$URL$name") || warn $!;
+                }
+            } else {
+                push @file, "$line";
+                # utime(undef, undef, "$TREE_DIR/$URL$name") || warn "$TREE_DIR/$URL$name: $!";
+                open(FILE, ">$TREE_DIR/$URL$name") || die;
+                close(FILE) || die;
             }
         }
     }
