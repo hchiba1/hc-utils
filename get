@@ -47,8 +47,11 @@ $URL = search_bookmark($URL);
 if ($URL !~ /\//) {
     $URL .= "/";
 }
-if ($URL !~ /\/$/ && -d "$TREE_DIR/$URL") {
-    $URL .= "/";
+
+if (! $OPT{n} and ! $OPT{d}) {
+    if ($URL !~ /\/$/ && -d "$TREE_DIR/$URL") {
+        $URL .= "/";
+    }
 }
 
 my $CACHE_FILE_PATH = get_cache_file($URL);
@@ -62,13 +65,14 @@ if ($URL =~ /\/$/) {
     } elsif ($OPT{d}) {
         system "$COMMAND $URL";
     } else {
-        my $retrieved = retrieve_cache($CACHE_FILE_PATH);
-        if (! $retrieved) {
+        my @retrieved = retrieve_cache($CACHE_FILE_PATH);
+        if (@retrieved) {
+            print format_list(@retrieved);
+        } else {
             touch_dir("$TREE_DIR/$URL");
             my @list = `$COMMAND $URL`;
-            my $result = format_list(@list);
-            print $result;
-            save_cache($CACHE_FILE_PATH, $result);
+            print format_list(@list);
+            save_cache($CACHE_FILE_PATH, join("", @list));
         }
     }
     exit;
@@ -83,8 +87,10 @@ if ($OPT{f}) {
     if ($OPT{q}) {
         print "$COMMAND $URL\n";
     } else {
-        my $retrieved = retrieve_cache($CACHE_FILE_PATH);
-        if (! $retrieved) {
+        my @retrieved = retrieve_cache($CACHE_FILE_PATH);
+        if (@retrieved) {
+            print @retrieved;
+        } else {
             my @result = `$COMMAND $URL`;
             my $result = join("", @result);
             print $result;
@@ -221,6 +227,12 @@ sub exec_command {
 sub touch_dir {
     my ($dir) = @_;
 
+    my $path = $dir;
+    $path =~ s/\/$//;
+    if (-e $path) {
+        rmtree($path);
+    }
+    
     if (! -e "$dir") {
         mkpath("$dir") || warn $!;
     }
@@ -261,24 +273,17 @@ sub retrieve_cache {
     my ($cache_file) = @_;
 
     if ($OPT{n}) {
-        return 0;
+        return;
     }
     
     if (-e $cache_file and is_recent_file($cache_file)) {
-        print_file_content($cache_file);
-        return 1;
-    } else {
-        return 0;
+        open(CACHE_FILE, $cache_file) || die $!;
+        my @result = <CACHE_FILE>;
+        close(CACHE_FILE) || die $!;
+        return @result;
     }
-}
 
-sub print_file_content {
-    my ($file) = @_;
-    
-    open(FILE, $file) || die $!;
-    my @result = <FILE>;
-    close(FILE) || die $!;
-    print @result;
+    return;
 }
 
 sub is_recent_file {
