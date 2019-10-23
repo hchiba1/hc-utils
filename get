@@ -54,10 +54,7 @@ if ($URL !~ /\/$/ && -d "$TREE_DIR/$URL") {
     $URL .= "/";
 }
 
-# my $sha256 = sha256_hex($URL);
-# my $sub_dir = substr($sha256, 0, 3);
-# my $CACHE_FILE = "$CACHE_DIR/$sub_dir/$sha256";
-my $CACHE_FILE = get_cache_file($URL);
+my $CACHE_FILE_PATH = get_cache_file($URL);
 
 my $CURRENT_TIME = localtime;
 
@@ -77,7 +74,7 @@ if ($URL =~ /\/$/) {
         } elsif ($OPT{d}) {
             system "$COMMAND $URL";
         } else {
-            my $retrieved = retrieve_cache($CACHE_FILE);
+            my $retrieved = retrieve_cache($CACHE_FILE_PATH);
             if (! $retrieved) {
                 if (! -e "$TREE_DIR/$URL") {
                     mkpath("$TREE_DIR/$URL") || warn $!;
@@ -85,8 +82,7 @@ if ($URL =~ /\/$/) {
                 my @list = `$COMMAND $URL`;
                 my $result = format_list(@list);
                 print $result;
-                # save_cache($sub_dir, $CACHE_FILE, $result);
-                save_cache($CACHE_FILE, $result);
+                save_cache($CACHE_FILE_PATH, $result);
             }
         }
     }
@@ -102,15 +98,14 @@ if ($OPT{f}) {
     if ($OPT{q}) {
         print "$COMMAND $URL\n";
     } else {
-        my $retrieved = retrieve_cache($CACHE_FILE);
+        my $retrieved = retrieve_cache($CACHE_FILE_PATH);
         if (! $retrieved) {
             my @result = `$COMMAND $URL`;
             my $result = join("", @result);
             print $result;
             my $size = length($result);
             if ($size <= $CACHE_FILE_SIZE_LIMIT) {
-                # save_cache($sub_dir, $CACHE_FILE, $result);
-                save_cache($CACHE_FILE, $result);
+                save_cache($CACHE_FILE_PATH, $result);
             }
         }
     }
@@ -270,12 +265,8 @@ sub get_cache_file {
 
 
 sub save_cache {
-    # my ($sub_dir, $cache_file, $result) = @_;
     my ($cache_file, $result) = @_;
 
-    # if (! -e "$CACHE_DIR/$sub_dir") {
-    #     mkpath("$CACHE_DIR/$sub_dir") || die $!;
-    # }
     open(CACHE, ">$cache_file") || die $!;
     print CACHE $result;
     close(CACHE) || die $!;
