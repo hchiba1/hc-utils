@@ -64,9 +64,7 @@ if ($URL =~ /\/$/) {
     } else {
         my $retrieved = retrieve_cache($CACHE_FILE_PATH);
         if (! $retrieved) {
-            if (! -e "$TREE_DIR/$URL") {
-                mkpath("$TREE_DIR/$URL") || warn $!;
-            }
+            touch_dir("$TREE_DIR/$URL");
             my @list = `$COMMAND $URL`;
             my $result = format_list(@list);
             print $result;
