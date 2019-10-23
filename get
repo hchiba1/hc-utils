@@ -163,6 +163,9 @@ sub format_list {
             if ($line =~ /^d/) {
                 push @all, "$line/";
                 touch_dir("$TREE_DIR/$URL$name");
+            } elsif ($line =~ /^l/ and $line =~ /\/$/) {
+                push @all, "$line";
+                touch_dir("$TREE_DIR/$URL$name");
             } else {
                 push @all, "$line";
                 touch_file("$TREE_DIR/$URL$name");
@@ -240,9 +243,13 @@ sub touch_dir {
 
 sub touch_file {
     my ($file) = @_;
+
+    if (-d $file) {
+        return;
+    }
     
-    open(FILE, ">$file") || warn $!;
-    close(FILE) || warn;
+    open(FILE, ">$file") || warn "$file: $!";
+    close(FILE) || warn $!;
 }
 
 ### For caching ###
