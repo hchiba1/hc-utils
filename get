@@ -150,8 +150,6 @@ sub format_list {
     my (@list) = @_;
     chomp(@list);
 
-    my @file = ();
-    my @dir = ();
     my @all = ();
 
     ### find max length for each column
@@ -172,17 +170,11 @@ sub format_list {
                 $f2_len_max = $f2_len;
             }
             if ($line =~ /^d/) {
-                push @dir, "$line/";
                 push @all, "$line/";
-                if (! -e "$TREE_DIR/$URL$name") {
-                    mkpath("$TREE_DIR/$URL$name") || warn $!;
-                }
+                touch_dir("$TREE_DIR/$URL$name");
             } else {
-                push @file, "$line";
                 push @all, "$line";
-                # utime(undef, undef, "$TREE_DIR/$URL$name") || warn "$TREE_DIR/$URL$name: $!";
-                open(FILE, ">$TREE_DIR/$URL$name") || warn $!;
-                close(FILE) || warn;
+                touch_file("$TREE_DIR/$URL$name");
             }
         }
     }
@@ -190,7 +182,6 @@ sub format_list {
     ### format list (add padding for each column)
     my $result = "";
     for my $line (@all) {
-    # for my $line (@file, @dir) { ## show files first, then directories
         if ($line =~ /^(.*?) +(\d+)( +.*?) +(\d+)( +.*)/) {
             my $f1_len = length($2);
             # my $f2_len = length($4);
@@ -205,16 +196,6 @@ sub format_list {
     }
 
     return $result;
-}
-
-sub exec_command {
-    my ($command) = @_;
-
-    if ($OPT{q}) {
-        print "$command\n";
-    } else {
-        system "$command";
-    }
 }
 
 sub format_size {
@@ -236,6 +217,35 @@ sub format_size {
 
     my $giga = $mega / 1024;
     return(sprintf("%.1f", $giga) . "G");
+}
+
+### Exec command ###
+
+sub exec_command {
+    my ($command) = @_;
+
+    if ($OPT{q}) {
+        print "$command\n";
+    } else {
+        system "$command";
+    }
+}
+
+### File manipulation ###
+
+sub touch_dir {
+    my ($dir) = @_;
+
+    if (! -e "$dir") {
+        mkpath("$dir") || warn $!;
+    }
+}
+
+sub touch_file {
+    my ($file) = @_;
+    
+    open(FILE, ">$file") || warn $!;
+    close(FILE) || warn;
 }
 
 ### For caching ###
