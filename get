@@ -62,8 +62,6 @@ my $CURRENT_TIME = localtime;
 if ($URL =~ /\/$/) {
     if ($OPT{q}) {
         print "$COMMAND $URL\n";
-    } elsif ($OPT{d}) {
-        system "$COMMAND $URL";
     } else {
         my @retrieved = retrieve_cache($CACHE_FILE_PATH);
         if (@retrieved) {
@@ -139,6 +137,11 @@ sub search_bookmark {
 
 sub format_list {
     my (@list) = @_;
+
+    if ($OPT{d}) {
+        print @list;
+    }
+
     chomp(@list);
 
     my @all = ();
