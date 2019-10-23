@@ -14,7 +14,6 @@ get -f URL
 get -o OUT_FILE URL
 -v: verbose
 -n: do not use cache
--u: print URL and quit
 -q: print command and quit
 -d: debug
 -L CACHE_FILE_SIZE_LIMIT
@@ -29,7 +28,7 @@ my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('lfo:vnuqdL:', \%OPT);
+getopts('lfo:vnqdL:', \%OPT);
 
 if ($OPT{L}) {
     $CACHE_FILE_SIZE_LIMIT = $OPT{L};
@@ -57,12 +56,6 @@ if ($URL !~ /\/$/ && -d "$TREE_DIR/$URL") {
 my $CACHE_FILE_PATH = get_cache_file($URL);
 
 my $CURRENT_TIME = localtime;
-
-### debug
-if ($OPT{u}) {
-    print STDERR $URL, "\n";
-    exit;
-}
 
 ### get directory contents
 if ($URL =~ /\/$/) {
