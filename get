@@ -134,6 +134,7 @@ sub format_list {
 
     if ($OPT{d}) {
         print @list;
+        return;
     }
 
     chomp(@list);
