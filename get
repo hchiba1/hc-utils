@@ -14,23 +14,17 @@ my $USAGE=
 -d: debug
 -n: do not use cache
 -v: verbose
--L CACHE_FILE_SIZE_LIMIT
 ";
 
 my $CACHE_TIME_LIMIT = 3600; # one hour
-# my $CACHE_FILE_SIZE_LIMIT = 4096; # 4KiB
-my $CACHE_FILE_SIZE_LIMIT = 100000; # 4KiB
+my $CACHE_FILE_SIZE_LIMIT = 100000; # 100K
 my $CACHE_DIR = "$ENV{HOME}/.get/cache";
 my $TREE_DIR = "$ENV{HOME}/.get/tree";
 my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('lfo:vnqdL:', \%OPT);
-
-if ($OPT{L}) {
-    $CACHE_FILE_SIZE_LIMIT = $OPT{L};
-}
+getopts('lfo:vnqd:', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
