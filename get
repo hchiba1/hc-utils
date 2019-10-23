@@ -181,8 +181,8 @@ sub format_list {
                 push @file, "$line";
                 push @all, "$line";
                 # utime(undef, undef, "$TREE_DIR/$URL$name") || warn "$TREE_DIR/$URL$name: $!";
-                open(FILE, ">$TREE_DIR/$URL$name") || die;
-                close(FILE) || die;
+                open(FILE, ">$TREE_DIR/$URL$name") || warn $!;
+                close(FILE) || warn;
             }
         }
     }
