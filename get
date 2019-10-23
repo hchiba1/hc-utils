@@ -8,7 +8,7 @@ use HTTP::Date;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [OPTIONS] URL
-get [-l] URL/ > LIST
+get URL/ > LIST
 get URL | less
 get -f URL
 get -o OUT_FILE URL
@@ -59,24 +59,20 @@ my $CURRENT_TIME = localtime;
 
 ### get directory contents
 if ($URL =~ /\/$/) {
-    if ($OPT{l}) {
-        exec_command("$COMMAND -l $URL");
+    if ($OPT{q}) {
+        print "$COMMAND $URL\n";
+    } elsif ($OPT{d}) {
+        system "$COMMAND $URL";
     } else {
-        if ($OPT{q}) {
-            print "$COMMAND $URL\n";
-        } elsif ($OPT{d}) {
-            system "$COMMAND $URL";
-        } else {
-            my $retrieved = retrieve_cache($CACHE_FILE_PATH);
-            if (! $retrieved) {
-                if (! -e "$TREE_DIR/$URL") {
-                    mkpath("$TREE_DIR/$URL") || warn $!;
-                }
-                my @list = `$COMMAND $URL`;
-                my $result = format_list(@list);
-                print $result;
-                save_cache($CACHE_FILE_PATH, $result);
+        my $retrieved = retrieve_cache($CACHE_FILE_PATH);
+        if (! $retrieved) {
+            if (! -e "$TREE_DIR/$URL") {
+                mkpath("$TREE_DIR/$URL") || warn $!;
             }
+            my @list = `$COMMAND $URL`;
+            my $result = format_list(@list);
+            print $result;
+            save_cache($CACHE_FILE_PATH, $result);
         }
     }
     exit;
