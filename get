@@ -54,9 +54,12 @@ if ($URL !~ /\/$/ && -d "$TREE_DIR/$URL") {
     $URL .= "/";
 }
 
-my $sha256 = sha256_hex($URL);
-my $sub_dir = substr($sha256, 0, 3);
-my $CACHE_FILE = "$CACHE_DIR/$sub_dir/$sha256";
+# my $sha256 = sha256_hex($URL);
+# my $sub_dir = substr($sha256, 0, 3);
+# my $CACHE_FILE = "$CACHE_DIR/$sub_dir/$sha256";
+my $CACHE_FILE = get_cache_file($URL);
+
+my $CURRENT_TIME = localtime;
 
 ### debug
 if ($OPT{u}) {
@@ -82,7 +85,8 @@ if ($URL =~ /\/$/) {
                 my @list = `$COMMAND $URL`;
                 my $result = format_list(@list);
                 print $result;
-                save_cache($sub_dir, $CACHE_FILE, $result);
+                # save_cache($sub_dir, $CACHE_FILE, $result);
+                save_cache($CACHE_FILE, $result);
             }
         }
     }
@@ -105,7 +109,8 @@ if ($OPT{f}) {
             print $result;
             my $size = length($result);
             if ($size <= $CACHE_FILE_SIZE_LIMIT) {
-                save_cache($sub_dir, $CACHE_FILE, $result);
+                # save_cache($sub_dir, $CACHE_FILE, $result);
+                save_cache($CACHE_FILE, $result);
             }
         }
     }
@@ -250,12 +255,27 @@ sub touch_file {
 
 ### For caching ###
 
-sub save_cache {
-    my ($sub_dir, $cache_file, $result) = @_;
+sub get_cache_file {
+    my ($URL) = @_;
 
+    my $sha256 = sha256_hex($URL);
+
+    my $sub_dir = substr($sha256, 0, 3);
     if (! -e "$CACHE_DIR/$sub_dir") {
         mkpath("$CACHE_DIR/$sub_dir") || die $!;
     }
+
+    return "$CACHE_DIR/$sub_dir/$sha256";
+}
+
+
+sub save_cache {
+    # my ($sub_dir, $cache_file, $result) = @_;
+    my ($cache_file, $result) = @_;
+
+    # if (! -e "$CACHE_DIR/$sub_dir") {
+    #     mkpath("$CACHE_DIR/$sub_dir") || die $!;
+    # }
     open(CACHE, ">$cache_file") || die $!;
     print CACHE $result;
     close(CACHE) || die $!;
@@ -268,22 +288,33 @@ sub retrieve_cache {
         return 0;
     }
     
-    if (-e $cache_file) {
-        my @cache_stat = stat $cache_file;
-        my $cache_time = localtime($cache_stat[9]);
-        my $current_time = localtime;
-        my $diff_time = str2time($current_time) - str2time($cache_time);
-        if ($diff_time <= $CACHE_TIME_LIMIT) {
-            if ($OPT{v}) {
-                print "Found results cached at: $cache_time\n";
-            }
-            open(CACHE_FILE, $cache_file) || die $!;
-            my @result = <CACHE_FILE>;
-            close(CACHE_FILE) || die $!;
-            print @result;
-            return 1;
-        }
+    if (-e $cache_file and is_recent_file($cache_file)) {
+        print_file_content($cache_file);
+        return 1;
+    } else {
+        return 0;
     }
+}
 
-    return 0;
+sub print_file_content {
+    my ($file) = @_;
+    
+    open(FILE, $file) || die $!;
+    my @result = <FILE>;
+    close(FILE) || die $!;
+    print @result;
+}
+
+sub is_recent_file {
+    my ($file) = @_;
+    
+    my @stat = stat $file;
+    my $file_time = localtime($stat[9]);
+    my $diff_time = str2time($CURRENT_TIME) - str2time($file_time);
+    if ($diff_time <= $CACHE_TIME_LIMIT) {
+        print "Found results cached at: $file_time\n" if $OPT{v};
+        return 1;
+    } else {
+        return 0;
+    }
 }
