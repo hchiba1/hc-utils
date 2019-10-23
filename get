@@ -8,14 +8,12 @@ use HTTP::Date;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [OPTIONS] URL
-get URL/ > LIST
-get URL | less
-get -f URL
-get -o OUT_FILE URL
--v: verbose
--n: do not use cache
+-f: save as file
+-o FILE: save as specified file
 -q: print command and quit
 -d: debug
+-n: do not use cache
+-v: verbose
 -L CACHE_FILE_SIZE_LIMIT
 ";
 
