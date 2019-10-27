@@ -155,6 +155,7 @@ sub format_list {
 
     my @all = ();
     my @former = ();
+    my @former_dir = ();
     my @latter = ();
 
     ### find max length for each column
@@ -175,11 +176,11 @@ sub format_list {
             }
             if ($line =~ /^d/) {
                 push @all, "$line/";
-                push_former_or_latter("$line/", $name, \@former, \@latter);
+                push_former_or_latter("$line/", $name, \@former_dir, \@latter);
                 touch_dir("$TREE_DIR/$URL$name");
             } elsif ($line =~ /^l/ and $line =~ /\/$/) {
                 push @all, "$line";
-                push_former_or_latter("$line", $name, \@former, \@latter);
+                push_former_or_latter("$line", $name, \@former_dir, \@latter);
                 touch_dir("$TREE_DIR/$URL$name");
             } else {
                 push @all, "$line";
@@ -192,7 +193,7 @@ sub format_list {
     ### format list (add padding for each column)
     my $result = "";
     # for my $line (@all) {
-    for my $line (@former, @latter) {
+    for my $line (@former, @former_dir, @latter) {
         if ($line =~ /^(.*?) +(\d+)( +.*?) +(\d+)( +.*)/) {
             my $f1_len = length($2);
             my $f2_len = length(format_size($4));
