@@ -81,7 +81,12 @@ if ($URL =~ /\/$/) {
 if ($OPT{p}) {
     if ($URL =~ /^(.+)\/.+$/) {
         my $directory = $1;
-        touch_dir($directory);
+        if (-f $directory) {
+            rmtree($directory);
+        }
+        if (! -e $directory) {
+            mkpath($directory) || warn $!;
+        }
         chdir($directory) || die "$directory: $!";
     }
     exec_command("$COMMAND -OR $URL");
