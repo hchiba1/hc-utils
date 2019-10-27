@@ -2,14 +2,14 @@
 use strict;
 use File::Basename;
 use Getopt::Std;
-# use IPC::Open3;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM FILE
+"Usage: $PROGRAM [-d] FILE
+-d: debug
 ";
 
 my %OPT;
-getopts('v', \%OPT);
+getopts('d', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -44,7 +44,7 @@ if ($FILE =~ /^(.+)\.nim$/) {
     die $USAGE;
 }
 
-if ($OPT{v}) {
+if ($OPT{d}) {
     system "nim compile --run --out:$BINARY_FILE $FILE";
 } elsif (-f $BINARY_FILE && (stat $BINARY_FILE)[9] > (stat $FILE)[9]) {
     system "$BINARY_FILE @ARGV";
