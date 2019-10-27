@@ -10,6 +10,7 @@ my $USAGE=
 "Usage: $PROGRAM [OPTIONS] URL
 -f: save as file
 -o FILE: save as specified file
+-p: make parent directory if needed
 -q: print command and quit
 -d: debug
 -n: do not use cache
@@ -25,7 +26,7 @@ my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('fo:qdnvr', \%OPT);
+getopts('fo:pqdnvr', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
@@ -77,7 +78,14 @@ if ($URL =~ /\/$/) {
 }
 
 ### get file contents
-if ($OPT{f}) {
+if ($OPT{p}) {
+    if ($URL =~ /^(.+)\/.+$/) {
+        my $directory = $1;
+        touch_dir($directory);
+        chdir($directory) || die "$directory: $!";
+    }
+    exec_command("$COMMAND -OR $URL");
+} elsif ($OPT{f}) {
     exec_command("$COMMAND -OR $URL");
 } elsif ($OPT{o}) {
     exec_command("$COMMAND -o $OPT{o} $URL");
