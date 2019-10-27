@@ -4,7 +4,7 @@ use File::Basename;
 use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM [-d] FILE
+"Usage: $PROGRAM [-d] FILE.nim
 -d: debug
 ";
 
@@ -15,15 +15,15 @@ if (!@ARGV) {
     print STDERR $USAGE;
     exit 1;
 }
-my $FILE = shift @ARGV;
+my $NIM_FILE = shift @ARGV;
 
-if (! -e $FILE) {
-    die "ERROR: $FILE: $!";
+if (! -e $NIM_FILE) {
+    die "ERROR: $NIM_FILE: $!";
 }
 
 my $DIR = "";
 my $BINARY_FILE = "";
-if ($FILE =~ /^(.+)\.nim$/) {
+if ($NIM_FILE =~ /^(.+)\.nim$/) {
     my $prefix = $1;
     my $DIR = dirname($prefix);
     my $basename = basename($prefix);
@@ -41,15 +41,16 @@ if ($FILE =~ /^(.+)\.nim$/) {
     }
     $BINARY_FILE = "$DIR/$basename";
 } else {
-    die $USAGE;
+    print STDERR $USAGE;
+    exit(1)
 }
 
 if ($OPT{d}) {
-    system "nim compile --run --out:$BINARY_FILE $FILE";
-} elsif (-f $BINARY_FILE && (stat $BINARY_FILE)[9] > (stat $FILE)[9]) {
+    system "nim compile --run --out:$BINARY_FILE $NIM_FILE";
+} elsif (-f $BINARY_FILE && (stat $BINARY_FILE)[9] > (stat $NIM_FILE)[9]) {
     system "$BINARY_FILE @ARGV";
 } else {
-    my $result = `nim compile --out:$BINARY_FILE $FILE 2>&1`;
+    my $result = `nim compile --out:$BINARY_FILE $NIM_FILE 2>&1`;
     if ($? >> 8) {
         print STDERR $result;
         exit($? >> 8);
