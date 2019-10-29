@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 use File::Basename;
+use File::Path;
 use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
@@ -17,33 +18,7 @@ if (!@ARGV) {
 }
 my $NIM_FILE = shift @ARGV;
 
-if (! -e $NIM_FILE) {
-    die "ERROR: $NIM_FILE: $!";
-}
-
-my $DIR = "";
-my $BINARY_FILE = "";
-if ($NIM_FILE =~ /^(.+)\.nim$/) {
-    my $prefix = $1;
-    my $DIR = dirname($prefix);
-    my $basename = basename($prefix);
-    if ($^O eq "linux") {
-        $DIR .= "/linux";
-    } elsif ($^O eq "darwin") {
-        $DIR .= "/mac"
-    } elsif ($^O eq "dos") {
-        $DIR .= "/win"
-    } else {
-        die;
-    }
-    if (! -e $DIR) {
-        mkdir($DIR);
-    }
-    $BINARY_FILE = "$DIR/$basename";
-} else {
-    print STDERR $USAGE;
-    exit(1)
-}
+my $BINARY_FILE = get_binary_file_path($NIM_FILE);
 
 if ($OPT{d}) {
     system "nim compile --run --out:$BINARY_FILE $NIM_FILE";
@@ -56,4 +31,44 @@ if ($OPT{d}) {
         exit($? >> 8);
     }
     system "$BINARY_FILE @ARGV";
+}
+
+################################################################################
+### Function ###################################################################
+################################################################################
+
+sub get_binary_file_path {
+    my ($nim_file) = @_;
+
+    if (! -e $nim_file) {
+        die "ERROR: $nim_file: $!";
+    }
+    
+    if ($nim_file =~ /^(.+)\.nim$/) {
+        my $prefix = $1;
+        my $directory = dirname($prefix);
+        my $program_name = basename($prefix);
+
+        if ($directory =~ /^src$/ || $directory =~ /\/src$/) {
+            $directory =~ s/src$/bin/;
+        }
+
+        if ($^O eq "linux") {
+            $directory .= "/linux";
+        } elsif ($^O eq "darwin") {
+            $directory .= "/mac"
+        } elsif ($^O eq "dos") {
+            $directory .= "/win"
+        } else {
+            die;
+        }
+        if (! -e $directory) {
+            mkpath($directory) || die "$directory: $!";
+        }
+
+        return "$directory/$program_name";
+    } else {
+        print STDERR $USAGE;
+        exit 1;
+    }
 }
