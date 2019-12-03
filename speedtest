@@ -6,18 +6,20 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
 -l: list servers
+-S ID: specify server ID
 -s SEC: sleep SEC seconds until next trial
 -n N: try N trials
 -v: verbose
--V: exec original command
+-V: verbose (original command output)
+-o 'ARGS': original command with ARGS
 -q: print command and quit
--o 'ARGS': original command
 ";
+# -N ID: grep server ID
 
 $|=1; # buffering: off
 
 my %OPT;
-getopts('lN:S:Vvn:S:s:1qo:', \%OPT);
+getopts('lS:s:n:vVo:qN:', \%OPT);
 
 my $COMMAND = "$ENV{HOME}/github/sivel/speedtest-cli/speedtest.py";
 if (!-f $COMMAND) {
