@@ -68,7 +68,7 @@ if ($OPT{V}) {
     chomp($date_time);
     print "$date_time\n";
     my @line = `$COMMAND --server $NUMBER --simple`;
-    my ($ping, $upload, $download) = extract_speed(@line);
+    my ($ping, $download, $upload) = extract_speed(@line);
 
     printf "Ping     %9s\n", $ping;
     printf "Download %13s\n", $download;
