@@ -43,17 +43,6 @@ if ($OPT{V}) {
     print "Testing...";
     my @line = `$COMMAND --server $number --simple`;
     print "\n";
-    # for my $line (@line) {
-    # 	if ($line =~ /^(Ping:) (.*)/) {
-    # 	    print $1, "   ", $2, "\n";
-    # 	} elsif ($line =~ /^(Upload:) (.*)/) {
-    # 	    print $1, "    ", $2, "\n";
-    # 	} elsif ($line =~ /^(Download:) (.*)/) {
-    # 	    print $1, "  ", $2, "\n";
-    # 	} else {
-    # 	    print $line;
-    # 	}
-    # }
     my ($ping, $upload, $download) = extract_speed(@line);
     print "Ping   $ping:\n";
     print "Download  $download:\n";
