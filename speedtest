@@ -54,11 +54,11 @@ if ($OPT{S}) {
     ($NUMBER, $DESCRIPTION) = extract_server(".*Tokyo.*");
 }
 
-### Exec ###
 if ($OPT{v}) {
     print "$DESCRIPTION\n";
 }
 
+### Exec ###
 if ($OPT{V}) {
     system "$COMMAND --server $NUMBER";
 } elsif ($OPT{s} || $OPT{n}) {
