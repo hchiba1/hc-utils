@@ -14,6 +14,8 @@ my $USAGE=
 -o 'ARGS': original command
 ";
 
+$|=1; # buffering: off
+
 my %OPT;
 getopts('lN:S:Vvn:S:s:1qo:', \%OPT);
 
