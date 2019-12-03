@@ -10,14 +10,26 @@ my $USAGE=
 -n N: try N trials
 -v: verbose
 -V: exec original command
+-q: print command and quit
+-o 'ARGS': original command
 ";
 
 my %OPT;
-getopts('lN:S:Vvn:S:s:1', \%OPT);
+getopts('lN:S:Vvn:S:s:1qo:', \%OPT);
 
 my $COMMAND = "$ENV{HOME}/github/sivel/speedtest-cli/speedtest.py";
 if (!-f $COMMAND) {
     system "github -prh sivel/speedtest-cli";
+}
+
+if ($OPT{q}) {
+    print "$COMMAND\n";
+    exit;
+}
+
+if ($OPT{o}) {
+    system "$COMMAND $OPT{o}";
+    exit;
 }
 
 ### Selecte server ###
