@@ -41,6 +41,10 @@ if ($OPT{S}) {
 }
 
 ### Exec ###
+if ($OPT{v}) {
+    print "$DESCRIPTION\n";
+}
+
 if ($OPT{V}) {
     system "$COMMAND --server $NUMBER";
 } elsif ($OPT{s} || $OPT{n}) {
@@ -61,9 +65,6 @@ if ($OPT{V}) {
         }
     }
 } else {
-    if ($OPT{v}) {
-        print "Server:   $DESCRIPTION\n";
-    }
     my $date_time = `date '+%F %T'`;
     chomp($date_time);
     print "$date_time\n";
