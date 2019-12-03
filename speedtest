@@ -48,7 +48,8 @@ if ($OPT{V}) {
     }
 } elsif ($OPT{s}) {
     # print "Date       Time      ";
-    printf "                     %-11s%-15sUpload\n", "Ping", "Download";
+    # printf "                     %-11s%-15sUpload\n", "Ping", "Download";
+    printf "Date       Time      %-11s%-15sUpload\n", "Ping", "Download";
     while (1) {
         my $date_time = `date '+%F %T'`;
         chomp($date_time);
@@ -100,7 +101,6 @@ sub extract_server {
     my $number = "";
     my $description = "";
     for my $server (@list) {
-        # if ($server =~ /^\s*(\d+)\) +($pattern .*)/) {
         if ($server =~ /^\s*(\d+)\) +($pattern)/) {
             $number = $1;
             $description = $2;
