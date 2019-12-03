@@ -40,8 +40,6 @@ if ($OPT{V}) {
     system "$COMMAND --server $NUMBER";
 } elsif ($OPT{s} || $OPT{n}) {
     my $sleep_seconds = $OPT{s} || 0;
-    # print "Date       Time      ";
-    # printf "                     %-11s%-15sUpload\n", "Ping", "Download";
     printf "Date       Time      %-11s%-15sUpload\n", "Ping", "Download";
     my $count = 0;
     while (1) {
