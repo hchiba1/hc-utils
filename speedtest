@@ -16,7 +16,8 @@ if (-f "$ENV{HOME}/pkg/speedtest-cli/speedtest.py") {
 } elsif (-f "$ENV{HOME}/github/sivel/speedtest-cli/speedtest.py") {
     $COMMAND = "~/github/sivel/speedtest-cli/speedtest.py";
 } else {
-    die;
+    system "github -prh sivel/speedtest-cli";
+    $COMMAND = "~/github/sivel/speedtest-cli/speedtest.py";
 }
 
 if ($OPT{l}) {
