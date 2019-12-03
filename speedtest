@@ -6,6 +6,10 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
 -l: list servers
+-s SEC: sleep SEC seconds until next trial
+-n N: try N trials
+-v: verbose
+-V: exec original command
 ";
 
 my %OPT;
