@@ -46,9 +46,7 @@ if ($OPT{V}) {
         my $date_time = `date '+%F %T'`;
         chomp($date_time);
         my @line = `$COMMAND --server $NUMBER --simple`;
-        my ($ping, $upload, $download) = extract_speed(@line);
-        printf "$date_time  %-11s%-15s$upload\n", $ping, $download;
-        # printf "$date_time  %-11s%-15s%s\n", extract_speed(@line);
+        printf "$date_time  %-11s%-15s%s\n", extract_speed(@line);
         sleep $sleep_seconds;
         $count ++;
         if ($OPT{n}) {
