@@ -61,21 +61,21 @@ if ($OPT{V}) {
 } elsif ($OPT{n}) {
     printf "                     %-11s%-15sUpload\n", "Ping", "Download";
     for (my $i=0; $i<$OPT{n}; $i++) {
-	my $date_time = `date '+%F %T'`;
-	chomp($date_time);
-	my @line = `$COMMAND --server $number --simple`;
-	printf "$date_time  %-11s%-15s%s\n", extract_speed(@line);
+        my $date_time = `date '+%F %T'`;
+        chomp($date_time);
+        my @line = `$COMMAND --server $number --simple`;
+        printf "$date_time  %-11s%-15s%s\n", extract_speed(@line);
     }
 } elsif ($OPT{s}) {
     # print "Date       Time      ";
     printf "                     %-11s%-15sUpload\n", "Ping", "Download";
     while (1) {
-	my $date_time = `date '+%F %T'`;
-	chomp($date_time);
-	my @line = `$COMMAND --server $number --simple`;
-	my ($ping, $upload, $download) = extract_speed(@line);
-	printf "$date_time  %-11s%-15s$upload\n", $ping, $download;
-	sleep $OPT{s};
+        my $date_time = `date '+%F %T'`;
+        chomp($date_time);
+        my @line = `$COMMAND --server $number --simple`;
+        my ($ping, $upload, $download) = extract_speed(@line);
+        printf "$date_time  %-11s%-15s$upload\n", $ping, $download;
+        sleep $OPT{s};
     }
 } else {
     my $date_time = `date '+%F %T'`;
@@ -107,13 +107,13 @@ sub extract_speed {
     
     my ($ping, $download, $upload);
     for my $line (@line) {
-	if ($line =~ /^Ping: (.*)/) {
-	    $ping = $1;
-	} elsif ($line =~ /^Download: (.*)/) {
-	    $download = $1;
-	} elsif ($line =~ /^Upload: (.*)/) {
-	    $upload = $1;
-	}
+        if ($line =~ /^Ping: (.*)/) {
+            $ping = $1;
+        } elsif ($line =~ /^Download: (.*)/) {
+            $download = $1;
+        } elsif ($line =~ /^Upload: (.*)/) {
+            $upload = $1;
+        }
     }
 
     return ($ping, $download, $upload);
@@ -127,16 +127,16 @@ sub extract_server {
     my $number = "";
     my $description = "";
     for my $server (@list) {
-	# if ($server =~ /^\s*(\d+)\) +($pattern .*)/) {
-	if ($server =~ /^\s*(\d+)\) +($pattern)/) {
-	    $number = $1;
-	    $description = $2;
-	    last;
-	}
+        # if ($server =~ /^\s*(\d+)\) +($pattern .*)/) {
+        if ($server =~ /^\s*(\d+)\) +($pattern)/) {
+            $number = $1;
+            $description = $2;
+            last;
+        }
     }
 
     if ($number !~ /^\d+$/) {
-	die @list;
+        die @list;
     }
 
     return ($number, $description);
@@ -149,14 +149,14 @@ sub select_server {
 
     my $description = "";
     for my $server (@list) {
-	if ($server =~ /^\s*$number\) +(\S.*)/) {
-	    $description = $1;
-	    last;
-	}
+        if ($server =~ /^\s*$number\) +(\S.*)/) {
+            $description = $1;
+            last;
+        }
     }
 
     if ($description eq "") {
-	die @list;
+        die @list;
     }
 
     return ($description);
