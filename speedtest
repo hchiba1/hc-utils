@@ -10,14 +10,9 @@ my $USAGE=
 my %OPT;
 getopts('lN:S:Vvn:S:s:1', \%OPT);
 
-my $COMMAND;
-if (-f "$ENV{HOME}/pkg/speedtest-cli/speedtest.py") {
-    $COMMAND = "~/pkg/speedtest-cli/speedtest.py";
-} elsif (-f "$ENV{HOME}/github/sivel/speedtest-cli/speedtest.py") {
-    $COMMAND = "~/github/sivel/speedtest-cli/speedtest.py";
-} else {
+my $COMMAND = "$ENV{HOME}/github/sivel/speedtest-cli/speedtest.py";
+if (!-f $COMMAND) {
     system "github -prh sivel/speedtest-cli";
-    $COMMAND = "~/github/sivel/speedtest-cli/speedtest.py";
 }
 
 if ($OPT{l}) {
