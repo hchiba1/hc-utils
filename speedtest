@@ -45,22 +45,22 @@ if ($OPT{N}) {
     exit;
 }
 
-my ($NUMBER, $DESCRIPTION);
+my ($SERVER_ID, $SERVER_DESC);
 if ($OPT{S}) {
-    $NUMBER = $OPT{S};
-    $DESCRIPTION = select_server($NUMBER);
+    $SERVER_ID = $OPT{S};
+    $SERVER_DESC = select_server($SERVER_ID);
 } else {
-    # ($NUMBER, $DESCRIPTION) = extract_server("OPEN Project .*");
-    ($NUMBER, $DESCRIPTION) = extract_server(".*Tokyo.*");
+    # ($SERVER_ID, $SERVER_DESC) = extract_server("OPEN Project .*");
+    ($SERVER_ID, $SERVER_DESC) = extract_server(".*Tokyo.*");
 }
 
 if ($OPT{v}) {
-    print "$DESCRIPTION\n";
+    print "$SERVER_DESC\n";
 }
 
 ### Exec ###
 if ($OPT{V}) {
-    system "$COMMAND --server $NUMBER";
+    system "$COMMAND --server $SERVER_ID";
 } elsif ($OPT{s} || $OPT{n}) {
     my $sleep_seconds = $OPT{s} || 0;
     printf "Date       Time      %-11s%-15sUpload\n", "Ping", "Download";
@@ -68,7 +68,7 @@ if ($OPT{V}) {
     while (1) {
         my $date_time = `date '+%F %T'`;
         chomp($date_time);
-        my @line = `$COMMAND --server $NUMBER --simple`;
+        my @line = `$COMMAND --server $SERVER_ID --simple`;
         printf "$date_time  %-11s%-15s%s\n", extract_speed(@line);
         sleep $sleep_seconds;
         $count ++;
@@ -82,7 +82,7 @@ if ($OPT{V}) {
     my $date_time = `date '+%F %T'`;
     chomp($date_time);
     print "$date_time\n";
-    my @line = `$COMMAND --server $NUMBER --simple`;
+    my @line = `$COMMAND --server $SERVER_ID --simple`;
     my ($ping, $download, $upload) = extract_speed(@line);
 
     printf "Ping     %9s\n", $ping;
