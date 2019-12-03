@@ -38,15 +38,6 @@ if ($OPT{S}) {
 ### Testing
 if ($OPT{V}) {
     system "$COMMAND --server $number";
-} elsif ($OPT{v}) {
-    print "Server:   $description\n";
-    print "Testing...";
-    my @line = `$COMMAND --server $number --simple`;
-    print "\n";
-    my ($ping, $upload, $download) = extract_speed(@line);
-    print "Ping   $ping:\n";
-    print "Download  $download:\n";
-    print "Upload    $upload:\n";
 } elsif ($OPT{n}) {
     printf "                     %-11s%-15sUpload\n", "Ping", "Download";
     for (my $i=0; $i<$OPT{n}; $i++) {
@@ -67,6 +58,9 @@ if ($OPT{V}) {
         sleep $OPT{s};
     }
 } else {
+    if ($OPT{v}) {
+        print "Server:   $description\n";
+    }
     my $date_time = `date '+%F %T'`;
     chomp($date_time);
     print "$date_time\n";
