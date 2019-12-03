@@ -38,25 +38,26 @@ if ($OPT{S}) {
 ### Testing
 if ($OPT{V}) {
     system "$COMMAND --server $NUMBER";
-} elsif ($OPT{n}) {
-    printf "                     %-11s%-15sUpload\n", "Ping", "Download";
-    for (my $i=0; $i<$OPT{n}; $i++) {
-        my $date_time = `date '+%F %T'`;
-        chomp($date_time);
-        my @line = `$COMMAND --server $NUMBER --simple`;
-        printf "$date_time  %-11s%-15s%s\n", extract_speed(@line);
-    }
-} elsif ($OPT{s}) {
+} elsif ($OPT{s} || $OPT{n}) {
+    my $sleep_seconds = $OPT{s} || 0;
     # print "Date       Time      ";
     # printf "                     %-11s%-15sUpload\n", "Ping", "Download";
     printf "Date       Time      %-11s%-15sUpload\n", "Ping", "Download";
+    my $count = 0;
     while (1) {
         my $date_time = `date '+%F %T'`;
         chomp($date_time);
         my @line = `$COMMAND --server $NUMBER --simple`;
         my ($ping, $upload, $download) = extract_speed(@line);
         printf "$date_time  %-11s%-15s$upload\n", $ping, $download;
-        sleep $OPT{s};
+        # printf "$date_time  %-11s%-15s%s\n", extract_speed(@line);
+        sleep $sleep_seconds;
+        $count ++;
+        if ($OPT{n}) {
+            if ($OPT{n} == $count) {
+                last;
+            }
+        }
     }
 } else {
     if ($OPT{v}) {
