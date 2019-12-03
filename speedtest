@@ -16,6 +16,7 @@ if (!-f $COMMAND) {
     system "github -prh sivel/speedtest-cli";
 }
 
+### Selecte server ###
 if ($OPT{l}) {
     system "$COMMAND --list";
     exit;
@@ -35,7 +36,7 @@ if ($OPT{S}) {
     ($NUMBER, $DESCRIPTION) = extract_server(".*Tokyo.*");
 }
 
-### Testing
+### Exec ###
 if ($OPT{V}) {
     system "$COMMAND --server $NUMBER";
 } elsif ($OPT{s} || $OPT{n}) {
