@@ -5,6 +5,7 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
+-l: list servers
 ";
 
 my %OPT;
