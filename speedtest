@@ -13,13 +13,14 @@ my $USAGE=
 -V: verbose (original command output)
 -o 'ARGS': original command with ARGS
 -q: print command and quit
+-H: do not print header line
 ";
 # -N ID: grep server ID
 
 $|=1; # buffering: off
 
 my %OPT;
-getopts('lS:s:n:vVo:qN:', \%OPT);
+getopts('lS:s:n:vVo:qHN:', \%OPT);
 
 my $COMMAND = "$ENV{HOME}/github/sivel/speedtest-cli/speedtest.py";
 if (!-f $COMMAND) {
@@ -65,7 +66,9 @@ if ($OPT{V}) {
     system "$COMMAND --server $SERVER_ID";
 } elsif ($OPT{s} || $OPT{n}) {
     my $sleep_seconds = $OPT{s} || 0;
-    printf "Date       Time      %-11s%-15sUpload\n", "Ping", "Download";
+    if (!$OPT{H}) {
+        printf "Date       Time      %-11s%-15sUpload\n", "Ping", "Download";
+    }
     my $count = 0;
     while (1) {
         my $date_time = `date '+%F %T'`;
