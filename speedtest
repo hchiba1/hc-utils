@@ -90,9 +90,9 @@ if ($OPT{V}) {
     my @line = `$COMMAND --server $SERVER_ID --simple`;
     my ($ping, $download, $upload) = extract_speed(@line);
 
-    printf "Ping     %9s\n", $ping;
-    printf "Download %13s\n", $download;
-    printf "Upload   %13s\n", $upload;
+    printf "Ping     %10s\n", $ping;
+    printf "Download %14s\n", $download;
+    printf "Upload   %14s\n", $upload;
 }
 
 ################################################################################
