@@ -75,13 +75,11 @@ if ($OPT{V}) {
         chomp($date_time);
         my @line = `$COMMAND --server $SERVER_ID --simple`;
         printf "$date_time  %-11s%-15s%s\n", extract_speed(@line);
-        sleep $sleep_seconds;
         $count ++;
-        if ($OPT{n}) {
-            if ($OPT{n} == $count) {
-                last;
-            }
+        if ($OPT{n} and $OPT{n} == $count) {
+            last;
         }
+        sleep $sleep_seconds;
     }
 } else {
     my $date_time = `date '+%F %T'`;
