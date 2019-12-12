@@ -70,5 +70,5 @@ if ($USER_REPO =~ /^([-\w\.]+)\/([-\w\.]+)$/) {
         }
     }
 } else {
-    die $USER_REPO;
+    die "ERROR: specify user/repo instead of $USER_REPO\n";
 }
