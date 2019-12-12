@@ -15,12 +15,11 @@ my $USAGE=
 -o 'ARGS': original command with ARGS
 -H: do not print header line
 ";
-# -N ID: grep server ID
 
 $|=1; # buffering: off
 
 my %OPT;
-getopts('lP:S:s:n:vVo:HN:', \%OPT);
+getopts('lP:S:s:n:vVo:H', \%OPT);
 
 my $COMMAND = "speedtest-go";
 
@@ -32,11 +31,6 @@ if ($OPT{o}) {
 ### Selecte server ###
 if ($OPT{l}) {
     system "$COMMAND --list";
-    exit;
-}
-
-if ($OPT{N}) {
-    system "$COMMAND --list | grep -iw '$OPT{N}'";
     exit;
 }
 
