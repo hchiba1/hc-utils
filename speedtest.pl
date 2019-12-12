@@ -48,7 +48,6 @@ if ($OPT{S}) {
     $SERVER_DESC = select_server($SERVER_ID);
 } else {
     ($SERVER_ID, $SERVER_DESC) = extract_server("OPEN Project .*");
-    # ($SERVER_ID, $SERVER_DESC) = extract_server(".*Tokyo.*");
 }
 
 if ($OPT{v}) {
