@@ -4,10 +4,8 @@ use File::Basename;
 use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM
+"Usage: $PROGRAM [SERVER_ID|PATTERN]
 -l: list servers
--P PATTERN: specify server by PATTERN
--S ID: specify server by ID
 -s SEC: sleep SEC seconds until next trial
 -n N: try N trials
 -v: verbose
@@ -20,7 +18,7 @@ my $USAGE=
 $|=1; # buffering: off
 
 my %OPT;
-getopts('lP:S:s:n:vVo:qH', \%OPT);
+getopts('ls:n:vVo:qH', \%OPT);
 
 my $COMMAND = "$ENV{HOME}/github/sivel/speedtest-cli/speedtest.py";
 if (!-f $COMMAND) {
@@ -44,13 +42,12 @@ if ($OPT{l}) {
 }
 
 my ($SERVER_ID, $SERVER_DESC);
-if ($OPT{S}) {
-    $SERVER_ID = $OPT{S};
-    $SERVER_DESC = select_server($SERVER_ID);
-} elsif ($OPT{P}) {
-    ($SERVER_ID, $SERVER_DESC) = extract_server($OPT{P});
-} else {
+if (!@ARGV) {
     ($SERVER_ID, $SERVER_DESC) = extract_server("OPEN Project");
+} elsif ($ARGV[0] =~ /^\d+$/) {
+    ($SERVER_ID, $SERVER_DESC) = select_server($ARGV[0]);
+} else {
+    ($SERVER_ID, $SERVER_DESC) = extract_server($ARGV[0]);
 }
 
 if ($OPT{v}) {
@@ -117,7 +114,7 @@ sub extract_server {
     my $number = "";
     my $description = "";
     for my $server (@list) {
-        if ($server =~ /^\s*(\d+)\) +(.*$pattern).*/) {
+        if ($server =~ /^\s*(\d+)\) +(.*$pattern.*)/i) {
             $number = $1;
             $description = $2;
             last;
@@ -148,5 +145,5 @@ sub select_server {
         die @list;
     }
 
-    return ($description);
+    return ($number, $description);
 }
