@@ -47,7 +47,7 @@ if ($OPT{S}) {
     $SERVER_ID = $OPT{S};
     $SERVER_DESC = select_server($SERVER_ID);
 } else {
-    ($SERVER_ID, $SERVER_DESC) = extract_server("OPEN Project .*");
+    ($SERVER_ID, $SERVER_DESC) = extract_server("OPEN Project");
 }
 
 if ($OPT{v}) {
@@ -114,7 +114,7 @@ sub extract_server {
     my $number = "";
     my $description = "";
     for my $server (@list) {
-        if ($server =~ /^\s*(\d+)\) +($pattern)/) {
+        if ($server =~ /^\s*(\d+)\) +(.*$pattern).*/) {
             $number = $1;
             $description = $2;
             last;
