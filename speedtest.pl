@@ -6,7 +6,8 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
 -l: list servers
--S ID: specify server ID
+-P PATTERN: specify server by PATTERN
+-S ID: specify server by ID
 -s SEC: sleep SEC seconds until next trial
 -n N: try N trials
 -v: verbose
@@ -19,7 +20,7 @@ my $USAGE=
 $|=1; # buffering: off
 
 my %OPT;
-getopts('lS:s:n:vVo:qH', \%OPT);
+getopts('lP:S:s:n:vVo:qH', \%OPT);
 
 my $COMMAND = "$ENV{HOME}/github/sivel/speedtest-cli/speedtest.py";
 if (!-f $COMMAND) {
@@ -46,6 +47,8 @@ my ($SERVER_ID, $SERVER_DESC);
 if ($OPT{S}) {
     $SERVER_ID = $OPT{S};
     $SERVER_DESC = select_server($SERVER_ID);
+} elsif ($OPT{P}) {
+    ($SERVER_ID, $SERVER_DESC) = extract_server($OPT{P});
 } else {
     ($SERVER_ID, $SERVER_DESC) = extract_server("OPEN Project");
 }
