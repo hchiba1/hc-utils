@@ -109,7 +109,7 @@ sub extract_server {
     my $number = "";
     my $description = "";
     for my $server (@list) {
-        if ($server =~ /^\[(\d+)\] +\S+ (.*$pattern.*)/) {
+        if ($server =~ /^\[(\d+)\] +\S+ (.*$pattern.*)/i) {
             $number = $1;
             $description = $2;
             last;
