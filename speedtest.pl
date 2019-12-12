@@ -15,12 +15,11 @@ my $USAGE=
 -q: print command and quit
 -H: do not print header line
 ";
-# -N ID: grep server ID
 
 $|=1; # buffering: off
 
 my %OPT;
-getopts('lS:s:n:vVo:qHN:', \%OPT);
+getopts('lS:s:n:vVo:qH', \%OPT);
 
 my $COMMAND = "$ENV{HOME}/github/sivel/speedtest-cli/speedtest.py";
 if (!-f $COMMAND) {
@@ -40,11 +39,6 @@ if ($OPT{o}) {
 ### Selecte server ###
 if ($OPT{l}) {
     system "$COMMAND --list";
-    exit;
-}
-
-if ($OPT{N}) {
-    system "$COMMAND --list | grep -iw '$OPT{N}'";
     exit;
 }
 
