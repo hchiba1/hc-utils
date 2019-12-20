@@ -51,14 +51,15 @@ if ($OPT{V}) {
 } elsif ($OPT{s} || $OPT{n}) {
     my $sleep_seconds = $OPT{s} || 0;
     if (!$OPT{H}) {
-        printf "Date       Time      %-11s%-15sUpload\n", "Ping", "Download";
+        # printf "Date       Time     %11s %14s %14s\n", "Ping", "Download", "Upload";
+        printf "Date       Time     %14s %14s %10s\n", "Download", "Upload", "Ping";
     }
     my $count = 0;
     while (1) {
         my $date_time = `date '+%F %T'`;
         chomp($date_time);
         my @line = `$COMMAND --server $SERVER_ID`;
-        printf "$date_time  %-11s%-15s%s\n", extract_speed(@line);
+        printf "$date_time %14s %14s %10s\n", extract_speed(@line);
         $count ++;
         if ($OPT{n} and $OPT{n} == $count) {
             last;
@@ -70,11 +71,11 @@ if ($OPT{V}) {
     chomp($date_time);
     print "$date_time\n";
     my @line = `$COMMAND --server $SERVER_ID`;
-    my ($ping, $download, $upload) = extract_speed(@line);
+    my ($download, $upload, $ping) = extract_speed(@line);
 
     printf "Ping     %10s\n", $ping;
-    printf "Download %14s\n", $download;
     printf "Upload   %14s\n", $upload;
+    printf "Download %14s\n", $download;
 }
 
 ################################################################################
@@ -95,7 +96,8 @@ sub extract_speed {
         }
     }
 
-    return ($ping, $download, $upload);
+    # return ($ping, $download, $upload);
+    return ($download, $upload, $ping);
 }
 
 sub extract_server {
