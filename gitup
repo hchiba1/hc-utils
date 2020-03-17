@@ -1,15 +1,11 @@
 #!/usr/bin/perl -w
 use strict;
 use File::Basename;
-use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM file message ...
 git add, commit and push
 ";
-
-my %OPT;
-getopts('', \%OPT);
 
 if (@ARGV < 2) {
     print STDERR $USAGE;
