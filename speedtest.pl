@@ -122,7 +122,7 @@ sub extract_server {
     }
 
     if ($number !~ /^\d+$/) {
-        die @list;
+        die;
     }
 
     return ($number, $description);
@@ -142,7 +142,7 @@ sub select_server {
     }
 
     if ($description eq "") {
-        die @list;
+        die;
     }
 
     return ($number, $description);
