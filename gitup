@@ -7,12 +7,15 @@ my $USAGE=
 git add, commit and push
 ";
 
-if (@ARGV < 2) {
+my ($FILE, @MESSAGE) = @ARGV;
+my $MESSAGE = "@MESSAGE";
+
+if (@ARGV == 1) {
+    $MESSAGE = "update $FILE";
+} elsif (@ARGV < 2) {
     print STDERR $USAGE;
     exit 1;
 }
-my ($FILE, @MESSAGE) = @ARGV;
-my $MESSAGE = "@MESSAGE";
 
 print "[add]\n";
 system "git add $FILE";
