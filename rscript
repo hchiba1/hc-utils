@@ -1,0 +1,289 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $VERSION = "$PROGRAM 1.1.11 (2013/02/05)\n";
+
+### CONFIGURATION ##############################################################
+my $R_EXECUTABLE   = "R";
+my @R_COMMAND_LINE = ($R_EXECUTABLE, "-q", "--vanilla", "--args");
+my $CONVERT        = "convert";
+my $SOURCE         = "Rplots.pdf";
+my $TARGET         = "Rplots.png";
+# my $VIEW           = "/usr/bin/ggv";
+# my $IMAGE          = "Rplots.pdf";
+my $VIEW           = "display";
+my $IMAGE          = "Rplots.png";
+if (`uname` eq "Darwin\n") { # Mac OS X
+    $CONVERT        = "";
+    $VIEW           = "open";
+    $IMAGE          = "Rplots.pdf";
+}
+################################################################################
+
+# Make sure to tokenize the first argument
+# (Tokenization of the first argument is possibly incomplete, depending on the environment)
+!@ARGV and exit(0);
+my $FIRST_ARG = shift @ARGV;
+my @FIRST_ARG = split(/\s+/, $FIRST_ARG);
+@ARGV = (@FIRST_ARG, @ARGV);
+
+my %OPT;
+getopts('de:gvn', \%OPT);
+
+my $DEBUG_OPTION = $OPT{d};
+if ($OPT{v}) {
+    print STDERR $VERSION;
+    exit(0);
+}
+
+my $STDIN_TMP = "$ENV{TMP}/$PROGRAM.stdin.$$";
+END {
+    $STDIN_TMP && -f $STDIN_TMP and
+	unlink $STDIN_TMP;
+}
+
+### Preprocessor ###
+my $PREPROCESSOR = "
+ARGV = commandArgs()[-1:-".scalar(@R_COMMAND_LINE)."]
+STDIN = NULL
+";
+# if input from STDIN
+if (!-t) {
+    save_stdin($STDIN_TMP);
+    $PREPROCESSOR .= "
+STDIN = '$STDIN_TMP'
+";
+}
+# read automatically from STDIN
+if (! $OPT{n}) {
+    $PREPROCESSOR .= "
+s = NULL
+t = NULL
+if (!is.null(STDIN)) {
+  s = scan(STDIN, quiet=T)
+  if (length(s)!=0) {
+    t = read.table(STDIN)
+  }
+}
+"
+}
+if (-f "$ENV{HOME}/.Rprofile") {
+    $PREPROCESSOR .= "
+source('~/.Rprofile')
+";
+}
+
+### Input code ###
+my $INPUT_CODE = "";
+if ($OPT{e}) {
+    $INPUT_CODE = $OPT{e};
+} elsif (@ARGV) {
+    $INPUT_CODE = get_file_content(shift @ARGV);
+    getopts_in_input_code(\$INPUT_CODE);
+} else {
+    system "perldoc $0";
+    exit(0);
+}
+
+### Execute preprocessor and input code ###
+my $STATUS = exec_R_code($PREPROCESSOR.$INPUT_CODE, $DEBUG_OPTION);
+
+
+### Image handling ###
+if ($STATUS == 0){
+    if ($CONVERT and -f $SOURCE 
+	and -M $SOURCE <= 0
+	) {
+	system "$CONVERT", "$SOURCE", "$TARGET";
+    }
+    if ($OPT{g} and $VIEW and -f $IMAGE
+	and -M $IMAGE <= 0
+	) {
+	system "$VIEW", "$IMAGE";
+    }
+}
+
+exit $STATUS;
+
+################################################################################
+### Functions ##################################################################
+################################################################################
+
+sub exec_R_code {
+    my ($R_code, $debug) = @_;
+
+    my $tmp_file = "$ENV{TMP}/$PROGRAM.$$";
+    open(TMP, ">$tmp_file") || die;
+    print TMP $R_code;
+    close(TMP);
+
+    my $status = 0;
+    if ($debug) {
+	system "@R_COMMAND_LINE @ARGV < $tmp_file 2>&1";
+	$status = $? >> 8;
+    } else {
+	# We need the status of this command line.
+	my $out = `@R_COMMAND_LINE @ARGV < $tmp_file`;
+	$status = $? >> 8;
+
+	# After executing the command line, filter the outptut.
+	open(POUT, "| grep -v '^[>+]'") or die "$!";
+	print POUT $out;
+	close(POUT);
+    }
+    unlink $tmp_file;
+
+    return $status;
+}
+
+# Find 'getopts(.*)' in input code, and interpret it
+sub getopts_in_input_code {
+    my ($ref_code) = @_;
+
+    # get option definition
+    my $definition = "";
+    if ($$ref_code =~ /^getopts\(([^()]*?)\)$/m) {
+	$definition = $1;
+    }
+    my %opt;
+    getopts($definition, \%opt);
+
+    # replace the definition by R code
+    my $replace = "";
+    while ($definition =~ /(\w:?)/g) {
+	my $c = $1;
+	if ($c =~ /(\w):/) {
+	    $c = $1;
+	    if (defined $opt{$c}) {
+		$replace .= "opt.$c = '$opt{$c}'\n";
+	    } else {
+		$replace .= "opt.$c = F\n";
+	    }
+	} else {
+	    if (defined $opt{$c}) {
+		$replace .= "opt.$c = T\n";
+	    } else {
+		$replace .= "opt.$c = F\n";
+	    }
+	}
+    }
+    $$ref_code =~ s/^getopts\(([^()]*?)\)$/$replace/m;
+}
+
+sub save_stdin {
+    my ($tmp_file) = @_;
+
+    open(TMP, ">$tmp_file") || die;
+    print TMP <STDIN>;
+    close(TMP);
+}
+
+sub get_file_content {
+    my ($file) = @_;
+
+    open(INPUT, $file) or die "$file: $!\n";
+    my @content = <INPUT>;
+    close(INPUT);
+
+    return join("", @content);
+}
+
+### POD document ###############################################################
+
+=head1 NAME
+
+rscript - a wrapper of R interpreter
+
+
+=head1 SYNOPSYS
+
+B<rscript>  [B<-dg>]  B<-e> 'INPUT CODE'  [F<ARGUMENT>]...
+
+B<rscript>  [B<-dg>]  F<SCRIPTFILE>  [F<ARGUMENT>]...
+
+F<./SCRIPTFILE>  [F<ARGUMENT>]...
+
+(If the first line of F<SCRIPTFILE> is C<#!/usr/bin/env rscript>)
+
+
+=over
+
+=item B<-d>
+
+Debug mode (echo R code).
+
+=item B<-g>
+
+Automatically display the output image (default viewer:ggv, default image:Rplots.ps).
+
+=back
+
+
+=head1 DESCRIPTION
+
+Some special variables can be used in 'INPUT CODE' or in F<SCRIPTFILE>.
+
+
+=over
+
+=item C<STDIN>
+
+Standard input is accessible by using this variable; e.g. C<x = scan(STDIN)> 
+or C<x = read.table(STDIN)>. (C<STDIN> is a temporary file.)
+
+=item C<ARGV[1]>, C<ARGV[2]>, ...
+
+F<ARGUMENT>s are accessible by these variables; e.g. C<x = as.numeric(ARGV[1])>.
+
+=item C<opt.a>, C<opt.b>, ...
+
+When function C<getopts('ab...')> is called in F<SCRIPTFILE>,
+options in F<ARGUMENT>s are extracted as C<opt.a>, C<opt.b>, ...
+
+=back
+
+
+=head1 EXAMPLES
+
+ $ cat data1
+ 10
+ 20
+ 50
+ 100
+ 200
+
+ $ cat data1 | rscript -e 'mean(scan(STDIN))'
+ [1] 76
+ 
+ $ cat sample.r
+ #!/usr/bin/env rscript
+ getopts('s')
+ x = scan(ARGV[1])
+ mean(x)
+ if (opt.s) {
+   sd(x)
+ }
+
+ $ ./sample.r data1
+ [1] 76
+
+ $ ./sample.r -s data1
+ [1] 76
+ [1] 77.65307
+ 
+ $ cat data2
+ 10 10
+ 20 20
+ 20 30
+ 30 30 
+ 30 50 
+
+ $ cat data2 | rscript -e 'plot(read.table(STDIN))' -g
+
+=head1 AUTHOR
+
+Hirokazu Chiba
+
+=cut
