@@ -21,17 +21,29 @@ system "git fetch origin";
 my $diff_exit_code = system("git diff HEAD..FETCH_HEAD --exit-code --quiet") >> 8;
 if ($diff_exit_code) {
     print "[pull]\n";
-    system "git pull";
+    my $pull_exit_code = system("git pull") >> 8;
+    if ($pull_exit_code) {
+        die;
+    }
     print "\n";
 }
 
 print "[add]\n";
-system "git add $FILE";
+my $add_exit_code = system("git add $FILE") >> 8;
+if ($add_exit_code) {
+    die;
+}
 print "\n";
 
 print "[commit]\n";
-system "git commit -m '$MESSAGE'";
+my $commit_exit_code = system("git commit -m '$MESSAGE'") >> 8;
+if ($commit_exit_code) {
+    die;
+}
 print "\n";
 
 print "[push]\n";
-system "git push";
+my $push_exit_code = system("git push") >> 8;
+if ($push_exit_code) {
+    die;
+}
