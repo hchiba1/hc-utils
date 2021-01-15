@@ -32,6 +32,8 @@ print "[add]\n";
 my $add_exit_code = system("git add $FILE") >> 8;
 if ($add_exit_code) {
     die;
+} else {
+    print "$FILE";
 }
 print "\n";
 
