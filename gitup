@@ -4,7 +4,7 @@ use File::Basename;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM file message ...
-git add, commit and push
+git pull, add, commit and push
 ";
 
 my ($FILE, @MESSAGE) = @ARGV;
@@ -25,6 +25,9 @@ if ($diff_exit_code) {
     if ($pull_exit_code) {
         die "pull failed.\n";
     }
+    print "\n";
+} else {
+    print "no remote change to pull.\n ";
     print "\n";
 }
 
