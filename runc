@@ -14,8 +14,8 @@ getopts('e:dO:W:o:', \%OPT);
 ### Settings
 my $COMPILER = "gcc";
 my $HOSTNAME = $ENV{HOSTNAME} || "tmp";
-my $SOURCE_TMP = "$HOSTNAME.$PROGRAM.$$.c";
-my $OBJECT_TMP = "$HOSTNAME.$PROGRAM.$$.o";
+my $SOURCE_TMP = "/tmp/$HOSTNAME.$PROGRAM.$$.c";
+my $OBJECT_TMP = "/tmp/$HOSTNAME.$PROGRAM.$$.o";
 if ($OPT{O}) {
     $COMPILER .= " -O$OPT{O}";
 }
@@ -64,7 +64,7 @@ if ($OPT{o}) {
 system "$COMPILER -o $OBJECT_TMP $SOURCE_TMP -lm";
 my $EXIT_STATUS = $? >> 8;
 if ($EXIT_STATUS == 0) {
-    system "./$OBJECT_TMP @ARGV";
+    system "$OBJECT_TMP @ARGV";
     $EXIT_STATUS = $? >> 8;
 }
 exit($EXIT_STATUS);
