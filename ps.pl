@@ -313,12 +313,16 @@ sub extract_start {
     my $start = substr($line, $POS{TIME}{end});
     $start =~ s/^\S+//; #previous column
     $start =~ s/^ +//;  #padding
-    $start =~ s/^(START\S+).*/$1/; #header
-    $start =~ s/^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+).*/$4-$1$2-$3/;
-    # $start =~ s/^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+) +(.*)/$4-$1$2-$3/;
-    # $command = $5;
-    $start =~ s/ /0/;
 
+    if ($start =~ /^(START\S+)/) { #header
+        return $1;
+    }
+    if ($start =~ /^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+).*/) {
+        my ($month, $day, $time, $year) = ($1, $2, $3, $4);
+        $month = { Jan => 1, Feb => 2, Mar => 3, Apr => 4, May => 5, Jun => 6,
+                   Jul => 7, Aug => 8, Sep => 9, Oct =>10, Nov =>11, Dec =>12}->{$month};
+        return sprintf("%d-%02d-%02d %s", $year, $month, $day, $time);
+    }
     return $start;
 }
 
