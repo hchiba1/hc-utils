@@ -9,15 +9,13 @@ my $USAGE=
 -a: show kernel threads too
 -p: show PPID
 -v: show VIRT
--s: show STARTED
--t: show TIME
 -w: show WCHAN
 -e: show environment variables for each command line
 ";
 # -M: show threads
 
 my %OPT;
-getopts('dapmvstweM', \%OPT);
+getopts('dapmvweM', \%OPT);
 
 ### Execute ###
 my $PS_OPT = "";
@@ -171,14 +169,10 @@ sub print_process_meta_data {
         print " ";
         print_info_and_padding($pid, "WCHAN");
     }
-    if ($OPT{s}) {
-        print " ";
-        print_info_and_padding($pid, "START");
-    }
-    if ($OPT{t}) {
-        print " ";
-        padding_and_print_info($pid, "TIME");
-    }
+    print " ";
+    print_info_and_padding($pid, "START");
+    print " ";
+    padding_and_print_info($pid, "TIME");
     print " ";
     print_info_and_padding($pid, "TTY");
     print " ";
