@@ -7,12 +7,12 @@ my $USAGE=
 "Usage: $PROGRAM
 -d: debug
 -a: show kernel threads too
--P: show PPID
+-t: show threads
+-v: show environment variables for each command line
 -V: show VIRT
 -W: show WCHAN
--v: show environment variables for each command line
+-P: show PPID
 ";
-# -t: show threads
 
 my %OPT;
 getopts('daPmVwvt', \%OPT);
