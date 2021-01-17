@@ -155,36 +155,24 @@ sub print_process_meta_data {
     
     if ($OPT{P}) {
         print_column($pid, "PPID", "right");
-        print " ";
     }
     print_column($pid, "PID", "right");
-    print " ";
     print_column($pid, "CPU", "right");
     if ($OPT{m}) {
-        print " ";
         print_column($pid, "MEM", "right");
     }
-    print " ";
     print_column($pid, "PHYS", "right");
     if ($OPT{V}) {
-        print " ";
         print_column($pid, "VIRT", "right");
     }
-    print " ";
     print_column($pid, "STAT", "left");
     if ($OPT{W}) {
-        print " ";
         print_column($pid, "WCHAN", "left");
     }
-    print " ";
     print_column($pid, "START", "left");
-    print " ";
     print_column($pid, "TIME", "right");
-    print " ";
     print_column($pid, "TTY", "left");
-    print " ";
     print_column($pid, "USER", "left");
-    print " ";
 }
 
 sub print_column {
@@ -202,6 +190,7 @@ sub print_column {
     if ($align eq "right") {
         print $val;
     }
+    print " ";
 }
 
 sub extract_columns {
