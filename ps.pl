@@ -34,6 +34,9 @@ if ($OPT{d} || $OPT{M}) {
 my @LINE = `ps $PS_OPT`;
 chomp(@LINE);
 
+my $YEAR = `date "+%Y"`;
+chomp($YEAR);
+
 ### Parse ###
 my %POS = ();
 parse_header_column_pos($LINE[0]);
@@ -321,7 +324,11 @@ sub extract_start {
         my ($month, $day, $time, $year) = ($1, $2, $3, $4);
         $month = { Jan => 1, Feb => 2, Mar => 3, Apr => 4, May => 5, Jun => 6,
                    Jul => 7, Aug => 8, Sep => 9, Oct =>10, Nov =>11, Dec =>12}->{$month};
-        return sprintf("%d-%02d-%02d %s", $year, $month, $day, $time);
+        if ($YEAR eq $year) {
+            return sprintf("%02d-%02d %s", $month, $day, $time);
+        } else {
+            return sprintf("%d-%02d-%02d %s", $year, $month, $day, $time);
+        }
     }
     return $start;
 }
