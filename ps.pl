@@ -147,61 +147,52 @@ sub print_process_meta_data {
     my ($pid) = @_;
     
     if ($OPT{P}) {
-        padding_and_print_info($pid, "PPID");
+        print_column($pid, "PPID", "right");
         print " ";
     }
-    padding_and_print_info($pid, "PID");
+    print_column($pid, "PID", "right");
     print " ";
-    padding_and_print_info($pid, "CPU");
+    print_column($pid, "CPU", "right");
     if ($OPT{m}) {
         print " ";
-        padding_and_print_info($pid, "MEM");
+        print_column($pid, "MEM", "right");
     }
     print " ";
-    padding_and_print_info($pid, "PHYS");
+    print_column($pid, "PHYS", "right");
     if ($OPT{V}) {
         print " ";
-        padding_and_print_info($pid, "VIRT");
+        print_column($pid, "VIRT", "right");
     }
     print " ";
-    print_info_and_padding($pid, "STAT");
+    print_column($pid, "STAT", "left");
     if ($OPT{W}) {
         print " ";
-        print_info_and_padding($pid, "WCHAN");
+        print_column($pid, "WCHAN", "left");
     }
     print " ";
-    print_info_and_padding($pid, "START");
+    print_column($pid, "START", "left");
     print " ";
-    padding_and_print_info($pid, "TIME");
+    print_column($pid, "TIME", "right");
     print " ";
-    print_info_and_padding($pid, "TTY");
+    print_column($pid, "TTY", "left");
     print " ";
-    print_info_and_padding($pid, "USER");
+    print_column($pid, "USER", "left");
     print " ";
 }
 
-sub padding_and_print_info {
-    my ($pid, $name) = @_;
+sub print_column {
+    my ($pid, $name, $align) = @_;
 
     my $val = $PROCESS{$pid}{$name};
     my $len = $LEN{$name};
 
-    if ($len > length($val)) {
-        print " " x ($len - length($val)) . $val;
-    } else {
+    if ($align eq "left") {
         print $val;
     }
-}
-
-sub print_info_and_padding {
-    my ($pid, $name) = @_;
-
-    my $val = $PROCESS{$pid}{$name};
-    my $len = $LEN{$name};
-
     if ($len > length($val)) {
-        print $val . " " x ($len - length($val));
-    } else {
+        print " " x ($len - length($val));
+    }
+    if ($align eq "right") {
         print $val;
     }
 }
