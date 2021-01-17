@@ -153,22 +153,14 @@ sub print_process_rec {
 sub print_process_meta_data {
     my ($pid) = @_;
     
-    if ($OPT{P}) {
-        print_column($pid, "PPID", "right");
-    }
+    print_column($pid, "PPID", "right") if $OPT{P};
     print_column($pid, "PID", "right");
     print_column($pid, "CPU", "right");
-    if ($OPT{m}) {
-        print_column($pid, "MEM", "right");
-    }
+    print_column($pid, "MEM", "right") if $OPT{m};
     print_column($pid, "PHYS", "right");
-    if ($OPT{V}) {
-        print_column($pid, "VIRT", "right");
-    }
+    print_column($pid, "VIRT", "right") if $OPT{V};
     print_column($pid, "STAT", "left");
-    if ($OPT{W}) {
-        print_column($pid, "WCHAN", "left");
-    }
+    print_column($pid, "WCHAN", "left") if $OPT{W};
     print_column($pid, "START", "left");
     print_column($pid, "TIME", "right");
     print_column($pid, "TTY", "left");
