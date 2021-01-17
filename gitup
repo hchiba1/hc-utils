@@ -24,10 +24,13 @@ if ($diff_exit_code) {
     my $pull_exit_code = system("git pull") >> 8;
     if ($pull_exit_code) {
         die "pull failed.\n";
+    } else {
+        print "OK\n";
     }
     print "\n";
 } else {
-    print "no remote change to pull.\n ";
+    print "remote: no change to pull\n ";
+    print "OK\n";
     print "\n";
 }
 
@@ -37,6 +40,7 @@ if ($add_exit_code) {
     die "add failed.\n";
 } else {
     print "$FILE\n";
+    print "OK\n";
 }
 print "\n";
 
@@ -44,6 +48,8 @@ print "[commit]\n";
 my $commit_exit_code = system("git commit -m '$MESSAGE'") >> 8;
 if ($commit_exit_code) {
     die "commit failed.\n";
+} else {
+    print "OK\n";
 }
 print "\n";
 
@@ -51,4 +57,6 @@ print "[push]\n";
 my $push_exit_code = system("git push") >> 8;
 if ($push_exit_code) {
     die "push failed.\n";
+} else {
+    print "OK\n";
 }
