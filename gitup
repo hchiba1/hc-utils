@@ -31,7 +31,6 @@ if ($diff_exit_code) {
     }
     print "\n";
 } else {
-    print "remote: no change to pull\n";
     print "OK\n";
     print "\n";
 }
