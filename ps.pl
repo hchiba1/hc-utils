@@ -35,6 +35,9 @@ chomp(@LINE);
 my $YEAR = `date "+%Y"`;
 chomp($YEAR);
 
+my %MONTH_INT = ( Jan => 1, Feb => 2, Mar => 3, Apr => 4, May => 5, Jun => 6,
+                  Jul => 7, Aug => 8, Sep => 9, Oct =>10, Nov =>11, Dec =>12 );
+
 ### Parse ###
 my %POS = ();
 parse_header_column_pos($LINE[0]);
@@ -46,8 +49,8 @@ my %LEN = ();
 for my $line (@LINE) {
     my $pid = extract_columns($line);
     my $start = extract_start($line);
-    my $command = extract_command($line);
     sava_info($pid, "START", $start);
+    my $command = extract_command($line);
     sava_info($pid, "COMMAND", $command);
 }
 
@@ -280,22 +283,23 @@ sub extract_start {
     my ($line) = @_;
     
     my $start = substr($line, $POS{TIME}{end});
-    $start =~ s/^\S+//; #previous column
-    $start =~ s/^ +//;  #padding
+    $start =~ s/^\S+//; # clear previous column
+    $start =~ s/^ +//;  # clear padding
 
-    if ($start =~ /^(START\S+)/) { #header
+    if ($start =~ /^(START\S+)/) { # header line
         return $1;
-    }
-    if ($start =~ /^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+).*/) {
+    } elsif ($start =~ /^[A-Z][a-z][a-z] ([A-Z][a-z][a-z]) (.\d) (\d\d:\d\d:\d\d) (\d+).*/) {
         my ($month, $day, $time, $year) = ($1, $2, $3, $4);
-        $month = { Jan => 1, Feb => 2, Mar => 3, Apr => 4, May => 5, Jun => 6,
-                   Jul => 7, Aug => 8, Sep => 9, Oct =>10, Nov =>11, Dec =>12}->{$month};
-        if ($YEAR eq $year) {
-            return sprintf("%02d-%02d %s", $month, $day, $time);
-        } else {
-            return sprintf("%d-%02d-%02d %s", $year, $month, $day, $time);
+        if ($MONTH_INT{$month}) {
+            $month = $MONTH_INT{$month};
+            if ($YEAR eq $year) {
+                return sprintf("%02d-%02d %s", $month, $day, $time);
+            } else {
+                return sprintf("%d-%02d-%02d %s", $year, $month, $day, $time);
+            }
         }
     }
+
     return $start;
 }
 
