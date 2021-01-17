@@ -15,7 +15,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('daPmVwvt', \%OPT);
+getopts('daPmVWvt', \%OPT);
 
 ### Execute ###
 my $PS_OPT = "";
