@@ -168,13 +168,12 @@ sub print_process_meta_data {
 }
 
 sub print_column {
-    my ($pid, $name, $align) = @_;
+    my ($pid, $col_name, $align) = @_;
 
-    my $val = $PROCESS{$pid}{$name};
-    my $len = $LEN{$name};
+    my $val = $PROCESS{$pid}{$col_name};
 
     print($val) if $align eq "left";
-    print(" " x ($len - length($val))) if $len > length($val);
+    print(" " x ($LEN{$col_name} - length($val))) if $LEN{$col_name} > length($val);
     print($val) if $align eq "right";
     print " ";
 }
