@@ -173,15 +173,9 @@ sub print_column {
     my $val = $PROCESS{$pid}{$name};
     my $len = $LEN{$name};
 
-    if ($align eq "left") {
-        print $val;
-    }
-    if ($len > length($val)) {
-        print " " x ($len - length($val));
-    }
-    if ($align eq "right") {
-        print $val;
-    }
+    print($val) if $align eq "left";
+    print(" " x ($len - length($val))) if $len > length($val);
+    print($val) if $align eq "right";
     print " ";
 }
 
