@@ -17,9 +17,11 @@ if (@ARGV == 1) {
     exit 1;
 }
 
+print "[fetch]\n";
 system "git fetch origin";
 my $diff_exit_code = system("git diff HEAD..FETCH_HEAD --exit-code --quiet") >> 8;
 if ($diff_exit_code) {
+    print "\n";
     print "[pull]\n";
     my $pull_exit_code = system("git pull") >> 8;
     if ($pull_exit_code) {
