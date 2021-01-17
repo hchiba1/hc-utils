@@ -7,25 +7,25 @@ my $USAGE=
 "Usage: $PROGRAM
 -d: debug
 -a: show kernel threads too
--p: show PPID
--v: show VIRT
--w: show WCHAN
--e: show environment variables for each command line
+-P: show PPID
+-V: show VIRT
+-W: show WCHAN
+-v: show environment variables for each command line
 ";
-# -M: show threads
+# -t: show threads
 
 my %OPT;
-getopts('dapmvweM', \%OPT);
+getopts('daPmVwvt', \%OPT);
 
 ### Execute ###
 my $PS_OPT = "";
-$PS_OPT .= "e" if $OPT{e};
-$PS_OPT .= "M" if $OPT{M};
+$PS_OPT .= "e" if $OPT{v};
+$PS_OPT .= "M" if $OPT{t};
 $PS_OPT .= " -A -o ppid,pid,pcpu,pmem,rss,vsz,tty,stat,wchan,user,time,lstart,command";
 # stime or lstart
 # bsdtime or time
 
-if ($OPT{d} || $OPT{M}) {
+if ($OPT{d} || $OPT{t}) {
     system "ps $PS_OPT | less -S";
     exit(1);
 }
@@ -146,7 +146,7 @@ sub print_process_rec {
 sub print_process_meta_data {
     my ($pid) = @_;
     
-    if ($OPT{p}) {
+    if ($OPT{P}) {
         padding_and_print_info($pid, "PPID");
         print " ";
     }
@@ -159,13 +159,13 @@ sub print_process_meta_data {
     }
     print " ";
     padding_and_print_info($pid, "PHYS");
-    if ($OPT{v}) {
+    if ($OPT{V}) {
         print " ";
         padding_and_print_info($pid, "VIRT");
     }
     print " ";
     print_info_and_padding($pid, "STAT");
-    if ($OPT{w}) {
+    if ($OPT{W}) {
         print " ";
         print_info_and_padding($pid, "WCHAN");
     }
