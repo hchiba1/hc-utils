@@ -57,7 +57,7 @@ for my $line (@LINE) {
 }
 
 ### Print ###
-print_process_meta_data("PID");
+print_columns("PID");
 print $PROCESS{"PID"}{COMMAND};
 print "\n";
 
@@ -115,16 +115,16 @@ sub print_process_rec {
     
     if ($pid eq "1") { # pid=1 is a special process
         if (process_contains_keyword($pid, @ARGV)) { # hide it when it does not match keyword
-            print_process_meta_data($pid);
+            print_columns($pid);
             print $PROCESS{$pid}{COMMAND};
             print "\n";
         }
     } elsif ($ppid eq "0" || $ppid eq "1") { # pid=1,2 || children of pid=1
-        print_process_meta_data($pid);
+        print_columns($pid);
         print $PROCESS{$pid}{COMMAND};
         print "\n";
     } else {
-        print_process_meta_data($pid);
+        print_columns($pid);
         if ($last_child) {
             print $pad . "`- " . $PROCESS{$pid}{COMMAND};
         } else {
@@ -155,7 +155,7 @@ sub print_process_rec {
     }
 }
 
-sub print_process_meta_data {
+sub print_columns {
     my ($pid) = @_;
     
     print_column($pid, "PPID", "right") if $OPT{P};
