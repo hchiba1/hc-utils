@@ -47,11 +47,10 @@ my %MONTH_INT = ( Jan => 1, Feb => 2, Mar => 3, Apr => 4, May => 5, Jun => 6,
 my %POS = ();
 parse_header_column_pos($LINE[0]);
 
-my %PARENT = ();
-my %CHILD = ();
-my %PARENT_CHILD = ();
 my %PROCESS = ();
 my %LEN = ();
+my %CHILD = ();
+my %PARENT_CHILD = ();
 for my $line (@LINE) {
     my $pid = extract_and_save_columns($line);
     sava_info($pid, "START", extract_start($line));
@@ -102,9 +101,9 @@ sub select_pid {
 
     $SELECTED{$pid} = 1;
     update_columns_lengths($pid);
-    while ($PARENT{$pid}) {
-        add_child($PARENT{$pid}, $pid);
-        $pid = $PARENT{$pid};
+    while ($PROCESS{$pid}{PPID}) {
+        add_child($PROCESS{$pid}{PPID}, $pid);
+        $pid = $PROCESS{$pid}{PPID};
         $SELECTED{$pid} = 1;
         update_columns_lengths($pid);
     }
@@ -203,7 +202,6 @@ sub extract_and_save_columns {
     $line =~ s/^ +//;
 
     my ($ppid, $pid, $cpu, $mem, $phys, $virt, $tty, $stat, $wchan, $user, $time) = split(/ +/, $line);
-    $PARENT{$pid} = $ppid;
     add_child($ppid, $pid);
 
     if ($mem !~ /%/) {
