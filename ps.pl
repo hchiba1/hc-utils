@@ -345,6 +345,6 @@ sub get_column_pos {
 sub print_ledgends {
     print "\n";
     # print "- sleep, L locked, 1 session leader, = multi-threaded, * foreground";
-    print "-sleep, 1 leader, =multi, *fore";
+    print "-sleep, L locked, 1 leader, =multi, *fore";
     print "\n";
 }
