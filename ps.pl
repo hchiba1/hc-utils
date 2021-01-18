@@ -115,25 +115,21 @@ sub update_columns_lengths {
 
 sub print_process_rec {
     my ($pid, $pad, $last_child) = @_;
-    my $ppid = $PROCESS{$pid}{PPID};
 
-    if (@ARGV && !$SELECTED{$pid} || # did not match keyword
-        $pid eq $$) {            # this process
-        return;                  # do not show
-    }
+    $pid eq $$ and return;                 # this process
+    @ARGV && !$SELECTED{$pid} and return;  # did not match keyword
     
+    my $ppid = $PROCESS{$pid}{PPID};
     if ($pid eq "1") { # pid=1 is a special process
         if (!@ARGV or contains_keyword($pid, @ARGV)) {
             print_columns($pid, "");
         }
     } elsif ($ppid eq "0" || $ppid eq "1") { # pid=1,2 || children of pid=1
         print_columns($pid, "");
+    } elsif ($last_child) {
+        print_columns($pid, "${pad}`- ");
     } else {
-        if ($last_child) {
-            print_columns($pid, "${pad}`- ");
-        } else {
-            print_columns($pid, "${pad}|- ");
-        }
+        print_columns($pid, "${pad}|- ");
     }
     
     if ($CHILD{$pid}) {
