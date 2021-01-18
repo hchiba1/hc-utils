@@ -6,26 +6,27 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
 -d: debug
--t: show threads in multiple lines
+-m: show threads in multiple lines
 -a: show kernel threads too
 -P: show PPID
+-M: show %MEM
 -V: show VIRT
 -W: show WCHAN
--v: show environment variables for each command line
+-E: show environment variables for each command line
 ";
 
 my %OPT;
-getopts('daPmVWvt', \%OPT);
+getopts('dmaPMVWE', \%OPT);
 
 ### Execute ###
 my $PS_OPT = "";
-$PS_OPT .= "e" if $OPT{v};
-$PS_OPT .= "M" if $OPT{t};
+$PS_OPT .= "e" if $OPT{E};
+$PS_OPT .= "M" if $OPT{m};
 $PS_OPT .= " -A -o ppid,pid,pcpu,pmem,rss,vsz,tty,stat,wchan,user,time,lstart,command";
 # stime or lstart
 # bsdtime or time
 
-if ($OPT{d} || $OPT{t}) {
+if ($OPT{d} || $OPT{m}) {
     system "ps $PS_OPT | less -S";
     exit(1);
 }
@@ -159,7 +160,7 @@ sub print_process_meta_data {
     print_column($pid, "PPID", "right") if $OPT{P};
     print_column($pid, "PID", "right");
     print_column($pid, "CPU", "right");
-    print_column($pid, "MEM", "right") if $OPT{m};
+    print_column($pid, "MEM", "right") if $OPT{M};
     print_column($pid, "PHYS", "right");
     print_column($pid, "VIRT", "right") if $OPT{V};
     print_column($pid, "STAT", "left");
