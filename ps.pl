@@ -52,14 +52,11 @@ my %PROCESS = ();
 my %LEN = ();
 for my $line (@LINE) {
     my $pid = extract_and_save_columns($line);
-    my $start = extract_start($line);
-    sava_info($pid, "START", $start);
-    my $command = extract_command($line);
-    sava_info($pid, "COMMAND", $command);
+    sava_info($pid, "START", extract_start($line));
+    sava_info($pid, "COMMAND", extract_command($line));
 }
 
 ### Print ###
-print_columns("PID", "");
 my %FLAG = (); # Set flags for print, if keyword specified.
 if (@ARGV) {
     for my $pid (keys %PROCESS) {
@@ -69,9 +66,10 @@ if (@ARGV) {
         }
     }
 }
+print_columns("PID", "");
 print_process_rec(1, "", 0);
 print_process_rec(2, "", 0) if $OPT{a}; # kernel threads
-$OPT{l} and print_ledgends();
+print_ledgends() if $OPT{l};
 
 ################################################################################
 ### Function ###################################################################
