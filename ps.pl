@@ -49,6 +49,7 @@ parse_header_column_pos($LINE[0]);
 
 my %PARENT = ();
 my %CHILD = ();
+my %PARENT_CHILD = ();
 my %PROCESS = ();
 my %LEN = ();
 for my $line (@LINE) {
@@ -61,7 +62,8 @@ for my $line (@LINE) {
 my %SELECTED = ();
 if (@ARGV) {
     %LEN = ();
-    # %CHILD = ();
+    %CHILD = ();
+    %PARENT_CHILD = ();
     update_columns_lengths("PID");
     for my $pid (keys %PROCESS) {
         contains_keyword($pid, @ARGV) and select_pid($pid);
@@ -100,7 +102,7 @@ sub select_pid {
     $SELECTED{$pid} = 1;
     update_columns_lengths($pid);
     while ($PARENT{$pid}) {
-        # add_child($PARENT{$pid}, $pid);
+        add_child($PARENT{$pid}, $pid);
         $pid = $PARENT{$pid};
         $SELECTED{$pid} = 1;
         update_columns_lengths($pid);
@@ -258,6 +260,11 @@ sub extract_and_save_columns {
 
 sub add_child {
     my ($parent, $child) = @_;
+
+    if ($PARENT_CHILD{$parent}{$child}) {
+        return;
+    }
+    $PARENT_CHILD{$parent}{$child} = 1;
 
     if ($CHILD{$parent}) {
         push @{$CHILD{$parent}}, $child;
