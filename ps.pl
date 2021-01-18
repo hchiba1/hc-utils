@@ -59,6 +59,8 @@ for my $line (@LINE) {
 ### Print ###
 my %FLAG = (); # Set flags for print, if keyword specified.
 if (@ARGV) {
+    %LEN = ();
+    update_columns_lengths("PID");
     for my $pid (keys %PROCESS) {
         next if ($pid eq $$ || $PROCESS{$pid}{PPID} eq $$);
         set_flag($pid) if process_contains_keyword($pid, @ARGV);
@@ -93,9 +95,20 @@ sub set_flag {
     my ($pid) = @_;
 
     $FLAG{$pid} = 1;
+    update_columns_lengths($pid);
     while ($PARENT{$pid}) {
         $pid = $PARENT{$pid};
         $FLAG{$pid} = 1;
+        update_columns_lengths($pid);
+    }
+}
+
+sub update_columns_lengths {
+    my ($pid) = @_;
+
+    my @col_name = ("PPID", "PID", "CPU", "MEM", "PHYS", "VIRT", "STAT", "WCHAN", "START", "TIME", "TTY", "USER");
+    for my $col_name (@col_name) {
+        update_max_len($col_name, $PROCESS{$pid}{$col_name});
     }
 }
 
