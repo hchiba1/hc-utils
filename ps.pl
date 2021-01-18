@@ -119,13 +119,11 @@ sub print_process_rec {
     } elsif ($ppid eq "0" || $ppid eq "1") { # pid=1,2 || children of pid=1
         print_columns($pid, "");
     } else {
-        my $tree = $pad;
         if ($last_child) {
-            $tree .= "`- ";
+            print_columns($pid, "${pad}`- ");
         } else {
-            $tree .= "|- ";
+            print_columns($pid, "${pad}|- ");
         }
-        print_columns($pid, $tree);
     }
     
     if ($CHILD{$pid}) {
