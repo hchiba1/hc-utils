@@ -62,7 +62,6 @@ if (@ARGV) {
     %LEN = ();
     update_columns_lengths("PID");
     for my $pid (keys %PROCESS) {
-        next if ($pid eq $$ || $PROCESS{$pid}{PPID} eq $$);
         select_pid($pid) if contains_keyword($pid, @ARGV);
     }
 }
@@ -93,6 +92,10 @@ sub contains_keyword {
 
 sub select_pid {
     my ($pid) = @_;
+
+    if ($pid eq $$ || $PROCESS{$pid}{PPID} eq $$) {
+        return;
+    }
 
     $SELECTED{$pid} = 1;
     update_columns_lengths($pid);
