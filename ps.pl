@@ -62,7 +62,7 @@ if (@ARGV) {
     %LEN = ();
     update_columns_lengths("PID");
     for my $pid (keys %PROCESS) {
-        select_pid($pid) if contains_keyword($pid, @ARGV);
+        contains_keyword($pid, @ARGV) and select_pid($pid);
     }
 }
 print_columns("PID", "");
@@ -76,10 +76,6 @@ print_ledgends() if $OPT{l};
 
 sub contains_keyword {
     my ($pid, @argv) = @_;
-
-    if (!@argv) {
-        return 1;
-    }
 
     my $keyword = $argv[0];
     if ($PROCESS{$pid}{COMMAND} =~ /$keyword/i ||
@@ -125,7 +121,7 @@ sub print_process_rec {
     }
     
     if ($pid eq "1") { # pid=1 is a special process
-        if (contains_keyword($pid, @ARGV)) { # hide it when it does not match keyword
+        if (!@ARGV or contains_keyword($pid, @ARGV)) { # hide it when it does not match keyword
             print_columns($pid, "");
         }
     } elsif ($ppid eq "0" || $ppid eq "1") { # pid=1,2 || children of pid=1
