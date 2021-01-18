@@ -8,6 +8,7 @@ my $USAGE=
 -d: debug
 -m: show threads in multiple lines
 -a: show kernel threads too
+-l: show ledgends
 -P: show PPID
 -M: show %MEM
 -V: show VIRT
@@ -18,7 +19,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('dmaPMVWETt', \%OPT);
+getopts('dmalPMVWETt', \%OPT);
 
 ### Execute ###
 my $PS_OPT = "";
@@ -70,7 +71,7 @@ if (@ARGV) {
 }
 print_process_rec(1, "", 0);
 print_process_rec(2, "", 0) if $OPT{a}; # kernel threads
-print_ledgends();
+$OPT{l} and print_ledgends();
 
 ################################################################################
 ### Function ###################################################################
