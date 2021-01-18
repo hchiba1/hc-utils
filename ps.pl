@@ -84,12 +84,13 @@ sub contains_keyword {
     my ($pid, @argv) = @_;
 
     my $keyword = $argv[0];
+
     if ($PROCESS{$pid}{COMMAND} =~ /$keyword/i ||
         $PROCESS{$pid}{USER} =~ /$keyword/i) {
         return 1;
-    } else {
-        return 0;
     }
+
+    return 0;
 }
 
 sub select_pid {
