@@ -14,10 +14,11 @@ my $USAGE=
 -W: show WCHAN
 -E: show environment variables for each command line
 -T: do not show time
+-t: use tab as column delimiter
 ";
 
 my %OPT;
-getopts('dmaPMVWET', \%OPT);
+getopts('dmaPMVWETt', \%OPT);
 
 ### Execute ###
 my $PS_OPT = "";
@@ -175,9 +176,15 @@ sub print_column {
     my $val = $PROCESS{$pid}{$col_name};
 
     print($val) if $align eq "left";
-    print(" " x ($LEN{$col_name} - length($val))) if $LEN{$col_name} > length($val);
+    if (!$OPT{t}) {
+        print(" " x ($LEN{$col_name} - length($val))) if $LEN{$col_name} > length($val);
+    }
     print($val) if $align eq "right";
-    print " ";
+    if ($OPT{t}) {
+        print "\t";
+    } else {
+        print " ";
+    }
 }
 
 sub extract_and_save_columns {
