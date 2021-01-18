@@ -58,8 +58,7 @@ for my $line (@LINE) {
 
 ### Print ###
 print_columns("PID");
-print $PROCESS{"PID"}{COMMAND};
-print "\n";
+print $PROCESS{"PID"}{COMMAND}, "\n";
 
 my %FLAG = (); # Set flags for print, if keyword specified.
 if (@ARGV) {
@@ -116,13 +115,11 @@ sub print_process_rec {
     if ($pid eq "1") { # pid=1 is a special process
         if (process_contains_keyword($pid, @ARGV)) { # hide it when it does not match keyword
             print_columns($pid);
-            print $PROCESS{$pid}{COMMAND};
-            print "\n";
+            print $PROCESS{$pid}{COMMAND}, "\n";
         }
     } elsif ($ppid eq "0" || $ppid eq "1") { # pid=1,2 || children of pid=1
         print_columns($pid);
-        print $PROCESS{$pid}{COMMAND};
-        print "\n";
+        print $PROCESS{$pid}{COMMAND}, "\n";
     } else {
         print_columns($pid);
         if ($last_child) {
