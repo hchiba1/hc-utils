@@ -49,7 +49,7 @@ my %CHILD = ();
 my %PROCESS = ();
 my %LEN = ();
 for my $line (@LINE) {
-    my $pid = extract_columns($line);
+    my $pid = extract_and_save_columns($line);
     my $start = extract_start($line);
     sava_info($pid, "START", $start);
     my $command = extract_command($line);
@@ -185,7 +185,7 @@ sub print_column {
     print " ";
 }
 
-sub extract_columns {
+sub extract_and_save_columns {
     my ($line) = @_;
     $line =~ s/^ +//;
 
