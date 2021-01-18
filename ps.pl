@@ -57,13 +57,13 @@ for my $line (@LINE) {
 }
 
 ### Print ###
-my %FLAG = (); # Set flags for print, if keyword specified.
+my %SELECTED = (); # Set flags for print, if keyword specified.
 if (@ARGV) {
     %LEN = ();
     update_columns_lengths("PID");
     for my $pid (keys %PROCESS) {
         next if ($pid eq $$ || $PROCESS{$pid}{PPID} eq $$);
-        set_flag($pid) if process_contains_keyword($pid, @ARGV);
+        select_pid($pid) if contains_keyword($pid, @ARGV);
     }
 }
 print_columns("PID", "");
@@ -75,7 +75,7 @@ print_ledgends() if $OPT{l};
 ### Function ###################################################################
 ################################################################################
 
-sub process_contains_keyword {
+sub contains_keyword {
     my ($pid, @argv) = @_;
 
     if (!@argv) {
@@ -91,14 +91,14 @@ sub process_contains_keyword {
     }
 }
 
-sub set_flag {
+sub select_pid {
     my ($pid) = @_;
 
-    $FLAG{$pid} = 1;
+    $SELECTED{$pid} = 1;
     update_columns_lengths($pid);
     while ($PARENT{$pid}) {
         $pid = $PARENT{$pid};
-        $FLAG{$pid} = 1;
+        $SELECTED{$pid} = 1;
         update_columns_lengths($pid);
     }
 }
@@ -116,13 +116,13 @@ sub print_process_rec {
     my ($pid, $pad, $last_child) = @_;
     my $ppid = $PROCESS{$pid}{PPID};
 
-    if (@ARGV && !$FLAG{$pid} || # did not match keyword
+    if (@ARGV && !$SELECTED{$pid} || # did not match keyword
         $pid eq $$) {            # this process
         return;                  # do not show
     }
     
     if ($pid eq "1") { # pid=1 is a special process
-        if (process_contains_keyword($pid, @ARGV)) { # hide it when it does not match keyword
+        if (contains_keyword($pid, @ARGV)) { # hide it when it does not match keyword
             print_columns($pid, "");
         }
     } elsif ($ppid eq "0" || $ppid eq "1") { # pid=1,2 || children of pid=1
