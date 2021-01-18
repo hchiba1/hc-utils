@@ -57,9 +57,7 @@ for my $line (@LINE) {
 }
 
 ### Print ###
-print_columns("PID");
-print $PROCESS{"PID"}{COMMAND}, "\n";
-
+print_columns("PID", "");
 my %FLAG = (); # Set flags for print, if keyword specified.
 if (@ARGV) {
     for my $pid (keys %PROCESS) {
@@ -114,20 +112,18 @@ sub print_process_rec {
     
     if ($pid eq "1") { # pid=1 is a special process
         if (process_contains_keyword($pid, @ARGV)) { # hide it when it does not match keyword
-            print_columns($pid);
-            print $PROCESS{$pid}{COMMAND}, "\n";
+            print_columns($pid, "");
         }
     } elsif ($ppid eq "0" || $ppid eq "1") { # pid=1,2 || children of pid=1
-        print_columns($pid);
-        print $PROCESS{$pid}{COMMAND}, "\n";
+        print_columns($pid, "");
     } else {
-        print_columns($pid);
+        my $tree = $pad;
         if ($last_child) {
-            print $pad . "`- " . $PROCESS{$pid}{COMMAND};
+            $tree .= "`- ";
         } else {
-            print $pad . "|- " . $PROCESS{$pid}{COMMAND};
+            $tree .= "|- ";
         }
-        print "\n";
+        print_columns($pid, $tree);
     }
     
     if ($CHILD{$pid}) {
@@ -153,7 +149,7 @@ sub print_process_rec {
 }
 
 sub print_columns {
-    my ($pid) = @_;
+    my ($pid, $tree) = @_;
     
     print_column($pid, "PPID", "right") if $OPT{P};
     print_column($pid, "PID", "right");
@@ -167,6 +163,10 @@ sub print_columns {
     print_column($pid, "TIME", "right") if !$OPT{T};
     print_column($pid, "TTY", "left");
     print_column($pid, "USER", "left");
+    if ($tree) {
+        print $tree;
+    }
+    print $PROCESS{$pid}{COMMAND}, "\n";
 }
 
 sub print_column {
