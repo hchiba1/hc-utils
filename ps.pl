@@ -56,8 +56,8 @@ for my $line (@LINE) {
     sava_info($pid, "COMMAND", extract_command($line));
 }
 
-### Print ###
-my %SELECTED = (); # Set flags for print, if keyword specified.
+### Select ###
+my %SELECTED = ();
 if (@ARGV) {
     %LEN = ();
     update_columns_lengths("PID");
@@ -65,9 +65,11 @@ if (@ARGV) {
         contains_keyword($pid, @ARGV) and select_pid($pid);
     }
 }
+
+### Print ###
 print_columns("PID", "");
 print_process_rec(1, "", 0);
-print_process_rec(2, "", 0) if $OPT{a}; # kernel threads
+print_process_rec(2, "", 0) if $OPT{a};
 print_ledgends() if $OPT{l};
 
 ################################################################################
@@ -121,7 +123,7 @@ sub print_process_rec {
     }
     
     if ($pid eq "1") { # pid=1 is a special process
-        if (!@ARGV or contains_keyword($pid, @ARGV)) { # hide it when it does not match keyword
+        if (!@ARGV or contains_keyword($pid, @ARGV)) {
             print_columns($pid, "");
         }
     } elsif ($ppid eq "0" || $ppid eq "1") { # pid=1,2 || children of pid=1
