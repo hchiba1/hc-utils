@@ -6,12 +6,12 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
 -d: debug
+-t: show threads in multiple lines
 -a: show kernel threads too
--t: show threads
--v: show environment variables for each command line
+-P: show PPID
 -V: show VIRT
 -W: show WCHAN
--P: show PPID
+-v: show environment variables for each command line
 ";
 
 my %OPT;
