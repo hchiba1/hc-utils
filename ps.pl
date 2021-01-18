@@ -8,16 +8,16 @@ my $USAGE=
 -d: debug
 -m: show threads in multiple lines
 -a: show kernel threads too
--t: do not show time
 -P: show PPID
 -M: show %MEM
 -V: show VIRT
 -W: show WCHAN
 -E: show environment variables for each command line
+-T: do not show time
 ";
 
 my %OPT;
-getopts('dmatPMVWE', \%OPT);
+getopts('dmaPMVWET', \%OPT);
 
 ### Execute ###
 my $PS_OPT = "";
@@ -166,10 +166,8 @@ sub print_process_meta_data {
     print_column($pid, "VIRT", "right") if $OPT{V};
     print_column($pid, "STAT", "left");
     print_column($pid, "WCHAN", "left") if $OPT{W};
-    if (!$OPT{t}) {
-        print_column($pid, "START", "left");
-        print_column($pid, "TIME", "right");
-    }
+    print_column($pid, "START", "left") if !$OPT{T};
+    print_column($pid, "TIME", "right") if !$OPT{T};
     print_column($pid, "TTY", "left");
     print_column($pid, "USER", "left");
 }
