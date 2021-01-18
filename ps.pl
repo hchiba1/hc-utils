@@ -15,11 +15,12 @@ my $USAGE=
 -W: show WCHAN
 -E: show environment variables for each command line
 -T: do not show time
+-s: do not show tree
 -t: use tab as column delimiter
 ";
 
 my %OPT;
-getopts('dmalPMVWETt', \%OPT);
+getopts('dmalPMVWETst', \%OPT);
 
 ### Execute ###
 my $PS_OPT = "";
@@ -120,11 +121,13 @@ sub print_process_rec {
     @ARGV && !$SELECTED{$pid} and return;  # did not match keyword
     
     my $ppid = $PROCESS{$pid}{PPID};
-    if ($pid eq "1") { # pid=1 is a special process
+    if ($pid eq "1") {                     # pid=1 is a special process
         if (!@ARGV or contains_keyword($pid, @ARGV)) {
             print_columns($pid, "");
         }
     } elsif ($ppid eq "0" || $ppid eq "1") { # pid=1,2 || children of pid=1
+        print_columns($pid, "");
+    } elsif ($OPT{s}) {
         print_columns($pid, "");
     } elsif ($last_child) {
         print_columns($pid, "${pad}`- ");
@@ -169,9 +172,7 @@ sub print_columns {
     print_column($pid, "TIME", "right") if !$OPT{T};
     print_column($pid, "TTY", "left");
     print_column($pid, "USER", "left");
-    if ($tree) {
-        print $tree;
-    }
+    print $tree if $tree;
     print $PROCESS{$pid}{COMMAND}, "\n";
 }
 
