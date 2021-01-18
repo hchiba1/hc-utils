@@ -61,6 +61,7 @@ for my $line (@LINE) {
 my %SELECTED = ();
 if (@ARGV) {
     %LEN = ();
+    # %CHILD = ();
     update_columns_lengths("PID");
     for my $pid (keys %PROCESS) {
         contains_keyword($pid, @ARGV) and select_pid($pid);
@@ -99,6 +100,7 @@ sub select_pid {
     $SELECTED{$pid} = 1;
     update_columns_lengths($pid);
     while ($PARENT{$pid}) {
+        # add_child($PARENT{$pid}, $pid);
         $pid = $PARENT{$pid};
         $SELECTED{$pid} = 1;
         update_columns_lengths($pid);
