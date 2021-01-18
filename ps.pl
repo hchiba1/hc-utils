@@ -61,9 +61,7 @@ my %FLAG = (); # Set flags for print, if keyword specified.
 if (@ARGV) {
     for my $pid (keys %PROCESS) {
         next if ($pid eq $$ || $PROCESS{$pid}{PPID} eq $$);
-        if (process_contains_keyword($pid, @ARGV)) {
-            trace_back($pid);
-        }
+        set_flag($pid) if process_contains_keyword($pid, @ARGV);
     }
 }
 print_columns("PID", "");
@@ -91,7 +89,7 @@ sub process_contains_keyword {
     }
 }
 
-sub trace_back {
+sub set_flag {
     my ($pid) = @_;
 
     $FLAG{$pid} = 1;
