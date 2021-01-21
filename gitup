@@ -55,7 +55,7 @@ if ($commit_exit_code) {
 print "\n";
 
 print "[push]\n";
-my $push_exit_code = system("git push") >> 8;
+my $push_exit_code = system("git push origin HEAD") >> 8;
 if ($push_exit_code) {
     die "push failed.\n";
 } else {
