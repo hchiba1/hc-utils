@@ -1,11 +1,16 @@
 #!/usr/bin/perl -w
 use strict;
 use File::Basename;
+use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM file message ...
 git pull, add, commit and push
+-c: commit but not push
 ";
+
+my %OPT;
+getopts('c', \%OPT);
 
 my ($FILE, @MESSAGE) = @ARGV;
 my $MESSAGE = "@MESSAGE";
@@ -17,22 +22,24 @@ if (@ARGV == 1) {
     exit 1;
 }
 
-print "[fetch]\n";
-system "git fetch origin";
-my $diff_exit_code = system("git diff HEAD..FETCH_HEAD --exit-code --quiet") >> 8;
-if ($diff_exit_code) {
-    print "\n";
-    print "[pull]\n";
-    my $pull_exit_code = system("git pull") >> 8;
-    if ($pull_exit_code) {
-        die "pull failed.\n";
+if (!$OPT{c}) {
+    print "[fetch]\n";
+    system "git fetch origin";
+    my $diff_exit_code = system("git diff HEAD..FETCH_HEAD --exit-code --quiet") >> 8;
+    if ($diff_exit_code) {
+        print "\n";
+        print "[pull]\n";
+        my $pull_exit_code = system("git pull") >> 8;
+        if ($pull_exit_code) {
+            die "pull failed.\n";
+        } else {
+            print "OK\n";
+        }
+        print "\n";
     } else {
         print "OK\n";
+        print "\n";
     }
-    print "\n";
-} else {
-    print "OK\n";
-    print "\n";
 }
 
 print "[add]\n";
@@ -52,12 +59,14 @@ if ($commit_exit_code) {
 } else {
     print "OK\n";
 }
-print "\n";
 
-print "[push]\n";
-my $push_exit_code = system("git push origin HEAD") >> 8;
-if ($push_exit_code) {
-    die "push failed.\n";
-} else {
-    print "OK\n";
+if (!$OPT{c}) {
+    print "\n";
+    print "[push]\n";
+    my $push_exit_code = system("git push origin HEAD") >> 8;
+    if ($push_exit_code) {
+        die "push failed.\n";
+    } else {
+        print "OK\n";
+    }
 }
