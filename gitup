@@ -6,17 +6,22 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM file message ...
 git pull, add, commit and push
+-a: commit message is 'add new_file'
 -c: commit but not push
 ";
 
 my %OPT;
-getopts('c', \%OPT);
+getopts('ac', \%OPT);
 
 my ($FILE, @MESSAGE) = @ARGV;
 my $MESSAGE = "@MESSAGE";
 
 if (@ARGV == 1) {
-    $MESSAGE = "update $FILE";
+    if ($OPT{a}) {
+        $MESSAGE = "add $FILE";
+    } else {
+        $MESSAGE = "update $FILE";
+    }
 } elsif (@ARGV < 2) {
     print STDERR $USAGE;
     exit 1;
