@@ -14,13 +14,14 @@ my $USAGE=
 -V: show VIRT
 -W: show WCHAN
 -E: show environment variables for each command line
--T: do not show time
+-T: show CPU time
+-S: suppress start time
 -s: do not show tree
 -t: use tab as column delimiter
 ";
 
 my %OPT;
-getopts('dmalPMVWETst', \%OPT);
+getopts('dmalPMVWETSst', \%OPT);
 
 ### Execute ###
 my $PS_OPT = "";
@@ -172,8 +173,8 @@ sub print_columns {
     print_column($pid, "VIRT", "right") if $OPT{V};
     print_column($pid, "STAT", "left");
     print_column($pid, "WCHAN", "left") if $OPT{W};
-    print_column($pid, "START", "left") if !$OPT{T};
-    print_column($pid, "TIME", "right") if !$OPT{T};
+    print_column($pid, "START", "left") if !$OPT{S};
+    print_column($pid, "TIME", "right") if $OPT{T};
     print_column($pid, "TTY", "left");
     print_column($pid, "USER", "left");
     print $tree if $tree;
