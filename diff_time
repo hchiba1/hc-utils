@@ -1,0 +1,83 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+use HTTP::Date;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM [OPTION] 'DATE_TIME_BEFORE' ['DATE_TIME_AFTER']
+OPTION
+ -m: print in minutes
+ -h: print in hours
+ -d: print in days
+ -v: verbose
+Examples
+ $PROGRAM '2018-09-07 20:19' '2018-09-07 21:56:01'
+ $PROGRAM '2018-09-07 20:19' 'Fri Sep  7 22:07:57 JST 2018'
+";
+
+my %OPT;
+getopts('mhdv', \%OPT);
+
+my ($TIME1, $TIME2) = @ARGV;
+
+if (@ARGV == 1) {
+    ($TIME1) = @ARGV;
+    $TIME2 = `date`;
+    chomp($TIME2);
+} elsif (@ARGV == 2) {
+    ($TIME1, $TIME2) = @ARGV;
+} else {
+    die $USAGE;
+}
+
+if (! str2time($TIME1) or ! str2time($TIME2)) {
+    die "ERROR: specify date and time\n";
+}
+
+my $total_sec = str2time($TIME2) - str2time($TIME1);
+if ($total_sec < 0) {
+    die "ERROR: specify DATE_TIME_BEFORE < DATE_TIME_AFTER\n";
+}
+
+my $sec = $total_sec % 60;
+my $total_min = int($total_sec / 60);
+my $min = $total_min % 60;
+my $hour = int($total_min / 60);
+
+if ($OPT{m}) {
+    printf "%.2f", $total_sec / 60;
+    if ($OPT{v}) {
+	print " min";
+    }
+    print "\n";
+    exit;
+}
+
+if ($OPT{h}) {
+    printf "%.4f", $total_sec / 3600;
+    if ($OPT{v}) {
+	print " hours";
+    }
+    print "\n";
+    exit;
+}
+
+if ($OPT{d}) {
+    printf "%.5f", $total_sec / (3600 * 24);
+    if ($OPT{v}) {
+	print " days";
+    }
+    print "\n";
+    exit;
+}
+
+if ($OPT{v}) {
+    if ($hour == 0) {
+	printf "%d min %02d sec\n", $min, $sec;
+    } else {
+	printf "%d hour %d min %02d sec\n", $hour, $min, $sec;
+    }
+} else {
+    printf "%d:%02d:%02d\n", $hour, $min, $sec;
+}
