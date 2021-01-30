@@ -30,14 +30,15 @@ sub print_current_or_next {
     }
 
     if ($current =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /
-        or $next =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /
+        # or $next =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /
         ) {
         print $current, "\n";
         return 1;
     }
 
     if (
-        $next =~ /^([*|\/ \\]+)\d+ files? changed, /
+        # $next =~ /^([*|\/ \\]+)\d+ files? changed, /
+        $next =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /
         ) {
         if ($current =~ /^([*|\/ \\]+)\w?.*$/) {
             my $current_bar_only = $1;
