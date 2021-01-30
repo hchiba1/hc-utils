@@ -29,15 +29,19 @@ sub print_current_or_next {
         return 0;
     }
 
-    if ($current =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /) {
+    if ($current =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /
+        or $next =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /
+        ) {
         print $current, "\n";
         return 1;
     }
 
-    if ($next =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /) {
+    if (
+        $next =~ /^([*|\/ \\]+)\d+ files? changed, /
+        ) {
         if ($current =~ /^([*|\/ \\]+)\w?.*$/) {
-            my $current_bar = $1;
-            print $current_bar, "\n";
+            my $current_bar_only = $1;
+            print $current_bar_only, "\n";
             return 1;
         } else {
             die;
@@ -45,13 +49,13 @@ sub print_current_or_next {
     }
 
     if ($current =~ /^([*|\/ \\]+)(\w?.*)$/) {
-        my ($bar, $current_comment) = ($1, $2);
+        my ($current_bar, $current_comment) = ($1, $2);
         if ($next =~ /^.+?(\w.*)/) {
             my $next_comment = $1;
             if ($current_comment eq "") {
-                print "$bar $next_comment\n";
+                print "$current_bar $next_comment\n";
             } else {
-                print $bar, $next_comment, "\n";
+                print $current_bar, $next_comment, "\n";
             }
             return 2;
         } else {
