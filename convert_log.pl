@@ -49,9 +49,9 @@ sub print_current_or_next {
         }
     }
 
-    if ($current =~ /^([*|\/ \\]+)(\w?.*)$/) {
+    if ($current =~ /^([*|\/ \\]+)(.*)$/) {
         my ($current_bar, $current_comment) = ($1, $2);
-        if ($next =~ /^.+?(\w.*)/) {
+        if ($next =~ /^[*|\/ \\]+(.*)$/) {
             my $next_comment = $1;
             if ($current_comment eq "") {
                 print "$current_bar $next_comment\n";
