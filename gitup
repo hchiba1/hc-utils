@@ -18,9 +18,9 @@ my $MESSAGE = "@MESSAGE";
 
 if (@ARGV == 1) {
     if ($OPT{a}) {
-        $MESSAGE = "add $FILE";
+        $MESSAGE = "Add $FILE";
     } else {
-        $MESSAGE = "update $FILE";
+        $MESSAGE = "Update $FILE";
     }
 } elsif (@ARGV < 2) {
     print STDERR $USAGE;
