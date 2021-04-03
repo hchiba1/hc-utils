@@ -1,49 +1,77 @@
 #!/usr/bin/perl -w
 use strict;
 use File::Basename;
+use File::Path;
 use Getopt::Std;
-# use IPC::Open3;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM FILE
+"Usage: $PROGRAM [-d] FILE.nim
+-d: debug
+path/to/src/hoge.nim -> path/to/bin/linux/hoge
+path/to/hoge.nim -> path/to/linux/hoge
 ";
 
 my %OPT;
-getopts('v', \%OPT);
+getopts('d', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
     exit 1;
 }
-my $FILE = shift @ARGV;
+my $NIM_FILE = shift @ARGV;
 
-my ($NIM_FILE, $EXEC_FILE);
-if ($FILE =~ /^(.+)\.nim$/) {
-    $EXEC_FILE = $1;
-    $NIM_FILE = $FILE;
-} else {
-    $EXEC_FILE = $FILE;
-    $NIM_FILE = "$FILE.nim";
-}
+my $BINARY_FILE = get_binary_file_path($NIM_FILE);
 
-if ($EXEC_FILE =~ /^\//) {
+if ($OPT{d}) {
+    system "nim compile --run --out:$BINARY_FILE $NIM_FILE";
+} elsif (-f $BINARY_FILE && (stat $BINARY_FILE)[9] > (stat $NIM_FILE)[9]) {
+    system "$BINARY_FILE @ARGV";
 } else {
-    $EXEC_FILE = "./" . $EXEC_FILE;
-}
-
-if (! -f $EXEC_FILE && ! -f $NIM_FILE) {
-    print STDERR "ERROR: cannot find $EXEC_FILE nor $NIM_FILE\n";
-    exit 1;
-} elsif ($OPT{v}) {
-    system "nim compile --run $FILE @ARGV";
-} elsif (-f $EXEC_FILE && ! -f $NIM_FILE ||
-	 -f $EXEC_FILE && -f $NIM_FILE && (stat $EXEC_FILE)[9] > (stat $NIM_FILE)[9]) {
-    system "$EXEC_FILE @ARGV";
-} else {
-    my $result = `nim compile $FILE 2>&1`;
+    my $result = `nim compile --out:$BINARY_FILE $NIM_FILE 2>&1`;
     if ($? >> 8) {
-	print STDERR $result;
-	exit($? >> 8);
+        print STDERR $result;
+        exit($? >> 8);
     }
-    system "$EXEC_FILE @ARGV";
+    system "$BINARY_FILE @ARGV";
+}
+
+################################################################################
+### Function ###################################################################
+################################################################################
+
+sub get_binary_file_path {
+    my ($nim_file) = @_;
+
+    if (! -e $nim_file) {
+        print STDERR "ERROR: cannot find $nim_file\n";
+        exit 1;
+    }
+
+    if ($nim_file =~ /^(.+)\.nim$/) {
+        my $prefix = $1;
+        my $directory = dirname($prefix);
+        my $program_name = basename($prefix);
+
+        if ($directory =~ /^src$/ || $directory =~ /\/src$/) {
+            $directory =~ s/src$/bin/;
+        }
+
+        if ($^O eq "linux") {
+            $directory .= "/linux";
+        } elsif ($^O eq "darwin") {
+            $directory .= "/mac"
+        } elsif ($^O eq "dos") {
+            $directory .= "/win"
+        } else {
+            die;
+        }
+        if (! -e $directory) {
+            mkpath($directory) || die "$directory: $!";
+        }
+
+        return "$directory/$program_name";
+    } else {
+        print STDERR $USAGE;
+        exit 1;
+    }
 }
