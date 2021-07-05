@@ -16,6 +16,7 @@ my $USAGE=
 -n: do not use cache
 -v: verbose
 -r: recursive
+-l: list filename only
 ";
 
 my $CACHE_TIME_LIMIT = 3600; # one hour
@@ -26,7 +27,7 @@ my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('fo:pqdnvr', \%OPT);
+getopts('fo:pqdnvrl', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
@@ -154,6 +155,16 @@ sub format_list {
     if ($OPT{d}) {
         print @list;
         return;
+    }
+
+    if ($OPT{l}) {
+        my $result = "";
+        for my $line (@list) {
+            my @f = split(/\s+/, $line);
+            my $name = $f[8];
+            $result .= $name . "\n";
+        }
+        return $result;
     }
 
     chomp(@list);
