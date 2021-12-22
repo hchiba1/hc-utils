@@ -8,19 +8,17 @@ parser = argparse.ArgumentParser(description='Add STDIN taxid labels')
 parser.add_argument('-k', '--key', default=1, type=int, help='key column')
 args = parser.parse_args()
 
-def isPipe():
-    if select.select([sys.stdin,],[],[],0.0)[0]:
-        return True
-    return False
-if not isPipe():
+if not select.select([sys.stdin,],[],[],0.0)[0]:
     parser.print_help()
     exit(1)
+
+col_idx = args.key - 1
 
 taxids = []
 input_lines = sys.stdin.readlines()
 for line in input_lines:
     fields = line.strip().split()
-    taxids.append(fields[1])
+    taxids.append(fields[col_idx])
 
 command = [ 'spang2', 'main@github:sparqling/library/taxonomy/taxid2label.rq' ]
 ret = subprocess.run(command, input='\n'.join(taxids).encode(), stdout=subprocess.PIPE, timeout=300)
@@ -36,6 +34,5 @@ for line in output_lines:
     output[fields[0]] = fields[1]
 
 for line in input_lines:
-    i = args.key - 1
     fields = line.strip().split()
-    print(line.rstrip() + '\t' + output[fields[i]])
+    print(line.rstrip() + '\t' + output[fields[col_idx]])
