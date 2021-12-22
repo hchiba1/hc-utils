@@ -8,9 +8,9 @@ parser = argparse.ArgumentParser(description='Add STDIN taxid labels')
 parser.add_argument('-k', '--key', default=1, type=int, help='key column')
 args = parser.parse_args()
 
-if not select.select([sys.stdin,],[],[],0.0)[0]:
-    parser.print_help()
-    exit(1)
+# if not select.select([sys.stdin,],[],[],0.0)[0]:
+#     parser.print_help()
+#     exit(1)
 
 col_idx = args.key - 1
 
