@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+import sys
+import subprocess
+
+taxids = []
+input_lines = sys.stdin.readlines()
+for line in input_lines:
+    fields = line.strip().split()
+    taxids.append(fields[1])
+
+command = [ 'spang2', 'main@github:sparqling/library/taxonomy/taxid2label.rq' ]
+ret = subprocess.run(command, input='\n'.join(taxids).encode(), stdout=subprocess.PIPE, timeout=300)
+if ret.returncode != 0:
+    print(f'ERROR', flush=True)
+    sys.exit(ret.returncode)
+
+output = {}
+taxid_labels = ret.stdout.decode().strip() # why strip() is needed? newline was added?
+output_lines = taxid_labels.split('\n')
+for line in output_lines:
+    fields = line.split('\t');
+    output[fields[0]] = fields[1]
+
+for line in input_lines:
+    fields = line.strip().split()
+    print(line.rstrip() + '\t' + output[fields[1]])
