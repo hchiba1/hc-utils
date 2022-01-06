@@ -1,0 +1,29 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('', \%OPT);
+
+my @dir = `ls $ENV{HOME}/github/`;
+chomp(@dir);
+
+for my $dir (@dir) {
+    chdir("$ENV{HOME}/github/$dir/") || die "$!";
+    my @repo = `ls`;
+    chomp(@repo);
+
+    for my $repo (@repo) {
+        my $diff = `cd $repo; git status -s`;
+        if ($diff) {
+            print "$dir/$repo\n";
+            print "$diff";
+            print "\n";
+        }
+    }
+}
