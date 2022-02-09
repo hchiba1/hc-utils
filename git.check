@@ -8,7 +8,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('', \%OPT);
+getopts('d', \%OPT);
 
 my @dir = `ls $ENV{HOME}/github/`;
 chomp(@dir);
@@ -23,10 +23,12 @@ for my $dir (@dir) {
         if ($status) {
             print "### $dir/$repo\n";
             print "$status";
-            my $diff = `cd $repo; git diff --color`;
-            if ($diff) {
-                print "\n";
-                print "$diff";
+            if ($OPT{d}) {
+                my $diff = `cd $repo; git diff --color`;
+                if ($diff) {
+                    print "\n";
+                    print "$diff";
+                }
             }
             print "\n";
         }
