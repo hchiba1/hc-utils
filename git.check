@@ -19,10 +19,15 @@ for my $dir (@dir) {
     chomp(@repo);
 
     for my $repo (@repo) {
-        my $diff = `cd $repo; git status -s`;
-        if ($diff) {
-            print "$dir/$repo\n";
-            print "$diff";
+        my $status = `cd $repo; git status -s`;
+        if ($status) {
+            print "### $dir/$repo\n";
+            print "$status";
+            my $diff = `cd $repo; git diff --color`;
+            if ($diff) {
+                print "\n";
+                print "$diff";
+            }
             print "\n";
         }
     }
