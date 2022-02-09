@@ -19,18 +19,28 @@ for my $dir (@dir) {
     chomp(@repo);
 
     for my $repo (@repo) {
-        my $status = `cd $repo; git status -s`;
-        if ($status) {
-            print "### $dir/$repo\n";
-            print "$status";
-            if ($OPT{d}) {
-                my $diff = `cd $repo; git diff --color`;
-                if ($diff) {
-                    print "\n";
-                    print "$diff";
-                }
+        print_status($repo, "$dir/$repo");
+    }
+}
+
+################################################################################
+### Function ###################################################################
+################################################################################
+
+sub print_status {
+    my ($repo, $repo_path) = @_;
+
+    my $status = `cd $repo; git status -s`;
+    if ($status) {
+        print "### ${repo_path}\n";
+        print "$status";
+        if ($OPT{d}) {
+            my $diff = `cd $repo; git diff --color`;
+            if ($diff) {
+                print "\n";
+                print "$diff";
             }
-            print "\n";
         }
+        print "\n";
     }
 }
