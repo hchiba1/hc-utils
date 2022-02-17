@@ -124,6 +124,13 @@ sub update_columns_lengths {
 sub print_process_rec {
     my ($pid, $pad, $last_child) = @_;
 
+    my $pad_size = 3;
+    my $max_depth = 30;
+    if (length($pad)/$pad_size + 1 > $max_depth) {
+        print PIPE "Died: too deep recursion";
+        die;
+    }
+
     $pid eq $$ and return;                 # this process
     @ARGV && !$SELECTED{$pid} and return;  # did not match keyword
     
