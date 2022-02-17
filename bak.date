@@ -1,0 +1,58 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM FILE...
+mv FILE FILE.YY-MM-DD
+-a: cp -a (mv by default)
+-d: debug (print without execution)
+-e EXT: add further extention
+";
+
+my %OPT;
+getopts('ade:', \%OPT);
+
+if (!@ARGV) {
+    print STDERR $USAGE;
+    exit 1;
+}
+
+for my $file (@ARGV) {
+    if ($file =~ /\/$/) {
+        $file =~ s/\/$//;
+    }
+    
+    my @date = localtime((stat($file))[9]);
+    my $year = $date[5] + 1900;
+    my $month = $date[4] + 1;
+    my $day = $date[3];
+    unless ($year =~ /^[12]\d{3}$/) {
+        die;
+    }
+    unless (1 <= $month and $month <= 12) {
+        die;
+    }
+    unless (1 <= $day and $day <= 31) {
+        die;
+    }
+
+    my $new_name = sprintf("$file.%04d-%02d-%02d", $year, $month, $day);
+    if ($OPT{e}) {
+        $new_name .= $OPT{e};
+    }
+    
+    my $command_line = "mv $file $new_name";
+    if ($OPT{a}) {
+        $command_line = "cp -a $file $new_name";
+    }
+    print "$command_line\n";
+    if (!$OPT{d}) {
+        my $ret = system($command_line);
+        $ret = $ret >> 8;
+        if ($ret != 0) {
+            die;
+        }
+    }
+}
