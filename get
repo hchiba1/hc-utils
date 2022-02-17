@@ -176,7 +176,8 @@ sub format_list {
     my @upper_dir = ();
     my @lower_dir = ();
     my @lower_file = ();
-    my @others = ();
+    my @other_dir = ();
+    my @other_file = ();
 
     my %size = ();
 
@@ -210,10 +211,10 @@ sub format_list {
             }
             push @all, "$line";
             if ($line =~ /^d/ or $line =~ /^l/ && $line =~ /\/$/) {
-                push_upper_or_lower($line, $name, \@upper_dir, \@lower_dir, \@others);
+                push_upper_or_lower($line, $name, \@upper_dir, \@lower_dir, \@other_dir);
                 touch_dir("$TREE_DIR/$URL$name");
             } else {
-                push_upper_or_lower($line, $name, \@upper_file, \@lower_file, \@others);
+                push_upper_or_lower($line, $name, \@upper_file, \@lower_file, \@other_file);
                 touch_file("$TREE_DIR/$URL$name");
             }
         }
@@ -236,7 +237,7 @@ sub format_list {
         # Others
         # lcase_dir/
         # lcase_file
-        for my $line (@upper_file, @upper_dir, @lower_dir, @others, @lower_file) {
+        for my $line (@upper_file, @upper_dir, @lower_dir, @other_dir, @other_file, @lower_file) {
             $result .= format_line($line, $group_len_max, $user_len_max, $f1_len_max, $f2_len_max);
         }
     }
