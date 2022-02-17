@@ -202,16 +202,14 @@ sub format_list {
             if ($user_len > $user_len_max) {
                 $user_len_max = $user_len;
             }
+            push @all, "$line";
             if ($line =~ /^d/) {
-                push @all, "$line/";
-                push_upper_or_lower("$line/", $name, \@upper_dir, \@lower_dir, \@others);
+                push_upper_or_lower("$line", $name, \@upper_dir, \@lower_dir, \@others);
                 touch_dir("$TREE_DIR/$URL$name");
             } elsif ($line =~ /^l/ and $line =~ /\/$/) {
-                push @all, "$line";
                 push_upper_or_lower("$line", $name, \@upper_dir, \@lower_dir, \@others);
                 touch_dir("$TREE_DIR/$URL$name");
             } else {
-                push @all, "$line";
                 push_upper_or_lower("$line", $name, \@upper_file, \@lower_file, \@others);
                 touch_file("$TREE_DIR/$URL$name");
             }
@@ -231,6 +229,9 @@ sub format_list {
             my $pad2 = " " x ($f2_len_max - length($size));
             $num = $pad1 . $num;
             $size = $pad2 . $size;
+            if ($line =~ /^d/) {
+                $name .= "/";
+            }
             $result .= "$perm $num $group $user  $size $name\n";
         }
     }
