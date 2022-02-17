@@ -71,10 +71,12 @@ if (@ARGV) {
 }
 
 ### Print ###
+open(PIPE, "| less -S");
 print_columns("PID", "");
 print_process_rec(1, "", 0);
 print_process_rec(2, "", 0) if $OPT{a};
 print_ledgends() if $OPT{l};
+close(PIPE);
 
 ################################################################################
 ### Function ###################################################################
@@ -177,8 +179,10 @@ sub print_columns {
     print_column($pid, "TIME", "right") if $OPT{T};
     print_column($pid, "TTY", "left");
     print_column($pid, "USER", "left");
-    print $tree if $tree;
-    print $PROCESS{$pid}{COMMAND}, "\n";
+    if ($tree) {
+        print PIPE $tree;
+    }
+    print PIPE $PROCESS{$pid}{COMMAND}, "\n";
 }
 
 sub print_column {
@@ -186,15 +190,21 @@ sub print_column {
 
     my $val = $PROCESS{$pid}{$col_name};
 
-    print($val) if $align eq "left";
-    if (!$OPT{t}) {
-        print(" " x ($LEN{$col_name} - length($val))) if $LEN{$col_name} > length($val);
+    if ($align eq "left") {
+        print PIPE $val;
     }
-    print($val) if $align eq "right";
+    if (!$OPT{t}) {
+        if ($LEN{$col_name} > length($val)) {
+            print PIPE " " x ($LEN{$col_name} - length($val));
+        }
+    }
+    if ($align eq "right") {
+        print PIPE $val;
+    }
     if ($OPT{t}) {
-        print "\t";
+        print PIPE "\t";
     } else {
-        print " ";
+        print PIPE " ";
     }
 }
 
@@ -360,8 +370,8 @@ sub get_column_pos {
 }
 
 sub print_ledgends {
-    print "\n";
-    # print "- sleep, L locked, 1 session leader, = multi-threaded, * foreground";
-    print "-sleep, ><priority, L locked, 1 leader, =multi, *fore";
-    print "\n";
+    print PIPE "\n";
+    # print PIPE "- sleep, L locked, 1 session leader, = multi-threaded, * foreground";
+    print PIPE "-sleep, ><priority, L locked, 1 leader, =multi, *fore";
+    print PIPE "\n";
 }
