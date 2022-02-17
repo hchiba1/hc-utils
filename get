@@ -179,11 +179,12 @@ sub format_list {
     ### find max length for each column
     my $f1_len_max = 0;
     my $f2_len_max = 0;
+    my $user_len_max = 0;
     for my $line (@list) {
         my @f = split(/\s+/, $line);
         my $name = $f[8];
-        if ($line =~ /^.*? +(\d+) +\S+ +\S+ +(\d+) +.*/) {
-            my ($f1, $f2) = ($1, $2);
+        if ($line =~ /^.*? +(\d+) +\S+ +(\S+) +(\d+) +.*/) {
+            my ($f1, $user, $f2) = ($1, $2, $3);
             my $f1_len = length($f1);
             if ($f1_len > $f1_len_max) {
                 $f1_len_max = $f1_len;
@@ -191,6 +192,10 @@ sub format_list {
             my $f2_len = length(format_size($f2));
             if ($f2_len > $f2_len_max) {
                 $f2_len_max = $f2_len;
+            }
+            my $user_len = length($user);
+            if ($user_len > $user_len_max) {
+                $user_len_max = $user_len;
             }
             if ($line =~ /^d/) {
                 push @all, "$line/";
@@ -212,19 +217,23 @@ sub format_list {
     my $result = "";
     # for my $line (@all) {
     for my $line (@upper_file, @upper_dir, @lower_dir, @others, @lower_file) {
-        if ($line =~ /^(.*?) +(\d+)( +\S+ +\S+) +(\d+)( +.*)/) {
+        if ($line =~ /^(.*?) +(\d+)( +\S+ +)(\S+) +(\d+)( +.*)/) {
             my $perm = $1;
             my $num = $2;
-            my $user_group = $3;
-            my $size = $4;
-            my $name = $5;
+            my $group = $3;
+            my $user = $4;
+            my $size = $5;
+            my $name = $6;
             my $f1_len = length($num);
             my $f2_len = length(format_size($size));
+            my $user_len = length($user);
             my $f1_len_diff = $f1_len_max - $f1_len;
             my $f2_len_diff = $f2_len_max - $f2_len;
+            my $user_len_diff = $user_len_max - $user_len;
             my $padding1 = " " x $f1_len_diff;
             my $padding2 = " " x $f2_len_diff;
-            $result .= $perm . " " . $padding1  . $num . $user_group . " " . $padding2 . format_size($size) . $name . "\n";
+            $user .= " " x $user_len_diff . " ";
+            $result .= $perm . " " . $padding1  . $num . $group . $user . $padding2 . format_size($size) . $name . "\n";
         }
     }
 
