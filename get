@@ -209,14 +209,11 @@ sub format_list {
                 $user_len_max = $user_len;
             }
             push @all, "$line";
-            if ($line =~ /^d/) {
-                push_upper_or_lower("$line", $name, \@upper_dir, \@lower_dir, \@others);
-                touch_dir("$TREE_DIR/$URL$name");
-            } elsif ($line =~ /^l/ and $line =~ /\/$/) {
-                push_upper_or_lower("$line", $name, \@upper_dir, \@lower_dir, \@others);
+            if ($line =~ /^d/ or $line =~ /^l/ && $line =~ /\/$/) {
+                push_upper_or_lower($line, $name, \@upper_dir, \@lower_dir, \@others);
                 touch_dir("$TREE_DIR/$URL$name");
             } else {
-                push_upper_or_lower("$line", $name, \@upper_file, \@lower_file, \@others);
+                push_upper_or_lower($line, $name, \@upper_file, \@lower_file, \@others);
                 touch_file("$TREE_DIR/$URL$name");
             }
         }
