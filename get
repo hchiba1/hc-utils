@@ -17,6 +17,8 @@ my $USAGE=
 -v: verbose
 -r: recursive
 -l: list filename only
+-s: output in original order
+-S: sort by size
 ";
 
 my $CACHE_TIME_LIMIT = 21600; # 6 hours
@@ -27,7 +29,7 @@ my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('fo:pqdnvrl', \%OPT);
+getopts('fo:pqdnvrlsS', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
@@ -176,16 +178,20 @@ sub format_list {
     my @lower_file = ();
     my @others = ();
 
+    my %size = ();
+
     ### find max length for each column
     my $f1_len_max = 0;
     my $f2_len_max = 0;
     my $group_len_max = 0;
     my $user_len_max = 0;
+    my $i = 0;
     for my $line (@list) {
         my @f = split(/\s+/, $line);
         my $name = $f[8];
         if ($line =~ /^.*? +(\d+) +(\S+) +(\S+) +(\d+) +.*/) {
             my ($f1, $group, $user, $f2) = ($1, $2, $3, $4);
+            $size{$i} = $f2;
             my $f1_len = length($f1);
             if ($f1_len > $f1_len_max) {
                 $f1_len_max = $f1_len;
@@ -214,29 +220,52 @@ sub format_list {
                 touch_file("$TREE_DIR/$URL$name");
             }
         }
+        $i ++;
     }
 
-    ### format list (add padding for each column)
     my $result = "";
-    # for my $line (@all) {
-    for my $line (@upper_file, @upper_dir, @lower_dir, @others, @lower_file) {
-        if ($line =~ /^(.*?) +(\d+) +(\S+) +(\S+) +(\d+)( +.*)/) {
-            my ($perm, $num, $group, $user, $size, $name) = ($1, $2, $3, $4, $5, $6);
-            $size = format_size($size);
-            $group .= " " x ($group_len_max - length($group));
-            $user .= " " x ($user_len_max - length($user));
-            my $pad1 = " " x ($f1_len_max - length($num));
-            my $pad2 = " " x ($f2_len_max - length($size));
-            $num = $pad1 . $num;
-            $size = $pad2 . $size;
-            if ($line =~ /^d/) {
-                $name .= "/";
-            }
-            $result .= "$perm $num $group $user  $size $name\n";
+    if ($OPT{s}) {
+        for my $line (@all) {
+            $result .= format_line($line, $group_len_max, $user_len_max, $f1_len_max, $f2_len_max);
+        }
+    } elsif ($OPT{S}) {
+        for my $i (sort {$size{$b} <=> $size{$a}} keys(%size)) {
+            $result .= format_line($all[$i], $group_len_max, $user_len_max, $f1_len_max, $f2_len_max);
+        }
+    } else {
+        # output in the following order:
+        # UCASE_FILE
+        # USASE_DIR/
+        # Others
+        # lcase_dir/
+        # lcase_file
+        for my $line (@upper_file, @upper_dir, @lower_dir, @others, @lower_file) {
+            $result .= format_line($line, $group_len_max, $user_len_max, $f1_len_max, $f2_len_max);
         }
     }
 
     return $result;
+}
+
+sub format_line {
+    my ($line, $group_len_max, $user_len_max, $f1_len_max, $f2_len_max) = @_;
+
+    if ($line =~ /^(.*?) +(\d+) +(\S+) +(\S+) +(\d+)( +.*)/) {
+        my ($perm, $num, $group, $user, $size, $name) = ($1, $2, $3, $4, $5, $6);
+        $size = format_size($size);
+        $group .= " " x ($group_len_max - length($group));
+        $user .= " " x ($user_len_max - length($user));
+        my $pad1 = " " x ($f1_len_max - length($num));
+        my $pad2 = " " x ($f2_len_max - length($size));
+        $num = $pad1 . $num;
+        $size = $pad2 . $size;
+        if ($line =~ /^d/) {
+            $name .= "/";
+        }
+        return "$perm $num $group $user  $size $name\n";
+    } else {
+        return "";
+    }
 }
 
 sub push_upper_or_lower {
