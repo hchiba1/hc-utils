@@ -19,7 +19,7 @@ my $USAGE=
 -l: list filename only
 ";
 
-my $CACHE_TIME_LIMIT = 3600; # one hour
+my $CACHE_TIME_LIMIT = 21600; # 6 hours
 my $CACHE_FILE_SIZE_LIMIT = 100000; # 100K
 my $CACHE_DIR = "$ENV{HOME}/.get/cache";
 my $TREE_DIR = "$ENV{HOME}/.get/tree";
