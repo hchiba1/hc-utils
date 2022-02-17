@@ -223,25 +223,15 @@ sub format_list {
     # for my $line (@all) {
     for my $line (@upper_file, @upper_dir, @lower_dir, @others, @lower_file) {
         if ($line =~ /^(.*?) +(\d+) +(\S+) +(\S+) +(\d+)( +.*)/) {
-            my $perm = $1;
-            my $num = $2;
-            my $group = $3;
-            my $user = $4;
-            my $size = $5;
-            my $name = $6;
-            my $f1_len = length($num);
-            my $f2_len = length(format_size($size));
-            my $group_len = length($group);
-            my $user_len = length($user);
-            my $f1_len_diff = $f1_len_max - $f1_len;
-            my $f2_len_diff = $f2_len_max - $f2_len;
-            my $group_len_diff = $group_len_max - $group_len;
-            my $user_len_diff = $user_len_max - $user_len;
-            my $padding1 = " " x $f1_len_diff;
-            my $padding2 = " " x $f2_len_diff;
-            $group .= " " x $group_len_diff . " ";
-            $user .= " " x $user_len_diff . " ";
-            $result .= $perm . " " . $padding1  . $num . " " . $group . $user . $padding2 . format_size($size) . $name . "\n";
+            my ($perm, $num, $group, $user, $size, $name) = ($1, $2, $3, $4, $5, $6);
+            $size = format_size($size);
+            $group .= " " x ($group_len_max - length($group));
+            $user .= " " x ($user_len_max - length($user));
+            my $pad1 = " " x ($f1_len_max - length($num));
+            my $pad2 = " " x ($f2_len_max - length($size));
+            $num = $pad1 . $num;
+            $size = $pad2 . $size;
+            $result .= "$perm $num $group $user  $size $name\n";
         }
     }
 
