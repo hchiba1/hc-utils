@@ -9,11 +9,12 @@ mv FILE FILE.YY-MM-DD
 -a: cp -a (mv by default)
 -d: debug (print without execution)
 -e EXT: add further extention
+-E EXT: replace extention
 -f: force backup
 ";
 
 my %OPT;
-getopts('ade:f', \%OPT);
+getopts('ade:E:f', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -45,6 +46,9 @@ for my $file (@ARGV) {
     }
 
     my $new_name = sprintf("$file.%04d-%02d-%02d", $year, $month, $day);
+    if ($OPT{E}) {
+        $new_name = "$file$OPT{E}";
+    }
     if ($OPT{e}) {
         $new_name .= $OPT{e};
     }
