@@ -9,10 +9,11 @@ mv FILE FILE.YY-MM-DD
 -a: cp -a (mv by default)
 -d: debug (print without execution)
 -e EXT: add further extention
+-f: force backup
 ";
 
 my %OPT;
-getopts('ade:', \%OPT);
+getopts('ade:f', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -47,12 +48,18 @@ for my $file (@ARGV) {
     if ($OPT{e}) {
         $new_name .= $OPT{e};
     }
-    
+    if (! $OPT{f}) {
+        if (-e $new_name) {
+            print STDERR "Destination exists: $new_name\n";
+            next;
+        }
+    }
+
     my $command_line = "mv $file $new_name";
     if ($OPT{a}) {
         $command_line = "cp -a $file $new_name";
     }
-    print "$command_line\n";
+    print "> $command_line\n";
     if (!$OPT{d}) {
         my $ret = system($command_line);
         $ret = $ret >> 8;
