@@ -20,6 +20,11 @@ if (!@ARGV) {
 }
 
 for my $file (@ARGV) {
+    if (! -e $file) {
+        print STDERR "No such file or directory: $file\n";
+        next;
+    }
+
     if ($file =~ /\/$/) {
         $file =~ s/\/$//;
     }
