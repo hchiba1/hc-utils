@@ -7,12 +7,13 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [-d] FILE.nim
 -d: debug
+-r: release
 path/to/src/hoge.nim -> path/to/bin/linux/hoge
 path/to/hoge.nim -> path/to/linux/hoge
 ";
 
 my %OPT;
-getopts('d', \%OPT);
+getopts('dr', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -21,6 +22,11 @@ if (!@ARGV) {
 my $NIM_FILE = shift @ARGV;
 
 my $BINARY_FILE = get_binary_file_path($NIM_FILE);
+my $RELEASE_OPT = "";
+if ($OPT{r}) {
+    $BINARY_FILE .= ".release";
+    $RELEASE_OPT = "-d:release";
+}
 
 if ($OPT{d}) {
     system "nim compile --run --out:$BINARY_FILE $NIM_FILE";
