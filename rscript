@@ -9,13 +9,12 @@ my $VERSION = "$PROGRAM 1.1.11 (2013/02/05)\n";
 my $R_EXECUTABLE   = "R";
 my @R_COMMAND_LINE = ($R_EXECUTABLE, "-q", "--vanilla", "--args");
 my $CONVERT        = "convert";
-$CONVERT = "";
 my $SOURCE         = "Rplots.pdf";
 my $TARGET         = "Rplots.png";
 # my $VIEW           = "/usr/bin/ggv";
-my $VIEW = "xdg-open";
-my $IMAGE          = "Rplots.pdf";
 # my $VIEW           = "display";
+my $VIEW           = "xdg-open";
+my $IMAGE          = "Rplots.pdf";
 # my $IMAGE          = "Rplots.png";
 if (`uname` eq "Darwin\n") { # Mac OS X
     $CONVERT        = "";
