@@ -26,7 +26,7 @@ for my $dir (@dir) {
 @dir = ("etc");
 for my $dir (@dir) {
     chdir("$ENV{HOME}/$dir") || die "$dir: $!";
-    my @repo = ('hc-utils', 'hc-elisp', 'virt-utils', 'pg-utils', 'spang', 'sparqling-mode', 'spang.py', 'sparqlet');
+    my @repo = ('hc-utils', 'hc-elisp', 'virt-utils', 'pg-utils', 'spang', 'sparqling-mode', 'sparqlet');
     for my $repo (@repo) {
         print_status($repo, "$dir/$repo");
     }
