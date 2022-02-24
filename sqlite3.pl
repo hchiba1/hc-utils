@@ -9,7 +9,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('Tt:s:C:q', \%OPT);
+getopts('lTt:s:C:q', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -18,7 +18,7 @@ if (!@ARGV) {
 my ($DB) = @ARGV;
 
 my $QUERY;
-if ($OPT{T}) {
+if ($OPT{T} || $OPT{l}) {
     $QUERY = 'select name from sqlite_master where type="table"';
 } elsif ($OPT{C}) {
     $QUERY = "select count(*) from $OPT{C}";
