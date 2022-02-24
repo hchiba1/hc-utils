@@ -39,7 +39,15 @@ my $dbh = DBI->connect("dbi:SQLite:dbname=$DB");
 my $sth = $dbh->prepare($QUERY);
 $sth->execute();
 while (my @row = $sth->fetchrow_array) {
-    print join("\t", @row), "\n";
+    print $row[0];
+    for (my $i=1; $i<@row; $i++) {
+        if (defined $row[$i]) {
+            print "\t", $row[$i];
+        } else {
+            print "\t";
+        }
+    }
+    print "\n";
 }
 $sth->finish;
 $dbh->disconnect;
