@@ -9,7 +9,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('Tt:C:q', \%OPT);
+getopts('Tt:s:C:q', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -24,6 +24,8 @@ if ($OPT{T}) {
     $QUERY = "select count(*) from $OPT{C}";
 } elsif ($OPT{t}) {
     $QUERY = "select * from $OPT{t} limit 10";
+} elsif ($OPT{s}) {
+    $QUERY = "select * from $OPT{s}";
 } else {
     $QUERY = <STDIN>;
 }
