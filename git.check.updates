@@ -43,13 +43,15 @@ sub print_repo {
 
     my $status = `cd $repo; git status -s`;
     if ($status) {
-        print "### $dir/$repo\n";
         my $out = parse_status($status);
         if ($OPT{d}) {
             $out .= get_diff($repo);
         }
-        print $out;
-        print "\n";
+        if ($out) {
+            print "### $dir/$repo\n";
+            print $out;
+            print "\n";
+        }
     }
 }
 
