@@ -63,9 +63,9 @@ if ($OPT{s} || $OPT{n}) {
     while (<PIPE>) {
         chomp;
         if (/^Testing from (.+)\.\.\.$/) {
-            printf " %s", $1;
+            printf " %s\n", $1;
         } elsif (/^Hosted by (.*): (\S+ \S+)$/) {
-            print "\n$1\n";
+            print "$1\n";
             printf "Ping     %10s\n", $2;
         } elsif (/^Download: (\S+ \S+)$/) {
             printf "Download %14s\n", $1;
@@ -73,7 +73,6 @@ if ($OPT{s} || $OPT{n}) {
             printf "Upload   %14s\n", $1;
         }
     }
-    close(PIPE) || die;
 }
 
 ################################################################################
