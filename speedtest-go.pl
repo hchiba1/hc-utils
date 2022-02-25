@@ -55,13 +55,23 @@ if ($OPT{s} || $OPT{n}) {
 } else {
     my $date_time = `date '+%F %T'`;
     chomp($date_time);
-    print "$date_time\n";
-    my @line = `$COMMAND $SERVER_OPT`;
-    my ($download, $upload, $ping) = extract_speed(@line);
-
-    printf "Ping     %10s\n", $ping;
-    printf "Upload   %14s\n", $upload;
-    printf "Download %14s\n", $download;
+    print "$date_time";
+    open(PIPE, "$COMMAND $SERVER_OPT|") || die;
+    while (<PIPE>) {
+        chomp;
+        if (/^Testing From IP: (.+)$/) {
+            printf " %s\n", $1;
+        } elsif (/^Target Server: (\S+)\s+(.*)$/) {
+            print "$2 $1\n";
+        } elsif (/^Latency: (.*)ms$/) {
+            my $ping = sprintf("%.3f ms", $1);
+            printf "Ping     %10s\n", $ping;
+        } elsif (/^Download: (\S+ \S+)$/) {
+            printf "Download %14s\n", $1;
+        } elsif (/^Upload: (\S+ \S+)$/) {
+            printf "Upload   %14s\n", $1;
+        }
+    }
 }
 
 ################################################################################
