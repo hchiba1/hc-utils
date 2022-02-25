@@ -83,7 +83,6 @@ sub extract_speed {
     my ($ping, $download, $upload);
     for my $line (@line) {
         if ($line =~ /^Latency: (.*)ms/) {
-            # $ping = "$1 ms";
             $ping = sprintf("%.3f ms", $1)
         } elsif ($line =~ /^Download: (.*)/) {
             $download = $1;
@@ -102,11 +101,9 @@ sub extract_server {
     my @list = `$COMMAND --list 2>&1`;
 
     my $number = "";
-    my $description = "";
     for my $server (@list) {
-        if ($server =~ /^\[(\d+)\] +\S+ (.*$pattern.*)/i) {
+        if ($server =~ /^\[(\d+)\] +\S+ .*$pattern.*/i) {
             $number = $1;
-            $description = $2;
             last;
         }
     }
