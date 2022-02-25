@@ -8,33 +8,19 @@ my $USAGE=
 -l: list servers
 -s SEC: sleep SEC seconds until next trial
 -n N: try N trials
--v: verbose
--V: verbose (original command output)
--o 'ARGS': original command with ARGS
--q: print command and quit
 -H: do not print header line
 ";
 
 $|=1; # buffering: off
 
 my %OPT;
-getopts('ls:n:vVo:qH', \%OPT);
+getopts('ls:n:H', \%OPT);
 
 my $SCRIPT = "$ENV{HOME}/github/sivel/speedtest-cli/speedtest.py";
 if (!-f $SCRIPT) {
     system "github -prh sivel/speedtest-cli";
 }
 my $COMMAND = "python3 $SCRIPT";
-
-if ($OPT{q}) {
-    print "$COMMAND\n";
-    exit;
-}
-
-if ($OPT{o}) {
-    system "$COMMAND $OPT{o}";
-    exit;
-}
 
 ### Selecte server ###
 if ($OPT{l}) {
@@ -53,10 +39,6 @@ if (!@ARGV) {
     my $server_id;
     ($server_id, $SERVER_DESC) = extract_server($ARGV[0]);
     $SERVER_OPT = "--server $server_id";
-}
-
-if ($OPT{v}) {
-    print "$SERVER_DESC\n";
 }
 
 ### Exec ###
