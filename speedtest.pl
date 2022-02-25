@@ -42,13 +42,17 @@ if ($OPT{l}) {
     exit;
 }
 
-my ($SERVER_ID, $SERVER_DESC);
+my $SERVER_OPT = "";
+my $SERVER_DESC = "";
 if (!@ARGV) {
-    ($SERVER_ID, $SERVER_DESC) = extract_server("OPEN Project");
 } elsif ($ARGV[0] =~ /^\d+$/) {
-    ($SERVER_ID, $SERVER_DESC) = select_server($ARGV[0]);
+    my $server_id;
+    ($server_id, $SERVER_DESC) = select_server($ARGV[0]);
+    $SERVER_OPT = "--server $server_id";
 } else {
-    ($SERVER_ID, $SERVER_DESC) = extract_server($ARGV[0]);
+    my $server_id;
+    ($server_id, $SERVER_DESC) = extract_server($ARGV[0]);
+    $SERVER_OPT = "--server $server_id";
 }
 
 if ($OPT{v}) {
@@ -57,7 +61,7 @@ if ($OPT{v}) {
 
 ### Exec ###
 if ($OPT{V}) {
-    system "$COMMAND --server $SERVER_ID";
+    system "$COMMAND $SERVER_OPT";
 } elsif ($OPT{s} || $OPT{n}) {
     my $sleep_seconds = $OPT{s} || 0;
     if (!$OPT{H}) {
@@ -67,7 +71,7 @@ if ($OPT{V}) {
     while (1) {
         my $date_time = `date '+%F %T'`;
         chomp($date_time);
-        my @line = `$COMMAND --server $SERVER_ID --simple`;
+        my @line = `$COMMAND $SERVER_OPT --simple`;
         printf "$date_time  %-11s%-15s%s\n", extract_speed(@line);
         $count ++;
         if ($OPT{n} and $OPT{n} == $count) {
@@ -79,7 +83,7 @@ if ($OPT{V}) {
     my $date_time = `date '+%F %T'`;
     chomp($date_time);
     print "$date_time\n";
-    my @line = `$COMMAND --server $SERVER_ID --simple`;
+    my @line = `$COMMAND $SERVER_OPT --simple`;
     my ($ping, $download, $upload) = extract_speed(@line);
 
     printf "Ping     %10s\n", $ping;
