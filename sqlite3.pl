@@ -9,7 +9,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('lTt:s:L:C:q', \%OPT);
+getopts('lTs:L:C:q', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -22,8 +22,6 @@ if ($OPT{T} || $OPT{l}) {
     $QUERY = "select name from sqlite_master where type='table'";
 } elsif ($OPT{C}) {
     $QUERY = "select count(*) from $OPT{C}";
-} elsif ($OPT{t}) {
-    $QUERY = "select * from $OPT{t} limit 10";
 } elsif ($OPT{s}) {
     $QUERY = "select * from $OPT{s}";
 } else {
