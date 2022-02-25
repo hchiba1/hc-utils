@@ -44,7 +44,7 @@ sub print_repo {
     my $status = `cd $repo; git status -s`;
     if ($status) {
         print "### $dir/$repo\n";
-        print "$status";
+        print_status($status);
         if ($OPT{d}) {
             my $diff = `cd $repo; git diff --color`;
             if ($diff) {
@@ -53,5 +53,15 @@ sub print_repo {
             }
         }
         print "\n";
+    }
+}
+
+sub print_status {
+    my ($lines) = @_;
+
+    chomp($lines);
+    my @line = split("\n", $lines);
+    for my $line (@line) {
+        print "$line\n";
     }
 }
