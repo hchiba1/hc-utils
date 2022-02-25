@@ -24,6 +24,8 @@ if ($OPT{T} || $OPT{l}) {
     $QUERY = "select count(*) from $OPT{C}";
 } elsif ($OPT{s}) {
     $QUERY = "select * from $OPT{s}";
+} elsif (-t) {
+    $QUERY = "select name from sqlite_master where type='table'";
 } else {
     $QUERY = <STDIN>;
 }
