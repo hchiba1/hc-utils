@@ -20,10 +20,11 @@ $|=1; # buffering: off
 my %OPT;
 getopts('ls:n:vVo:qH', \%OPT);
 
-my $COMMAND = "$ENV{HOME}/github/sivel/speedtest-cli/speedtest.py";
-if (!-f $COMMAND) {
+my $SCRIPT = "$ENV{HOME}/github/sivel/speedtest-cli/speedtest.py";
+if (!-f $SCRIPT) {
     system "github -prh sivel/speedtest-cli";
 }
+my $COMMAND = "python2 $SCRIPT";
 
 if ($OPT{q}) {
     print "$COMMAND\n";
