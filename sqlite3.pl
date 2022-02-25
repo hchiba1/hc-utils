@@ -9,7 +9,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('lTt:s:C:q', \%OPT);
+getopts('lTt:s:L:C:q', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -28,6 +28,9 @@ if ($OPT{T} || $OPT{l}) {
     $QUERY = "select * from $OPT{s}";
 } else {
     $QUERY = <STDIN>;
+}
+if ($OPT{L}) {
+    $QUERY .= " limit $OPT{L}";
 }
 
 if ($OPT{q}) {
