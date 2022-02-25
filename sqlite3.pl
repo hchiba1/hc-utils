@@ -19,7 +19,7 @@ my ($DB) = @ARGV;
 
 my $QUERY;
 if ($OPT{T} || $OPT{l}) {
-    $QUERY = 'select name from sqlite_master where type="table"';
+    $QUERY = "select name from sqlite_master where type='table'";
 } elsif ($OPT{C}) {
     $QUERY = "select count(*) from $OPT{C}";
 } elsif ($OPT{t}) {
