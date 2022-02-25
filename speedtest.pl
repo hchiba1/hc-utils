@@ -60,19 +60,17 @@ if ($OPT{v}) {
 }
 
 ### Exec ###
-if ($OPT{V}) {
-    system "$COMMAND $SERVER_OPT";
-} elsif ($OPT{s} || $OPT{n}) {
+if ($OPT{s} || $OPT{n}) {
     my $sleep_seconds = $OPT{s} || 0;
     if (!$OPT{H}) {
-        printf "Date       Time      %-11s%-15sUpload\n", "Ping", "Download";
+        printf "Date       Time      %-11s%-15s%-15s%-29sServer\n", "Ping", "Download", "Upload", "IP";
     }
     my $count = 0;
     while (1) {
         my $date_time = `date '+%F %T'`;
         chomp($date_time);
-        my @line = `$COMMAND $SERVER_OPT --simple`;
-        printf "$date_time  %-11s%-15s%s\n", extract_speed(@line);
+        my @line = `$COMMAND $SERVER_OPT`;
+        printf "$date_time  %-11s%-15s%-15s%s  %s\n", extract_speed(@line);
         $count ++;
         if ($OPT{n} and $OPT{n} == $count) {
             last;
@@ -82,13 +80,22 @@ if ($OPT{V}) {
 } else {
     my $date_time = `date '+%F %T'`;
     chomp($date_time);
-    print "$date_time\n";
-    my @line = `$COMMAND $SERVER_OPT --simple`;
-    my ($ping, $download, $upload) = extract_speed(@line);
-
-    printf "Ping     %10s\n", $ping;
-    printf "Download %14s\n", $download;
-    printf "Upload   %14s\n", $upload;
+    print "$date_time";
+    open(PIPE, "$COMMAND $SERVER_OPT|") || die;
+    while (<PIPE>) {
+        chomp;
+        if (/^Testing from (.+)\.\.\.$/) {
+            printf " %s", $1;
+        } elsif (/^Hosted by (.*): (\S+ \S+)$/) {
+            print "\n$1\n";
+            printf "Ping     %10s\n", $2;
+        } elsif (/^Download: (\S+ \S+)$/) {
+            printf "Download %14s\n", $1;
+        } elsif (/^Upload: (\S+ \S+)$/) {
+            printf "Upload   %14s\n", $1;
+        }
+    }
+    close(PIPE) || die;
 }
 
 ################################################################################
@@ -97,10 +104,13 @@ if ($OPT{V}) {
 sub extract_speed {
     my @line = @_;
     
-    my ($ping, $download, $upload);
+    my ($ping, $download, $upload, $ip, $server);
     for my $line (@line) {
-        if ($line =~ /^Ping: (.*)/) {
-            $ping = $1;
+        if ($line =~ /^Hosted by (.*): (\S+ \S+)$/) {
+            $server = $1;
+            $ping = $2;
+        } elsif ($line =~ /^Testing from (.+)\.\.\.$/) {
+            $ip = $1;
         } elsif ($line =~ /^Download: (.*)/) {
             $download = $1;
         } elsif ($line =~ /^Upload: (.*)/) {
@@ -108,7 +118,7 @@ sub extract_speed {
         }
     }
 
-    return ($ping, $download, $upload);
+    return ($ping, $download, $upload, $ip, $server);
 }
 
 sub extract_server {
