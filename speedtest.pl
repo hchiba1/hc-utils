@@ -24,7 +24,7 @@ my $SCRIPT = "$ENV{HOME}/github/sivel/speedtest-cli/speedtest.py";
 if (!-f $SCRIPT) {
     system "github -prh sivel/speedtest-cli";
 }
-my $COMMAND = "python2 $SCRIPT";
+my $COMMAND = "python3 $SCRIPT";
 
 if ($OPT{q}) {
     print "$COMMAND\n";
