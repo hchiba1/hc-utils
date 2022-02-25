@@ -44,7 +44,8 @@ sub print_repo {
     my $status = `cd $repo; git status -s`;
     if ($status) {
         print "### $dir/$repo\n";
-        print_status($status);
+        my $out = parse_status($status);
+        print $out;
         if ($OPT{d}) {
             print_diff($repo);
         }
@@ -52,17 +53,20 @@ sub print_repo {
     }
 }
 
-sub print_status {
+sub parse_status {
     my ($lines) = @_;
 
+    my $out = "";
     chomp($lines);
     my @line = split("\n", $lines);
     for my $line (@line) {
         if ($OPT{s} && $line =~ /^\?\? /) {
             next;
         }
-        print "$line\n";
+        $out .= "$line\n";
     }
+
+    return $out;
 }
 
 sub print_diff {
