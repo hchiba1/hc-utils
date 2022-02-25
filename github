@@ -7,9 +7,9 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [OPTIONS] user/repos
 -l: list local repositories
--h: make ~/github directory
--d DIR: make directory
--r: make subdirectory of username
+-h: use under HOME/github/
+-d DIR: make DIR and use under it
+-r: make username/repo
 -p: preserve time stamp
 
 ex.)
