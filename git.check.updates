@@ -8,7 +8,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('ad', \%OPT);
+getopts('asd', \%OPT);
 
 my @dir = `ls $ENV{HOME}/github/`;
 chomp(@dir);
@@ -58,6 +58,9 @@ sub print_status {
     chomp($lines);
     my @line = split("\n", $lines);
     for my $line (@line) {
+        if ($OPT{s} && $line =~ /^\?\? /) {
+            next;
+        }
         print "$line\n";
     }
 }
