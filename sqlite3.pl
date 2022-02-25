@@ -9,7 +9,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('lF:L:C:q', \%OPT);
+getopts('ls:F:L:C:q', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -20,6 +20,9 @@ my ($DB) = @ARGV;
 my $QUERY;
 if ($OPT{l}) {
     $QUERY = "select name from sqlite_master where type='table'";
+} elsif ($OPT{s}) {
+    system "echo '.schema $OPT{s}' | sqlite3 $DB";
+    exit;
 } elsif ($OPT{C}) {
     $QUERY = "select count(*) from $OPT{C}";
 } elsif ($OPT{F}) {
