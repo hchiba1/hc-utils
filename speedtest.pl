@@ -29,16 +29,12 @@ if ($OPT{l}) {
 }
 
 my $SERVER_OPT = "";
-my $SERVER_DESC = "";
-if (!@ARGV) {
-} elsif ($ARGV[0] =~ /^\d+$/) {
-    my $server_id;
-    ($server_id, $SERVER_DESC) = select_server($ARGV[0]);
-    $SERVER_OPT = "--server $server_id";
-} else {
-    my $server_id;
-    ($server_id, $SERVER_DESC) = extract_server($ARGV[0]);
-    $SERVER_OPT = "--server $server_id";
+if (@ARGV) {
+    if ($ARGV[0] =~ /^\d+$/) {
+        $SERVER_OPT = "--server $ARGV[0]";
+    } else {
+        $SERVER_OPT = "--server " . extract_server($ARGV[0]);
+    }
 }
 
 ### Exec ###
@@ -109,38 +105,16 @@ sub extract_server {
     my @list = `$COMMAND --list 2>&1`;
 
     my $number = "";
-    my $description = "";
     for my $server (@list) {
-        if ($server =~ /^\s*(\d+)\) +(.*$pattern.*)/i) {
+        if ($server =~ /^\s*(\d+)\) +.*$pattern.*/i) {
             $number = $1;
-            $description = $2;
             last;
         }
     }
 
     if ($number !~ /^\d+$/) {
-        die;
+        die "ERROR: cannot find sever matching '$pattern'\n";
     }
 
-    return ($number, $description);
-}
-
-sub select_server {
-    my ($number) = @_;
-    
-    my @list = `$COMMAND --list 2>&1`;
-
-    my $description = "";
-    for my $server (@list) {
-        if ($server =~ /^\s*$number\) +(\S.*)/) {
-            $description = $1;
-            last;
-        }
-    }
-
-    if ($description eq "") {
-        die;
-    }
-
-    return ($number, $description);
+    return $number;
 }
