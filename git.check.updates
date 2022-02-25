@@ -45,10 +45,10 @@ sub print_repo {
     if ($status) {
         print "### $dir/$repo\n";
         my $out = parse_status($status);
-        print $out;
         if ($OPT{d}) {
-            print_diff($repo);
+            $out .= get_diff($repo);
         }
+        print $out;
         print "\n";
     }
 }
@@ -69,12 +69,14 @@ sub parse_status {
     return $out;
 }
 
-sub print_diff {
+sub get_diff {
     my ($repo) = @_;
 
+    my $out = "";
     my $diff = `cd $repo; git diff --color`;
     if ($diff) {
-        print "\n";
-        print "$diff";
+        $out = "\n" . $diff;
     }
+
+    return $out;
 }
