@@ -8,7 +8,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('d', \%OPT);
+getopts('ad', \%OPT);
 
 my @dir = `ls $ENV{HOME}/github/`;
 chomp(@dir);
@@ -23,12 +23,14 @@ for my $dir (@dir) {
     }
 }
 
-@dir = ("etc");
-for my $dir (@dir) {
-    chdir("$ENV{HOME}/$dir") || die "$dir: $!";
-    my @repo = ('hc-utils', 'hc-elisp', 'virt-utils', 'pg-utils', 'spang', 'sparqling-mode', 'sparqlet');
-    for my $repo (@repo) {
-        print_status($repo, "$dir/$repo");
+if ($OPT{a}) {
+    @dir = ("etc");
+    for my $dir (@dir) {
+        chdir("$ENV{HOME}/$dir") || die "$dir: $!";
+        my @repo = ('hc-utils', 'hc-elisp', 'virt-utils', 'pg-utils', 'spang', 'sparqling-mode', 'sparqlet');
+        for my $repo (@repo) {
+            print_status($repo, "$dir/$repo");
+        }
     }
 }
 
