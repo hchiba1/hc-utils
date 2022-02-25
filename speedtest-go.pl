@@ -8,23 +8,15 @@ my $USAGE=
 -l: list servers
 -s SEC: sleep SEC seconds until next trial
 -n N: try N trials
--v: verbose
--V: verbose (original command output)
--o 'ARGS': original command with ARGS
 -H: do not print header line
 ";
 
 $|=1; # buffering: off
 
 my %OPT;
-getopts('ls:n:vVo:H', \%OPT);
+getopts('ls:n:H', \%OPT);
 
 my $COMMAND = "speedtest-go";
-
-if ($OPT{o}) {
-    system "$COMMAND $OPT{o}";
-    exit;
-}
 
 ### Selecte server ###
 if ($OPT{l}) {
@@ -32,23 +24,17 @@ if ($OPT{l}) {
     exit;
 }
 
-my ($SERVER_ID, $SERVER_DESC);
-if (!@ARGV) {
-    ($SERVER_ID, $SERVER_DESC) = extract_server("OPEN Project");
-} elsif ($ARGV[0] =~ /^\d+$/) {
-    ($SERVER_ID, $SERVER_DESC) = select_server($ARGV[0]);
-} else {
-    ($SERVER_ID, $SERVER_DESC) = extract_server($ARGV[0]);
-}
-
-if ($OPT{v}) {
-    print "$SERVER_DESC\n";
+my $SERVER_OPT = "";
+if (@ARGV) {
+    if ($ARGV[0] =~ /^\d+$/) {
+        $SERVER_OPT = "--server $ARGV[0]";
+    } else {
+        $SERVER_OPT = "--server " . extract_server($ARGV[0]);
+    }
 }
 
 ### Exec ###
-if ($OPT{V}) {
-    system "$COMMAND --server $SERVER_ID";
-} elsif ($OPT{s} || $OPT{n}) {
+if ($OPT{s} || $OPT{n}) {
     my $sleep_seconds = $OPT{s} || 0;
     if (!$OPT{H}) {
         # printf "Date       Time     %11s %14s %14s\n", "Ping", "Download", "Upload";
@@ -58,7 +44,7 @@ if ($OPT{V}) {
     while (1) {
         my $date_time = `date '+%F %T'`;
         chomp($date_time);
-        my @line = `$COMMAND --server $SERVER_ID`;
+        my @line = `$COMMAND $SERVER_OPT`;
         printf "$date_time %14s %14s %10s\n", extract_speed(@line);
         $count ++;
         if ($OPT{n} and $OPT{n} == $count) {
@@ -70,7 +56,7 @@ if ($OPT{V}) {
     my $date_time = `date '+%F %T'`;
     chomp($date_time);
     print "$date_time\n";
-    my @line = `$COMMAND --server $SERVER_ID`;
+    my @line = `$COMMAND $SERVER_OPT`;
     my ($download, $upload, $ping) = extract_speed(@line);
 
     printf "Ping     %10s\n", $ping;
@@ -119,25 +105,5 @@ sub extract_server {
         die @list;
     }
 
-    return ($number, $description);
-}
-
-sub select_server {
-    my ($number) = @_;
-    
-    my @list = `$COMMAND --list 2>&1`;
-
-    my $description = "";
-    for my $server (@list) {
-        if ($server =~ /^\[$number\] +\S+ (.*)/) {
-            $description = $1;
-            last;
-        }
-    }
-
-    if ($description eq "") {
-        die @list;
-    }
-
-    return ($number, $description);
+    return $number;
 }
