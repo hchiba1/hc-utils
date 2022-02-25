@@ -19,7 +19,7 @@ for my $dir (@dir) {
     chomp(@repo);
 
     for my $repo (@repo) {
-        print_status($repo, "$dir/$repo");
+        print_repo($dir, $repo);
     }
 }
 
@@ -29,7 +29,7 @@ if ($OPT{a}) {
         chdir("$ENV{HOME}/$dir") || die "$dir: $!";
         my @repo = ('hc-utils', 'hc-elisp', 'virt-utils', 'pg-utils', 'spang', 'sparqling-mode', 'sparqlet');
         for my $repo (@repo) {
-            print_status($repo, "$dir/$repo");
+            print_repo($dir, $repo);
         }
     }
 }
@@ -38,12 +38,12 @@ if ($OPT{a}) {
 ### Function ###################################################################
 ################################################################################
 
-sub print_status {
-    my ($repo, $repo_path) = @_;
+sub print_repo {
+    my ($dir, $repo) = @_;
 
     my $status = `cd $repo; git status -s`;
     if ($status) {
-        print "### ${repo_path}\n";
+        print "### $dir/$repo\n";
         print "$status";
         if ($OPT{d}) {
             my $diff = `cd $repo; git diff --color`;
