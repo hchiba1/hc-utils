@@ -1,0 +1,41 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('c', \%OPT);
+
+STDOUT->autoflush;
+
+my @dir = `ls $ENV{HOME}/github/`;
+chomp(@dir);
+
+for my $dir (@dir) {
+    chdir("$ENV{HOME}/github/$dir/") || die "$!";
+    my @repo = `ls`;
+    chomp(@repo);
+
+    for my $repo (@repo) {
+        print "### $dir/$repo\n";
+        my $fetch = "";
+        if ($OPT{c}) {
+        } else {
+            $fetch = "git fetch;";
+        }
+        my $diff_exit_code = system("cd $repo; ${fetch} git diff HEAD..FETCH_HEAD --exit-code --quiet") >> 8;
+        if ($diff_exit_code) {
+            my @line = `cd $repo; git status -sb`;
+            for my $line (@line) {
+                if ($line =~ /^##/) {
+                    print $line;
+                }
+            }
+        }
+        print "\n";
+    }
+}
