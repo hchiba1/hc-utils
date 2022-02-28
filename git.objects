@@ -1,0 +1,43 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('tpd', \%OPT);
+
+if ($OPT{t} || $OPT{p}) {
+    my @line = `ls -lrt --full-time .git/objects/??/* | sed 's/\\.[0-9]\\+ \\S\\+//' | sed 's|.git/objects/||' | sed 's|/||'`;
+    chomp(@line);
+    for my $line (@line) {
+        my @f = split(/\s+/, $line);
+        my $object = $f[7];
+        if (!$OPT{t}) {
+            print "===============================================================================================\n";
+        }
+        print "$line";
+        my $type = `git cat-file -t $object`;
+        chomp($type);
+        if ($type eq "blob") {
+            print " [content]";
+        } elsif ($type eq "tree") {
+            print " [files]";
+        } elsif ($type eq "commit") {
+            print " [node]";
+        } else {
+            die;
+        }
+        print "\n";
+        if ($OPT{p}) {
+            my $cat = `git cat-file -p $object`;
+            print $cat;
+            print "\n";
+        }
+    }
+} else {
+    system "ls -lrt --full-time .git/objects/*/* | sed 's/\\.[0-9]\\+ \\S\\+//'";
+}
