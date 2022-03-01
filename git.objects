@@ -23,11 +23,11 @@ if ($OPT{t} || $OPT{p}) {
         my $type = `git cat-file -t $object`;
         chomp($type);
         if ($type eq "blob") {
-            print " [content]";
+            print " [file]";
         } elsif ($type eq "tree") {
-            print " [files]";
+            print " [directory]";
         } elsif ($type eq "commit") {
-            print " [node]";
+            print " [history]";
         } elsif ($type eq "tag") {
             print " [tag]";
         } else {
