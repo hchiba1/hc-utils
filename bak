@@ -8,14 +8,14 @@ my $USAGE=
 mv FILE FILE.YY-MM-DD
 -c: cp -a (mv by default)
 -d: debug (print without execution)
--e EXT: add further extention
+-a ext: add further extention
 -E EXT: replace extention
 -f: force backup
 -x: preserve extension automatically
 ";
 
 my %OPT;
-getopts('cde:E:fx', \%OPT);
+getopts('cda:E:fx', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -50,8 +50,8 @@ for my $file (@ARGV) {
     if ($OPT{E}) {
         $new_name = "$file$OPT{E}";
     }
-    if ($OPT{e}) {
-        $new_name .= $OPT{e};
+    if ($OPT{a}) {
+        $new_name .= $OPT{a};
     }
     if ($OPT{x}) {
         if ($file =~ /^(\w.*)\.(\w+)$/) {
