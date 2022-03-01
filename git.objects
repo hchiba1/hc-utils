@@ -28,8 +28,9 @@ if ($OPT{t} || $OPT{p}) {
             print " [files]";
         } elsif ($type eq "commit") {
             print " [node]";
+        } elsif ($type eq "tag") {
+            print " [tag]";
         } else {
-            die;
         }
         print "\n";
         if ($OPT{p}) {
