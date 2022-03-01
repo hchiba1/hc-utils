@@ -11,11 +11,11 @@ mv FILE FILE.YY-MM-DD
 -e EXT: add further extention
 -E EXT: replace extention
 -f: force backup
--x EXT: preserver extension
+-x: preserve extension automatically
 ";
 
 my %OPT;
-getopts('ade:E:fx:', \%OPT);
+getopts('ade:E:fx', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -54,10 +54,9 @@ for my $file (@ARGV) {
         $new_name .= $OPT{e};
     }
     if ($OPT{x}) {
-        if ($file =~ /\.$OPT{x}$/) {
-            my $prefix = $file;
-            $prefix =~ s/\.$OPT{x}$//;
-            $new_name = sprintf("$prefix.%04d-%02d-%02d.$OPT{x}", $year, $month, $day);
+        if ($file =~ /^(\w.*)\.(\w+)$/) {
+            my ($prefix, $suffix) = ($1, $2);
+            $new_name = sprintf("$prefix.%04d-%02d-%02d.$suffix", $year, $month, $day);
         }
     }
     if (! $OPT{f}) {
