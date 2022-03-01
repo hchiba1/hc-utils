@@ -6,7 +6,7 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM FILE...
 mv FILE FILE.YY-MM-DD
--a: cp -a (mv by default)
+-c: cp -a (mv by default)
 -d: debug (print without execution)
 -e EXT: add further extention
 -E EXT: replace extention
@@ -15,7 +15,7 @@ mv FILE FILE.YY-MM-DD
 ";
 
 my %OPT;
-getopts('ade:E:fx', \%OPT);
+getopts('cde:E:fx', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -67,7 +67,7 @@ for my $file (@ARGV) {
     }
 
     my $command_line = "mv $file $new_name";
-    if ($OPT{a}) {
+    if ($OPT{c}) {
         $command_line = "cp -a $file $new_name";
     }
     print "> $command_line\n";
