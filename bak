@@ -6,16 +6,16 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM FILE...
 mv FILE FILE.YY-MM-DD
--c: cp -a (mv by default)
--d: debug (print without execution)
+-c: cp -a FILE FILE.YY-MM-DD
 -e .ext: use specified extention
 -a EXT: add further extention
--f: force backup
 -x: preserve extension automatically
+-f: force backup
+-d: debug (print without execution)
 ";
 
 my %OPT;
-getopts('cde:a:fx', \%OPT);
+getopts('ce:a:xfd', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
