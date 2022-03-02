@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+import sys
+import zlib
+import hashlib
+
+lines = sys.stdin.readlines()
+data = ''.join(lines)
+data_len = len(data)
+encoded = f'blob {data_len}\0{data}'.encode('utf-8')
+encoded_compressed = zlib.compress(encoded, level=1)
+
+print(hashlib.sha1(encoded).hexdigest(), file=sys.stderr)
+print(bytes.hex(encoded_compressed), file=sys.stderr)
+sys.stdout.buffer.write(encoded_compressed)
