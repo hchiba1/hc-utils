@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+import sys
+import zlib
+import re
+
+encoded_compressed = sys.stdin.buffer.read()
+encoded = zlib.decompress(encoded_compressed)
+data = encoded.decode()
+
+r = re.compile('^(.+)\0(.*)')
+match = r.search(data)
+data = re.sub('^.+\0', '', data)
+
+print(match.group(1), file=sys.stderr)
+sys.stdout.write(data)
