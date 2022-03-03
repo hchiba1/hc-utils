@@ -7,7 +7,8 @@ encoded_compressed = sys.stdin.buffer.read()
 encoded = zlib.decompress(encoded_compressed)
 data = encoded.decode()
 
-r = re.compile(r'^(.+)\0(.*)'m)
-match = r.search(data)
-print(match.group(1), file=sys.stderr)
-sys.stdout.write(match.group(2))
+head = re.compile('^(.+)\0.*').search(data).group(1)
+data = re.sub('^.+\0', '', data)
+
+print(head, file=sys.stderr)
+sys.stdout.write(data)
