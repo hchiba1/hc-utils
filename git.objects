@@ -21,25 +21,32 @@ for my $line (@line) {
         my ($prefix, $object) = ($1, $2);
         $object =~ s|^.git/objects/||;
         $object =~ s|/||;
+        if ($OPT{o}) {
+            $line = "$prefix$object";
+        }
+        my $add_len = 0;
+        if (length($line) > 100) {
+            $add_len = length($line) - 100;
+        }
         my $type = "";
         if ($OPT{t} || $OPT{p}) {
             $type = get_type($object);
         }
         if ($OPT{p}) {
             my $pad = '=' x (9 - length($type));
-            printf "===[ $type ]$pad=========================================================================================\n";
+            print "===[ $type ]$pad====================================================================================";
+            print "=" x $add_len;
+            print "\n";
         }
-        if ($OPT{o}) {
-            print "$prefix$object";
-        } else {
-            print "$line";
-        }
+        print "$line";
         if ($OPT{t} && !$OPT{p}) {
             print " [$type]";
         }
         print "\n";
         if ($OPT{p}) {
-            printf "=========================================================================================================\n";
+            print "====================================================================================================";
+            print "=" x $add_len;
+            print "\n";
             system "git cat-file -p $object";
             if ($type eq "file") {
                 print "\n";
