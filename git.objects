@@ -34,8 +34,7 @@ for my $line (@line) {
         }
         print "\n";
         if ($OPT{p}) {
-            my $cat = `git cat-file -p $object`;
-            print $cat;
+            system "git cat-file -p $object";
             print "\n";
         }
     }
