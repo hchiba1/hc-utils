@@ -24,31 +24,24 @@ for my $line (@line) {
         if ($OPT{o}) {
             $line = "$prefix$object";
         }
-        my $add_len = 0;
-        if (length($line) > 90) {
-            $add_len = length($line) - 90;
-        }
-        my $type = "";
-        if ($OPT{t} || $OPT{p}) {
-            $type = get_type($object);
-        }
         if ($OPT{p}) {
-            print "==========================================================================================";
-            print "=" x $add_len;
-            print "\n";
-        }
-        print "$line";
-        if ($OPT{t} && !$OPT{p}) {
-            print " [$type]";
-        }
-        print "\n";
-        if ($OPT{p}) {
+            my $type = get_type($object);
             my $pad = '=' x (9 - length($type));
-            print "=== $type $pad============================================================================";
-            print "=" x $add_len;
-            print "\n";
+            my $add_len = 0;
+            if (length($line) > 90) {
+                $add_len = length($line) - 90;
+            }
+            print "==========================================================================================", "=" x $add_len, "\n";
+            print "$line\n";
+            print "=== $type $pad============================================================================", "=" x $add_len, "\n";
             system "git cat-file -p $object";
             print "\n";
+        } else {
+            if ($OPT{t}) {
+                my $type = get_type($object);
+                $line .= " [$type]";
+            }
+            print "$line\n";
         }
     }
 }
