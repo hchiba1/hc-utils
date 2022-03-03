@@ -30,18 +30,7 @@ for my $line (@line) {
             print "$line";
         }
         if ($OPT{t}) {
-            my $type = `git cat-file -t $object`;
-            chomp($type);
-            if ($type eq "blob") {
-                print " [file]";
-            } elsif ($type eq "tree") {
-                print " [directory]";
-            } elsif ($type eq "commit") {
-                print " [history]";
-            } elsif ($type eq "tag") {
-                print " [tag]";
-            } else {
-            }
+            print get_type($object);
         }
         print "\n";
         if ($OPT{p}) {
@@ -49,5 +38,23 @@ for my $line (@line) {
             print $cat;
             print "\n";
         }
+    }
+}
+
+sub get_type {
+    my ($object) = @_;
+
+    my $type = `git cat-file -t $object`;
+    chomp($type);
+    if ($type eq "blob") {
+        return " [file]";
+    } elsif ($type eq "tree") {
+        return " [directory]";
+    } elsif ($type eq "commit") {
+        return " [history]";
+    } elsif ($type eq "tag") {
+        return " [tag]";
+    } else {
+        return "";
     }
 }
