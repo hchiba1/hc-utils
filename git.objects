@@ -36,11 +36,10 @@ for my $line (@line) {
             print "=== $type $pad============================================================================", "=" x $add_len, "\n";
             system "git cat-file -p $object";
             print "\n";
+        } elsif ($OPT{t}) {
+            my $type = get_type($object);
+            print "$line [$type]\n";
         } else {
-            if ($OPT{t}) {
-                my $type = get_type($object);
-                $line .= " [$type]";
-            }
             print "$line\n";
         }
     }
