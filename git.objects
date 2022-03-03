@@ -21,21 +21,29 @@ for my $line (@line) {
         my ($prefix, $object) = ($1, $2);
         $object =~ s|^.git/objects/||;
         $object =~ s|/||;
+        my $type = "";
+        if ($OPT{t} || $OPT{p}) {
+            $type = get_type($object);
+        }
         if ($OPT{p}) {
-            print "===============================================================================================\n";
+            my $pad = '=' x (9 - length($type));
+            printf "===[ $type ]$pad=========================================================================================\n";
         }
         if ($OPT{o}) {
             print "$prefix$object";
         } else {
             print "$line";
         }
-        if ($OPT{t}) {
-            print get_type($object);
+        if ($OPT{t} && !$OPT{p}) {
+            print " [$type]";
         }
         print "\n";
         if ($OPT{p}) {
+            printf "=========================================================================================================\n";
             system "git cat-file -p $object";
-            print "\n";
+            if ($type eq "file") {
+                print "\n";
+            }
         }
     }
 }
@@ -45,14 +53,15 @@ sub get_type {
 
     my $type = `git cat-file -t $object`;
     chomp($type);
+
     if ($type eq "blob") {
-        return " [file]";
+        return "file";
     } elsif ($type eq "tree") {
-        return " [directory]";
+        return "directory";
     } elsif ($type eq "commit") {
-        return " [history]";
+        return "history";
     } elsif ($type eq "tag") {
-        return " [tag]";
+        return "tag";
     } else {
         return "";
     }
