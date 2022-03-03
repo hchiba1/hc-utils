@@ -5,7 +5,9 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
--o: object IDs
+-o: show object IDs
+-t: show type
+-p: show file conent
 ";
 
 my %OPT;
