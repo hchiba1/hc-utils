@@ -5,32 +5,41 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
+-o: object IDs
 ";
 
 my %OPT;
-getopts('tpd', \%OPT);
+getopts('otpd', \%OPT);
 
-if ($OPT{t} || $OPT{p}) {
-    my @line = `ls -lrt --full-time .git/objects/??/* | sed 's/\\.[0-9]\\+ \\S\\+//' | sed 's|.git/objects/||' | sed 's|/||'`;
-    chomp(@line);
-    for my $line (@line) {
-        my @f = split(/\s+/, $line);
-        my $object = $f[7];
-        if (!$OPT{t}) {
+my @line = `ls -lrt --full-time .git/objects/*/* | sed 's/\\.[0-9]\\+ \\S\\+//'`;
+chomp(@line);
+
+for my $line (@line) {
+    if ($line =~ /^(.+)(.git\/objects\/\w\w\/.*)$/) {
+        my ($prefix, $object) = ($1, $2);
+        $object =~ s|^.git/objects/||;
+        $object =~ s|/||;
+        if ($OPT{p}) {
             print "===============================================================================================\n";
         }
-        print "$line";
-        my $type = `git cat-file -t $object`;
-        chomp($type);
-        if ($type eq "blob") {
-            print " [file]";
-        } elsif ($type eq "tree") {
-            print " [directory]";
-        } elsif ($type eq "commit") {
-            print " [history]";
-        } elsif ($type eq "tag") {
-            print " [tag]";
+        if ($OPT{o}) {
+            print "$prefix$object";
         } else {
+            print "$line";
+        }
+        if ($OPT{t}) {
+            my $type = `git cat-file -t $object`;
+            chomp($type);
+            if ($type eq "blob") {
+                print " [file]";
+            } elsif ($type eq "tree") {
+                print " [directory]";
+            } elsif ($type eq "commit") {
+                print " [history]";
+            } elsif ($type eq "tag") {
+                print " [tag]";
+            } else {
+            }
         }
         print "\n";
         if ($OPT{p}) {
@@ -39,6 +48,4 @@ if ($OPT{t} || $OPT{p}) {
             print "\n";
         }
     }
-} else {
-    system "ls -lrt --full-time .git/objects/*/* | sed 's/\\.[0-9]\\+ \\S\\+//'";
 }
