@@ -11,7 +11,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('otpd', \%OPT);
+getopts('otp', \%OPT);
 
 my @line = `ls -lrt --full-time .git/objects/*/* | sed 's/\\.[0-9]\\+ \\S\\+//'`;
 chomp(@line);
