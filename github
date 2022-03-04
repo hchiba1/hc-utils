@@ -8,7 +8,6 @@ my $USAGE=
 "Usage: $PROGRAM [OPTIONS] user/repos
 -l: list local repositories
 -h: use under HOME/github/
--d DIR: make DIR and use under it
 -r: make username/repo
 -p: preserve time stamp
 
@@ -22,7 +21,7 @@ Dependency:
 my $SCRIPT_REVERT = "git.revert.timestamp.pl";
 
 my %OPT;
-getopts('prd:hl', \%OPT);
+getopts('prhl', \%OPT);
 
 if ($OPT{l}) {
     system "cd ~/github; ls -d1 */*";
@@ -39,12 +38,6 @@ if ($OPT{h}) {
     my $dir = "$ENV{HOME}/github";
     if (!-e $dir) {
         mkdir($dir) || die "ERROR: $dir: $!";
-    }
-    chdir($dir)
-} elsif ($OPT{d}) {
-    my $dir = $OPT{d};
-    if (!-e $dir) {
-        mkdir($dir) || die;
     }
     chdir($dir)
 }
