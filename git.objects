@@ -6,12 +6,13 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
 -o: show object IDs
+-O: show object IDs only
 -t: show type
 -p: show file conent
 ";
 
 my %OPT;
-getopts('otp', \%OPT);
+getopts('oOtp', \%OPT);
 
 my @line = `ls -lrt --full-time .git/objects/*/* | sed 's/\\.[0-9]\\+ \\S\\+//'`;
 chomp(@line);
@@ -23,6 +24,9 @@ for my $line (@line) {
         $object =~ s|/||;
         if ($OPT{o}) {
             $line = "$prefix$object";
+        }
+        if ($OPT{O}) {
+            $line = "$object";
         }
         if ($OPT{p}) {
             my $type = get_type($object);
