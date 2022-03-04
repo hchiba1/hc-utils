@@ -1,0 +1,32 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('', \%OPT);
+
+my @line = `ls -lrtdF --full-time .git/HEAD .git/FETCH_HEAD .git/ORIG_HEAD .git/refs/*/* .git/refs/*/*/* 2>/dev/null | sed 's/\\.[0-9]\\+ \\S\\+//'`;
+chomp(@line);
+
+for my $line (@line) {
+    if ($line =~ /\/$/ || $line =~ /tags/) {
+        next;
+    }
+    my @f = split(/\s+/, $line);
+    my $contents = `cat $f[7]`;
+    chomp($contents);
+    if ($contents eq "") {
+        print "$line\n";
+    } else {
+        my @content = split("\n", $contents);
+        print "$line";
+        for my $c (@content) {
+            print "\t$c\n";
+        }
+    }
+}
