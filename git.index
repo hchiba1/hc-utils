@@ -1,0 +1,41 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('', \%OPT);
+
+system "ls -l --full-time .git/index | sed 's/\\.[0-9]\\+ \\S\\+//'";
+
+my @line = `git ls-files --stage`;
+chomp(@line);
+for my $line (@line) {
+    my ($prefix, $file) = split("\t", $line);
+    my ($permisson, $object, $num) = split(/\s+/, $prefix);
+    my $type = get_type($object);
+    print "$permisson $num [$type] $file\t$object\n";
+}
+
+sub get_type {
+    my ($object) = @_;
+
+    my $type = `git cat-file -t $object`;
+    chomp($type);
+
+    if ($type eq "blob") {
+        return "file";
+    } elsif ($type eq "tree") {
+        return "directory";
+    } elsif ($type eq "commit") {
+        return "history";
+    } elsif ($type eq "tag") {
+        return "tag";
+    } else {
+        return "";
+    }
+}
