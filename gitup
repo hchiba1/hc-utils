@@ -29,7 +29,7 @@ if (@ARGV == 1) {
 
 if (!$OPT{c}) {
     print "[fetch]\n";
-    system "git fetch origin";
+    system "git fetch";
     my $diff_exit_code = system("git diff HEAD..FETCH_HEAD --exit-code --quiet") >> 8;
     if ($diff_exit_code) {
         print "\n";
