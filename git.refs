@@ -28,7 +28,7 @@ for my $line (@line) {
             $object =~ s|^.git/objects/||;
             $object =~ s|/||;
             my $type = get_type($object);
-            print "$prefix$object\t[$type]\n";
+            print "$prefix\[$type\]\t$object\n";
         }
     } else {
         my @content = split("\n", $contents);
