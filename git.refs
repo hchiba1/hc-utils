@@ -10,7 +10,7 @@ my $USAGE=
 my %OPT;
 getopts('', \%OPT);
 
-my @line = `ls -lrtdF --full-time .git/HEAD .git/FETCH_HEAD .git/ORIG_HEAD .git/refs/*/* .git/refs/*/*/* 2>/dev/null | sed 's/\\.[0-9]\\+ \\S\\+//'`;
+my @line = `ls -lrtdF --full-time .git/objects/*/* .git/HEAD .git/FETCH_HEAD .git/ORIG_HEAD .git/refs/*/* .git/refs/*/*/* 2>/dev/null | sed 's/\\.[0-9]\\+ \\S\\+//'`;
 chomp(@line);
 
 for my $line (@line) {
@@ -22,11 +22,38 @@ for my $line (@line) {
     chomp($contents);
     if ($contents eq "") {
         print "$line\n";
+    } elsif ($line =~ /objects/) {
+        if ($line =~ /^(.+)(.git\/objects\/\w\w\/.*)$/) {
+            my ($prefix, $object) = ($1, $2);
+            $object =~ s|^.git/objects/||;
+            $object =~ s|/||;
+            my $type = get_type($object);
+            print "$prefix$object\t[$type]\n";
+        }
     } else {
         my @content = split("\n", $contents);
         print "$line";
         for my $c (@content) {
             print "\t$c\n";
         }
+    }
+}
+
+sub get_type {
+    my ($object) = @_;
+
+    my $type = `git cat-file -t $object`;
+    chomp($type);
+
+    if ($type eq "blob") {
+        return "file";
+    } elsif ($type eq "tree") {
+        return "directory";
+    } elsif ($type eq "commit") {
+        return "history";
+    } elsif ($type eq "tag") {
+        return "tag";
+    } else {
+        return "";
     }
 }
