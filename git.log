@@ -13,11 +13,13 @@ my $FORMAT = "%h%x09[%ai]%d %s%x09<%ae>";
 
 my $CONVERT = 0;
 for (my $i=0; $i<@ARGV; $i++) {
-    if ($ARGV[$i] eq "-s") {
+    if ($ARGV[$i] eq "-s" or $ARGV[$i] eq "-S") {
+        if ($ARGV[$i] eq "-s") {
+            $CONVERT = 1;
+        }
         splice(@ARGV, $i, 1);
         unshift(@ARGV, "--stat");
         $FORMAT = "(%h)%x09[%ai]%d %s%x09<%ae>";
-        $CONVERT = 1;
         last;
     }
 }
