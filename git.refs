@@ -21,12 +21,14 @@ my @file = (
 my @line = `ls -lrtdF --full-time @file 2>/dev/null | sed 's/\\.[0-9]\\+ \\S\\+//'`;
 chomp(@line);
 
+my %TAGS = ();
 for my $line (@line) {
     if ($line =~ /\/$/ || $line =~ /tags/) {
         next;
     }
     my @f = split(/\s+/, $line);
-    my $contents = `cat $f[7]`;
+    my $file = $f[7];
+    my $contents = `cat $file`;
     chomp($contents);
     if ($contents eq "") {
         print "$line\n";
@@ -35,6 +37,9 @@ for my $line (@line) {
         print "$line";
         for my $c (@content) {
             print "\t$c\n";
+        }
+        if (@content == 1) {
+            add_tag($content[0], $file);
         }
     }
 }
@@ -51,7 +56,13 @@ for (my $i=$start; $i<@object; $i++) {
         $object =~ s|^.git/objects/||;
         $object =~ s|/||;
         my $type = get_type($object);
-        print "$prefix\[$type\]\t$object\n";
+        print "$prefix\[$type\]\t$object";
+        if ($TAGS{$object}) {
+            my @tag = @{$TAGS{$object}};
+            my $tags = join(", ", @tag);
+            print " ($tags)";
+        }
+        print "\n";
     }
 }
 
@@ -74,5 +85,16 @@ sub get_type {
         return "tag";
     } else {
         return "";
+    }
+}
+
+sub add_tag {
+    my ($hash, $tag) = @_;
+
+    $tag =~ s/.*\///;
+    if ($TAGS{$hash}) {
+        push @{$TAGS{$hash}}, $tag;
+    } else {
+        $TAGS{$hash} = [$tag];
     }
 }
