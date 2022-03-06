@@ -11,7 +11,6 @@ my %OPT;
 getopts('', \%OPT);
 
 my @file = (
-    ".git/objects/*/*",
     ".git/COMMIT_EDITMSG",
     ".git/HEAD",
     ".git/FETCH_HEAD",
@@ -31,20 +30,28 @@ for my $line (@line) {
     chomp($contents);
     if ($contents eq "") {
         print "$line\n";
-    } elsif ($line =~ /objects/) {
-        if ($line =~ /^(.+)(.git\/objects\/\w\w\/.*)$/) {
-            my ($prefix, $object) = ($1, $2);
-            $object =~ s|^.git/objects/||;
-            $object =~ s|/||;
-            my $type = get_type($object);
-            print "$prefix\[$type\]\t$object\n";
-        }
     } else {
         my @content = split("\n", $contents);
         print "$line";
         for my $c (@content) {
             print "\t$c\n";
         }
+    }
+}
+
+my @object = `ls -lrtdF --full-time .git/objects/*/* 2>/dev/null | sed 's/\\.[0-9]\\+ \\S\\+//'`;
+chomp(@object);
+my $start = 0;
+if (@ARGV && $ARGV[0] =~ /^\d+$/ && @object > $ARGV[0]) {
+    $start = @object - $ARGV[0];
+}
+for (my $i=$start; $i<@object; $i++) {
+    if ($object[$i] =~ /^(.+)(.git\/objects\/\w\w\/.*)$/) {
+        my ($prefix, $object) = ($1, $2);
+        $object =~ s|^.git/objects/||;
+        $object =~ s|/||;
+        my $type = get_type($object);
+        print "$prefix\[$type\]\t$object\n";
     }
 }
 
