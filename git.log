@@ -63,13 +63,9 @@ sub print_current_or_next {
         return 1;
     }
 
-    if (
-        # $next =~ /^([*|\/ \\]+)\d+ files? changed, /
-        $next =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /
-        ) {
+    if ($next =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /) {
         if ($current =~ /^([*|\/ \\]+)\w?.*$/) {
-            my $current_bar_only = $1;
-            print $current_bar_only, "\n";
+            print $1, "\n"; # print bar only
             return 1;
         } else {
             die;
@@ -90,8 +86,6 @@ sub print_current_or_next {
             print $current, "\n";
             return 1;
         }
-    } else {
-        die $current;
     }
 
     die $current;
