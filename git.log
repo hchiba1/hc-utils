@@ -78,8 +78,8 @@ sub print_current_or_next {
             $current_bar .= " ";
         }
         if ($next =~ /^[*|\/ \\]+(.*)$/) {
-            my $next_comment = $1;
-            print $current_bar, $next_comment, "\n";
+            # print next comment
+            print $current_bar, $1, "\n";
             return 2;
         } else {
             # print $current, "\n";
