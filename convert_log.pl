@@ -11,17 +11,20 @@ my %OPT;
 getopts('', \%OPT);
 
 !@ARGV && -t and die $USAGE;
-my $current = "";
-my $ret = 0;
+my $CURRENT = "";
+my $PRINTED = 0;
 while (<>) {
     chomp;
-    $ret = print_current_or_next($current, $_);
-    $current = $_;
+    $PRINTED = print_current_or_next($CURRENT, $_);
+    $CURRENT = $_;
 }
-if ($ret == 0) {
-    print $current;
+if ($PRINTED == 0) {
+    print $CURRENT;
 }
 
+################################################################################
+### Functions ##################################################################
+################################################################################
 sub print_current_or_next {
     my ($current, $next) = @_;
 
