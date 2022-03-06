@@ -82,8 +82,9 @@ sub print_current_or_next {
             print $current_bar, $next_comment, "\n";
             return 2;
         } else {
-            print $current, "\n";
-            return 1;
+            # print $current, "\n";
+            # return 1;
+            die;
         }
     }
 
