@@ -1,0 +1,27 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+-n: show full names
+";
+
+###         hash [date](desc)subj <mail>name
+my $FORMAT = "%h%x09[%ai]%d %s%x09<%ae>";
+if (@ARGV) {
+    for my $arg (@ARGV) {
+        if ($arg eq "--stat") {
+            $FORMAT = "(%h)%x09[%ai]%d %s%x09<%ae>";
+        }
+    }
+    for (my $i=0; $i<@ARGV; $i++) {
+        if ($ARGV[$i] eq "-n") {
+            splice(@ARGV, $i, 1);
+            $FORMAT .= " %an";
+            last;
+        }
+    }
+}
+
+system "git log --graph --format='$FORMAT' @ARGV"
