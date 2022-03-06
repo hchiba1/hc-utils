@@ -9,7 +9,8 @@ my $USAGE=
 ";
 
 ###         hash [date](desc)subj <mail>name
-my $FORMAT = "%h%x09[%ai]%d %s%x09<%ae>";
+# my $FORMAT = "%h%x09[%ai]%d %s%x09<%ae>";
+my $FORMAT = "%h%x09[%ai] %s%x09<%ae>%d";
 
 my $CONVERT = 0;
 for (my $i=0; $i<@ARGV; $i++) {
