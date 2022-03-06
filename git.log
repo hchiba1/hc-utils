@@ -34,12 +34,12 @@ if ($CONVERT) {
     my @line = `git log --graph --format='$FORMAT' @ARGV`;
     chomp(@line);
     my $current = "";
-    my $ret = 0;
+    my $printed = 0;
     for my $line (@line) {
-        $ret = print_current_or_next($current, $line);
+        $printed = print_current_or_next($current, $line);
         $current = $line;
     }
-    if ($ret == 0) {
+    if ($printed == 0) {
         print $current;
     }
 } else {
