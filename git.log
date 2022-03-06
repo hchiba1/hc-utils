@@ -74,13 +74,12 @@ sub print_current_or_next {
 
     if ($current =~ /^([*|\/ \\]+)(.*)$/) {
         my ($current_bar, $current_comment) = ($1, $2);
+        if ($current_comment eq "") {
+            $current_bar .= " ";
+        }
         if ($next =~ /^[*|\/ \\]+(.*)$/) {
             my $next_comment = $1;
-            if ($current_comment eq "") {
-                print "$current_bar $next_comment\n";
-            } else {
-                print $current_bar, $next_comment, "\n";
-            }
+            print $current_bar, $next_comment, "\n";
             return 2;
         } else {
             print $current, "\n";
