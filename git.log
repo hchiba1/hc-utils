@@ -5,14 +5,18 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
 -n: show full names
+-s: --stat option
 ";
 
 ###         hash [date](desc)subj <mail>name
 my $FORMAT = "%h%x09[%ai]%d %s%x09<%ae>";
 
-for my $arg (@ARGV) {
-    if ($arg eq "--stat") {
+for (my $i=0; $i<@ARGV; $i++) {
+    if ($ARGV[$i] eq "-s") {
+        splice(@ARGV, $i, 1);
+        unshift(@ARGV, "--stat");
         $FORMAT = "(%h)%x09[%ai]%d %s%x09<%ae>";
+        last;
     }
 }
 
