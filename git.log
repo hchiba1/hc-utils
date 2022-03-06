@@ -10,17 +10,27 @@ my $USAGE=
 
 ###         hash [date](desc)subj <mail>name
 # my $FORMAT = "%h%x09[%ai]%d %s%x09<%ae>";
-my $FORMAT = "%h%x09[%ai] %s%x09<%ae>%d";
+my $FORMAT = "%h%x09[%ai] %s%x09<%ae>";
 
-my $CONVERT = 0;
+my $OPT_CONVERT = 0;
 for (my $i=0; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq "-s" or $ARGV[$i] eq "-S") {
         if ($ARGV[$i] eq "-s") {
-            $CONVERT = 1;
+            $OPT_CONVERT = 1;
         }
         splice(@ARGV, $i, 1);
         unshift(@ARGV, "--stat");
-        $FORMAT = "(%h)%x09[%ai]%d %s%x09<%ae>";
+        # $FORMAT = "(%h)%x09[%ai]%d %s%x09<%ae>";
+        $FORMAT = "(%h)%x09[%ai] %s%x09<%ae>";
+        last;
+    }
+}
+
+my $OPT_COLUMN = 0;
+for (my $i=0; $i<@ARGV; $i++) {
+    if ($ARGV[$i] eq "-c") {
+        splice(@ARGV, $i, 1);
+        $OPT_COLUMN = 1;
         last;
     }
 }
@@ -33,8 +43,13 @@ for (my $i=0; $i<@ARGV; $i++) {
     }
 }
 
-if ($CONVERT) {
-    system "git log --graph --format='$FORMAT' @ARGV | convert_log.pl"
-} else {
-    system "git log --graph --format='$FORMAT' @ARGV"
+$FORMAT .= "%d";
+
+my $COMMAND = "git log --graph --format='$FORMAT' @ARGV";
+if ($OPT_COLUMN) {
+    $COMMAND .= " | align_column";
 }
+if ($OPT_CONVERT) {
+    $COMMAND .= " | convert_log.pl";
+}
+system "$COMMAND"
