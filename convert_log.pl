@@ -29,20 +29,14 @@ sub print_current_or_next {
         return 0;
     }
 
-    if ($current =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /
-        # or $next =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /
-        ) {
+    if ($current =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /) {
         print $current, "\n";
         return 1;
     }
 
-    if (
-        # $next =~ /^([*|\/ \\]+)\d+ files? changed, /
-        $next =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /
-        ) {
+    if ($next =~ /^([*|\/ \\]+) \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /) {
         if ($current =~ /^([*|\/ \\]+)\w?.*$/) {
-            my $current_bar_only = $1;
-            print $current_bar_only, "\n";
+            print $1, "\n"; # print bar only
             return 1;
         } else {
             die;
@@ -51,20 +45,18 @@ sub print_current_or_next {
 
     if ($current =~ /^([*|\/ \\]+)(.*)$/) {
         my ($current_bar, $current_comment) = ($1, $2);
+        if ($current_comment eq "") {
+            $current_bar .= " ";
+        }
         if ($next =~ /^[*|\/ \\]+(.*)$/) {
-            my $next_comment = $1;
-            if ($current_comment eq "") {
-                print "$current_bar $next_comment\n";
-            } else {
-                print $current_bar, $next_comment, "\n";
-            }
+            # print next comment
+            print $current_bar, $1, "\n";
             return 2;
         } else {
-            print $current, "\n";
-            return 1;
+            # print $current, "\n";
+            # return 1;
+            die;
         }
-    } else {
-        die $current;
     }
 
     die $current;
