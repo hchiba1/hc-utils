@@ -42,7 +42,7 @@ chomp(@line);
 
 my %REFS = ();
 for my $line (@line) {
-    if ($line =~ /\/$/ || $line =~ /refs/) {
+    if ($line =~ /\/$/ || $line =~ /tags/) {
         next;
     }
     my @f = split(/\s+/, $line);
