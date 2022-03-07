@@ -40,9 +40,9 @@ my @file = (
 my @line = `ls -lrtdF --full-time @file 2>/dev/null | sed 's/\\.[0-9]\\+ \\S\\+//'`;
 chomp(@line);
 
-my %TAGS = ();
+my %REFS = ();
 for my $line (@line) {
-    if ($line =~ /\/$/ || $line =~ /tags/) {
+    if ($line =~ /\/$/ || $line =~ /refs/) {
         next;
     }
     my @f = split(/\s+/, $line);
@@ -56,7 +56,7 @@ for my $line (@line) {
         print $fh "$line";
         if (@content == 1) {
             print $fh "\t$content[0]";
-            add_tag($content[0], $file);
+            add_ref($content[0], $file);
         }
         print $fh "\n";
     }
@@ -75,10 +75,10 @@ for (my $i=$start; $i<@object; $i++) {
         $object =~ s|/||;
         my $type = get_type($object);
         print $fh "$prefix\[$type\]\t$object";
-        if ($TAGS{$object}) {
-            my @tag = @{$TAGS{$object}};
-            my $tags = join(", ", @tag);
-            print $fh " ($tags)";
+        if ($REFS{$object}) {
+            my @ref = @{$REFS{$object}};
+            my $refs = join(", ", @ref);
+            print $fh " ($refs)";
         }
         if ($NAME{$object}) {
             my $name = $NAME{$object};
@@ -120,13 +120,13 @@ sub get_type {
     }
 }
 
-sub add_tag {
-    my ($hash, $tag) = @_;
+sub add_ref {
+    my ($hash, $ref) = @_;
 
-    $tag =~ s/.*\///;
-    if ($TAGS{$hash}) {
-        push @{$TAGS{$hash}}, $tag;
+    $ref =~ s/.*\///;
+    if ($REFS{$hash}) {
+        push @{$REFS{$hash}}, $ref;
     } else {
-        $TAGS{$hash} = [$tag];
+        $REFS{$hash} = [$ref];
     }
 }
