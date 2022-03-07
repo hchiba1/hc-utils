@@ -10,6 +10,11 @@ my $USAGE=
 my %OPT;
 getopts('', \%OPT);
 
+my $N;
+if (@ARGV && $ARGV[0] =~ /^\d+$/) {
+    $N = $ARGV[0];
+}
+
 my @file = (
     ".git/logs/HEAD",
     ".git/logs/refs/*/*",
@@ -25,5 +30,10 @@ for my $line (@line) {
     print "\n";
     print "$line\n";
     my @f = split(/\s+/, $line);
-    system "tail -n 10 $f[7]";
+    my $file = $f[7];
+    if ($N) {
+        system "tail -n $N $file";
+    } else {
+        system "cat $file";
+    }
 }
