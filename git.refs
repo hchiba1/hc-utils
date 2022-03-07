@@ -11,9 +11,22 @@ my %OPT;
 getopts('s', \%OPT);
 
 my $fh;
-$fh = *STDOUT;
 if ($OPT{s}) {
-    open($fh, "| sort -k6,7 -k8.5,8.5 | align_column") || die;
+    open($fh, "| sort -k6,7 -k8.5,8.5") || die;
+} else {
+    $fh = *STDOUT;
+}
+
+my %NAME = ();
+my $index_out = "";
+my @index = `git ls-files --stage`;
+chomp(@index);
+for my $index (@index) {
+    my ($prefix, $file) = split("\t", $index);
+    my ($permisson, $object, $num) = split(/\s+/, $prefix);
+    my $type = get_type($object);
+    $index_out .= "$permisson $num [$type] $file\t$object\n";
+    $NAME{$object} = $file;
 }
 
 my @file = (
@@ -42,9 +55,10 @@ for my $line (@line) {
         my @content = split("\n", $contents);
         print $fh "$line";
         if (@content == 1) {
-            print $fh "\t$content[0]\n";
+            print $fh "\t$content[0]";
             add_tag($content[0], $file);
         }
+        print $fh "\n";
     }
 }
 
@@ -66,6 +80,10 @@ for (my $i=$start; $i<@object; $i++) {
             my $tags = join(", ", @tag);
             print $fh " ($tags)";
         }
+        if ($NAME{$object}) {
+            my $name = $NAME{$object};
+            print $fh " $name";
+        }
         print $fh "\n";
     }
 }
@@ -73,6 +91,10 @@ for (my $i=$start; $i<@object; $i++) {
 if ($OPT{s}) {
     close($fh);
 }
+
+print "\n";
+system "ls -l --full-time .git/index 2>/dev/null | sed 's/\\.[0-9]\\+ \\S\\+//'";
+print $index_out;
 
 ################################################################################
 ### Functions ##################################################################
