@@ -35,10 +35,8 @@ for my $line (@line) {
     } else {
         my @content = split("\n", $contents);
         print "$line";
-        for my $c (@content) {
-            print "\t$c\n";
-        }
         if (@content == 1) {
+            print "\t$content[0]\n";
             add_tag($content[0], $file);
         }
     }
