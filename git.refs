@@ -8,7 +8,13 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('', \%OPT);
+getopts('s', \%OPT);
+
+my $fh;
+$fh = *STDOUT;
+if ($OPT{s}) {
+    open($fh, "| sort -k6,7 -k8.5,8.5 | align_column") || die;
+}
 
 my @file = (
     ".git/COMMIT_EDITMSG",
@@ -31,12 +37,12 @@ for my $line (@line) {
     my $contents = `cat $file`;
     chomp($contents);
     if ($contents eq "") {
-        print "$line\n";
+        print $fh "$line\n";
     } else {
         my @content = split("\n", $contents);
-        print "$line";
+        print $fh "$line";
         if (@content == 1) {
-            print "\t$content[0]\n";
+            print $fh "\t$content[0]\n";
             add_tag($content[0], $file);
         }
     }
@@ -54,14 +60,18 @@ for (my $i=$start; $i<@object; $i++) {
         $object =~ s|^.git/objects/||;
         $object =~ s|/||;
         my $type = get_type($object);
-        print "$prefix\[$type\]\t$object";
+        print $fh "$prefix\[$type\]\t$object";
         if ($TAGS{$object}) {
             my @tag = @{$TAGS{$object}};
             my $tags = join(", ", @tag);
-            print " ($tags)";
+            print $fh " ($tags)";
         }
-        print "\n";
+        print $fh "\n";
     }
+}
+
+if ($OPT{s}) {
+    close($fh);
 }
 
 ################################################################################
