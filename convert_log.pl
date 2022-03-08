@@ -11,34 +11,34 @@ my %OPT;
 getopts('', \%OPT);
 
 !@ARGV && -t and die $USAGE;
-my $CURRENT = "";
+my $BUFFER = "";
 my $PRINTED = 0;
 while (<>) {
     chomp;
-    $PRINTED = print_current_or_next($CURRENT, $_);
-    $CURRENT = $_;
+    $PRINTED = print_buffer_or_next($BUFFER, $_);
+    $BUFFER = $_;
 }
 if ($PRINTED == 0) {
-    print $CURRENT;
+    print $BUFFER;
 }
 
 ################################################################################
 ### Functions ##################################################################
 ################################################################################
-sub print_current_or_next {
-    my ($current, $next) = @_;
+sub print_buffer_or_next {
+    my ($buffer, $next) = @_;
 
-    if ($current eq "") {
+    if ($buffer eq "") {
         return 0;
     }
 
-    if ($current =~ /^[*|\/ \\]+ \([0-9a-f]{7}\)\s+\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /) {
-        print $current, "\n";
+    if ($buffer =~ /^[*|\/ \\]+ \([0-9a-f]{7}\)\s+\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /) {
+        print $buffer, "\n";
         return 1;
     }
 
     if ($next =~ /^[*|\/ \\]+ \([0-9a-f]{7}\)\s+\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /) {
-        if ($current =~ /^([*|\/ \\]+)\w?.*$/) {
+        if ($buffer =~ /^([*|\/ \\]+)\w?.*$/) {
             print $1, "\n"; # print bar only
             return 1;
         } else {
@@ -46,21 +46,21 @@ sub print_current_or_next {
         }
     }
 
-    if ($current =~ /^([*|\/ \\]+)(.*)$/) {
-        my ($current_bar, $current_comment) = ($1, $2);
-        if ($current_comment eq "") {
-            $current_bar .= " ";
+    if ($buffer =~ /^([*|\/ \\]+)(.*)$/) {
+        my ($bar, $comment) = ($1, $2);
+        if ($comment eq "") {
+            $bar .= " ";
         }
         if ($next =~ /^[*|\/ \\]+(.*)$/) {
             # print next comment
-            print $current_bar, $1, "\n";
+            print $bar, $1, "\n";
             return 2;
         } else {
-            # print $current, "\n";
+            # print $buffer, "\n";
             # return 1;
             die;
         }
     }
 
-    die $current;
+    die $buffer;
 }
