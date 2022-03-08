@@ -73,12 +73,8 @@ for (my $i=$start; $i<@object; $i++) {
         $object =~ s|^.git/objects/||;
         $object =~ s|/||;
         my $type = get_type($object);
-        print $fh "$prefix\[$type\]\t$object";
-        print_refs($fh, $object);
-        if ($NAME{$object}) {
-            my $name = $NAME{$object};
-            print $fh " $name";
-        }
+        print $fh "$prefix\[$type\]\t";
+        print_object($fh, $object);
         print $fh "\n";
     }
 }
@@ -116,27 +112,28 @@ sub get_type {
 }
 
 sub add_ref {
-    my ($hash, $ref) = @_;
+    my ($content, $ref) = @_;
 
-    if ($hash =~ /ref: refs\/heads\/(\S+)/) {
+    if ($content =~ /ref: refs\/heads\/(\S+)/) {
         my $branch = $1;
         $HEAD{$branch} = 1;
     }
 
     $ref =~ s/.*\///;
-    if (!$CHECK_REFS{$hash}{$ref}) {
-        if ($REFS{$hash}) {
-            push @{$REFS{$hash}}, $ref;
+    if (!$CHECK_REFS{$content}{$ref}) {
+        if ($REFS{$content}) {
+            push @{$REFS{$content}}, $ref;
         } else {
-            $REFS{$hash} = [$ref];
+            $REFS{$content} = [$ref];
         }
-        $CHECK_REFS{$hash}{$ref} = 1;
+        $CHECK_REFS{$content}{$ref} = 1;
     }
 }
 
-sub print_refs {
+sub print_object {
     my ($fh, $object) = @_;
 
+    print $fh "$object";
     if ($REFS{$object}) {
         my @ref = @{$REFS{$object}};
         my $refs = join(", ", @ref);
@@ -146,5 +143,9 @@ sub print_refs {
                 print $fh " <- HEAD";
             }
         }
+    }
+    if ($NAME{$object}) {
+        my $name = $NAME{$object};
+        print $fh " $name";
     }
 }
