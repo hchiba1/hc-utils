@@ -26,7 +26,11 @@ for my $index (@index) {
     my ($permisson, $object, $num) = split(/\s+/, $prefix);
     my $type = get_type($object);
     $index_out .= "$permisson $num [$type] $file\t$object\n";
-    $NAME{$object} = "$file($num)";
+    if ($num) {
+        $NAME{$object} = "$file($num)";
+    } else {
+        $NAME{$object} = "$file";
+    }
 }
 
 my @file = (
