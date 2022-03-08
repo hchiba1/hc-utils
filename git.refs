@@ -140,7 +140,7 @@ sub print_refs {
     if ($REFS{$object}) {
         my @ref = @{$REFS{$object}};
         my $refs = join(", ", @ref);
-        print $fh " (<- $refs)";
+        print $fh " ($refs)";
         for my $ref (@ref) {
             if ($HEAD{$ref}) {
                 print $fh " <- HEAD";
