@@ -38,6 +38,8 @@ my @line = `ls -lrtdF --full-time @file 2>/dev/null | sed 's/\\.[0-9]\\+ \\S\\+/
 chomp(@line);
 
 my %REFS = ();
+my %CHECK_REFS = ();
+my %HEAD;
 for my $line (@line) {
     if ($line =~ /\/$/ || $line =~ /tags/) {
         next;
@@ -72,11 +74,7 @@ for (my $i=$start; $i<@object; $i++) {
         $object =~ s|/||;
         my $type = get_type($object);
         print $fh "$prefix\[$type\]\t$object";
-        if ($REFS{$object}) {
-            my @ref = @{$REFS{$object}};
-            my $refs = join(", ", @ref);
-            print $fh " (<- $refs)";
-        }
+        print_refs($fh, $object);
         if ($NAME{$object}) {
             my $name = $NAME{$object};
             print $fh " $name";
@@ -120,10 +118,33 @@ sub get_type {
 sub add_ref {
     my ($hash, $ref) = @_;
 
+    if ($hash =~ /ref: refs\/heads\/(\S+)/) {
+        my $branch = $1;
+        $HEAD{$branch} = 1;
+    }
+
     $ref =~ s/.*\///;
-    if ($REFS{$hash}) {
-        push @{$REFS{$hash}}, $ref;
-    } else {
-        $REFS{$hash} = [$ref];
+    if (!$CHECK_REFS{$hash}{$ref}) {
+        if ($REFS{$hash}) {
+            push @{$REFS{$hash}}, $ref;
+        } else {
+            $REFS{$hash} = [$ref];
+        }
+        $CHECK_REFS{$hash}{$ref} = 1;
+    }
+}
+
+sub print_refs {
+    my ($fh, $object) = @_;
+
+    if ($REFS{$object}) {
+        my @ref = @{$REFS{$object}};
+        my $refs = join(", ", @ref);
+        print $fh " (<- $refs)";
+        for my $ref (@ref) {
+            if ($HEAD{$ref}) {
+                print $fh " <- HEAD";
+            }
+        }
     }
 }
