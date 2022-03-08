@@ -4,7 +4,7 @@ use File::Basename;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
--c: align column
+-t: align column
 -n: show full names
 -s: --stat option with conversion
 -S: --stat option original
@@ -28,11 +28,11 @@ for (my $i=0; $i<@ARGV; $i++) {
     }
 }
 
-my $OPT_COLUMN = 0;
+my $OPT_TAB = 0;
 for (my $i=0; $i<@ARGV; $i++) {
-    if ($ARGV[$i] eq "-c") {
+    if ($ARGV[$i] eq "-t") {
         splice(@ARGV, $i, 1);
-        $OPT_COLUMN = 1;
+        $OPT_TAB = 1;
         last;
     }
 }
@@ -48,10 +48,14 @@ for (my $i=0; $i<@ARGV; $i++) {
 $FORMAT .= "%d";
 
 my $COMMAND = "git log --graph --format='$FORMAT' @ARGV";
-if ($OPT_COLUMN) {
-    $COMMAND .= " | align_column";
-}
-if ($OPT_CONVERT) {
-    $COMMAND .= " | convert_log.pl";
+if ($OPT_CONVERT && $OPT_TAB) {
+    $COMMAND .= " | convert_log.pl -t | align_column";
+} else {
+    if ($OPT_TAB) {
+        $COMMAND .= " | align_column";
+    }
+    if ($OPT_CONVERT) {
+        $COMMAND .= " | convert_log.pl";
+    }
 }
 system "$COMMAND"
