@@ -8,7 +8,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('', \%OPT);
+getopts('t', \%OPT);
 
 !@ARGV && -t and die $USAGE;
 my $BUFFER = "";
@@ -32,12 +32,16 @@ sub print_buffer_or_next {
         return 0;
     }
 
-    if ($buffer =~ /^[*|\/ \\]+ \([0-9a-f]{7}\)\s+\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /) {
+    if ($buffer =~ /^[*|\/ \\]+ \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /) {
+        if ($OPT{t}) {
+            $buffer =~ s/\t/ /;
+            $buffer =~ s/] /]\t/;
+        }
         print $buffer, "\n";
         return 1;
     }
 
-    if ($next =~ /^[*|\/ \\]+ \([0-9a-f]{7}\)\s+\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /) {
+    if ($next =~ /^[*|\/ \\]+ \([0-9a-f]{7}\)\t\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \S{5}\] /) {
         if ($buffer =~ /^([*|\/ \\]+)\w?.*$/) {
             print $1, "\n"; # print bar only
             return 1;
@@ -52,8 +56,11 @@ sub print_buffer_or_next {
             $bar .= " ";
         }
         if ($next =~ /^[*|\/ \\]+(.*)$/) {
-            # print next comment
-            print $bar, $1, "\n";
+            my $next_comment = $1;
+            if ($OPT{t}) {
+                $next_comment =~ s/^/\t/;
+            }
+            print $bar, $next_comment, "\n";
             return 2;
         } else {
             # print $buffer, "\n";
