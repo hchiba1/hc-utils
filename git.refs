@@ -30,10 +30,7 @@ for my $index (@index) {
 }
 
 my @file = (
-    ".git/COMMIT_EDITMSG",
-    ".git/HEAD",
-    ".git/FETCH_HEAD",
-    ".git/ORIG_HEAD",
+    ".git/[A-Z]*",
     ".git/refs/*/*",
     ".git/refs/*/*/*"
     );
