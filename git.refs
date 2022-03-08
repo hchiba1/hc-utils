@@ -75,7 +75,7 @@ for (my $i=$start; $i<@object; $i++) {
         if ($REFS{$object}) {
             my @ref = @{$REFS{$object}};
             my $refs = join(", ", @ref);
-            print $fh " ($refs)";
+            print $fh " (<- $refs)";
         }
         if ($NAME{$object}) {
             my $name = $NAME{$object};
