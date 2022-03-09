@@ -15,7 +15,7 @@ my $USAGE=
 -D: show directory first
 -l: follow symbolic links
 -t: show time
--T: sort by time
+-r: sort by time
 -N N: limit file numbers
 -L L: limit levels
 -v: verbose
@@ -23,7 +23,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('hspugfdDltTN:L:vc', \%OPT);
+getopts('hspugfdDltrN:L:vc', \%OPT);
 
 my $OPTIONS = '-F';
 
@@ -60,7 +60,7 @@ if ($OPT{l}) {
 if ($OPT{t}) {
     $OPTIONS .= ' --timefmt "%Y-%m-%d %H:%M"';
 }
-if ($OPT{T}) {
+if ($OPT{r}) {
     $OPTIONS .= ' --timefmt "%Y-%m-%d %H:%M" -t';
 }
 
