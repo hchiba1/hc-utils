@@ -8,11 +8,11 @@ my $USAGE=
 -p: show permission info
 -u: show user info
 -g: show group info
--s: show file size
--h: show file size (human readable)
+-b: show file size (in bytes)
+-s: show file size (human readable)
 -f: show full info
--d: show only directory
--D: show directory first
+-D: show only directory
+-d: show directory first
 -l: follow symbolic links
 -t: show time
 -r: sort by time
@@ -23,7 +23,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('hspugfdDltrN:L:vc', \%OPT);
+getopts('pugbsfDdltrN:L:vc', \%OPT);
 
 my $OPTIONS = '-F';
 
@@ -36,20 +36,20 @@ if ($OPT{u}) {
 if ($OPT{g}) {
     $OPTIONS .= ' -pug';
 }
-if ($OPT{s}) {
+if ($OPT{b}) {
     $OPTIONS .= ' -s --du';
 }
-if ($OPT{h}) {
+if ($OPT{s}) {
     $OPTIONS .= ' -h --du';
 }
 if ($OPT{f}) {
     $OPTIONS .= ' -pugh --du';
 }
 
-if ($OPT{d}) {
+if ($OPT{D}) {
     $OPTIONS .= ' -d'
 }
-if ($OPT{D}) {
+if ($OPT{d}) {
     $OPTIONS .= ' --dirsfirst';
 }
 
