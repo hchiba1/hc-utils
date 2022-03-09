@@ -123,7 +123,10 @@ sub add_ref {
         $HEAD{$branch} = 1;
     }
 
-    $ref =~ s/.*\///;
+    $ref =~ s|\.git/refs/heads/||;
+    $ref =~ s|\.git/refs/remotes/||;
+    $ref =~ s|\.git/refs/remotes/||;
+    $ref =~ s|\.git/||;
     if (!$CHECK_REFS{$content}{$ref}) {
         if ($REFS{$content}) {
             push @{$REFS{$content}}, $ref;
