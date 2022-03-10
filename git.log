@@ -58,4 +58,5 @@ if ($OPT_CONVERT && $OPT_TAB) {
         $COMMAND .= " | convert_log.pl";
     }
 }
+print "### log ###\n";
 system "$COMMAND"
