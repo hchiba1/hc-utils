@@ -62,6 +62,10 @@ for my $line (@line) {
             $content =~ s/\t/    /g;
             print $fh "\t$content";
             add_ref($content[0], $file);
+        } else {
+            my $content = $content[0];
+            print $fh "\t\"$content\" ...";
+            add_ref($content[0], $file);
         }
         print $fh "\n";
     }
