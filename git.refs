@@ -58,7 +58,9 @@ for my $line (@line) {
         my @content = split("\n", $contents);
         print $fh "$line";
         if (@content == 1) {
-            print $fh "\t$content[0]";
+            my $content = $content[0];
+            $content =~ s/\t/    /g;
+            print $fh "\t$content";
             add_ref($content[0], $file);
         }
         print $fh "\n";
