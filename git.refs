@@ -74,7 +74,10 @@ for my $line (@LINE) {
         print $fh "$prefix\[$type\]\t";
         print_object($fh, $object);
         print $fh "\n";
-    } elsif ($line !~ /\/$/ && $line !~ /tags/ && $line !~ /objects/ && $line !~ /logs/) {
+    } elsif ($line =~ /^(.+).git\/objects\/pack\/pack-(.*)$/) {
+        my ($prefix, $object) = ($1, $2);
+        print $fh "$prefix\[pack\]\t$object\n";
+    } elsif ($line !~ /\/$/ && $line !~ /tags/ && $line !~ /logs/) {
         if ($line =~ /index/) {
             $INDEX = $line;
         } else {
