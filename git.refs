@@ -8,7 +8,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('st', \%OPT);
+getopts('stL:', \%OPT);
 
 my $fh;
 if ($OPT{s} && $OPT{t}) {
@@ -33,34 +33,39 @@ for my $index (`git ls-files --stage`) {
     }
 }
 
-my @file = (
+my @FILE = (
     ".git/[A-Z]*",
     ".git/index",
     ".git/objects/*/*",
+    ".git/logs/HEAD",
+    ".git/logs/refs/*/*",
+    ".git/logs/refs/*/*/*",
     ".git/refs/*/*",
     ".git/refs/*/*/*"
     );
-my @line = `ls -lrtdF --full-time @file 2>/dev/null | sed 's/\\.[0-9]\\+ \\S\\+//'`;
-chomp(@line);
+my @LINE = `ls -lrtdF --full-time @FILE 2>/dev/null | sed 's/\\.[0-9]\\+ \\S\\+//'`;
+chomp(@LINE);
 
 my %REFS = ();
 my %CHECK_REFS = ();
 my %HEAD;
-for my $line (@line) {
-    if ($line !~ /\/$/ && $line !~ /tags/ && $line !~ /index/ && $line !~ /objects/) {
+for my $line (@LINE) {
+    if ($line !~ /\/$/ && $line !~ /tags/ && $line !~ /index/ && $line !~ /objects/ && $line !~ /logs/) {
         my @f = split(/\s+/, $line);
         my $file = $f[7];
         my $contents = `cat $file`;
         chomp($contents);
         if ($contents) {
             my @content = split("\n", $contents);
-            my @col = split(/\s+/, $content[0]);
+            my @col = split(/\t/, $content[0]);
             add_ref($col[0], $file);
         }
     }
 }
 
-for my $line (@line) {
+my $INDEX = "";
+my $LEN;
+for my $line (@LINE) {
     if ($line =~ /^(.+)(.git\/objects\/\w\w\/.*)$/) {
         my ($prefix, $object) = ($1, $2);
         $object =~ s|^.git/objects/||;
@@ -69,12 +74,12 @@ for my $line (@line) {
         print $fh "$prefix\[$type\]\t";
         print_object($fh, $object);
         print $fh "\n";
-    } elsif ($line !~ /\/$/ && $line !~ /tags/ && $line !~ /objects/) {
-        print $fh "$line";
+    } elsif ($line !~ /\/$/ && $line !~ /tags/ && $line !~ /objects/ && $line !~ /logs/) {
         if ($line =~ /index/) {
-            my $n = keys %NAME;
-            print $fh "\t$n files";
+            $INDEX = $line;
         } else {
+            save_len($line);
+            print $fh "$line";
             my @f = split(/\s+/, $line);
             my $file = $f[7];
             my $contents = `cat $file`;
@@ -89,13 +94,45 @@ for my $line (@line) {
                     print $fh "\t\"$content\" ...";
                 }
             }
+            print $fh "\n";
         }
-        print $fh "\n";
     }
 }
 
 if ($OPT{t} || $OPT{s}) {
     close($fh);
+}
+
+print "\n";
+print $INDEX;
+if ($OPT{t}) {
+    my $pad_len = 0;
+    if ($LEN > length($INDEX)) {
+        $pad_len = $LEN - length($INDEX);
+    }
+    print " " x ($pad_len + 2);
+} else {
+    print "\t";
+}
+print scalar(keys %NAME), " files\n";
+
+if ($OPT{L}) {
+    for my $line (@LINE) {
+        if ($line =~ /logs/ && $line !~ /\/$/) {
+            print "\n";
+            print "$line\n";
+            my @f = split(/\s+/, $line);
+            my $file = $f[7];
+            system "tail -n $OPT{L} $file";
+        }
+    }
+} else {
+    print "\n";
+    for my $line (@LINE) {
+        if ($line =~ /logs/ && $line !~ /\/$/) {
+            print "$line\n";
+        }
+    }
 }
 
 ################################################################################
@@ -159,5 +196,14 @@ sub print_object {
     if ($NAME{$object}) {
         my $name = $NAME{$object};
         print $fh " $name";
+    }
+}
+
+sub save_len {
+    my ($out) = @_;
+
+    my $len = length($out);
+    if (!defined($LEN) || $len > $LEN) {
+        $LEN = $len;
     }
 }
