@@ -45,30 +45,27 @@ my %REFS = ();
 my %CHECK_REFS = ();
 my %HEAD;
 for my $line (@line) {
-    if ($line =~ /\/$/ || $line =~ /tags/) {
+    if ($line =~ /\/$/ || $line =~ /tags/ || $line =~ /index/) {
         next;
     }
+    print $fh "$line";
     my @f = split(/\s+/, $line);
     my $file = $f[7];
     my $contents = `cat $file`;
     chomp($contents);
-    if ($contents eq "") {
-        print $fh "$line\n";
-    } else {
+    if ($contents) {
         my @content = split("\n", $contents);
-        print $fh "$line";
+        my $content = $content[0];
+        my @col = split(/\s+/, $content);
+        add_ref($col[0], $file);
         if (@content == 1) {
-            my $content = $content[0];
             $content =~ s/\t/    /g;
             print $fh "\t$content";
-            add_ref($content[0], $file);
         } else {
-            my $content = $content[0];
             print $fh "\t\"$content\" ...";
-            add_ref($content[0], $file);
         }
-        print $fh "\n";
     }
+    print $fh "\n";
 }
 
 my @object = `ls -lrtdF --full-time .git/objects/*/* 2>/dev/null | sed 's/\\.[0-9]\\+ \\S\\+//'`;
