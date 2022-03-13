@@ -23,7 +23,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('pugbsfDdltrN:L:vc', \%OPT);
+getopts('pugbshfDdltrN:L:vc', \%OPT);
 
 my $OPTIONS = '-F';
 
@@ -39,7 +39,7 @@ if ($OPT{g}) {
 if ($OPT{b}) {
     $OPTIONS .= ' -s --du';
 }
-if ($OPT{s}) {
+if ($OPT{s} || $OPT{h}) {
     $OPTIONS .= ' -h --du';
 }
 if ($OPT{f}) {
