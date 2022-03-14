@@ -65,7 +65,7 @@ for my $line (@LINE) {
 
 my $INDEX = "";
 my $LEN;
-my $LOG;
+my $LOG_FILES;
 for my $line (@LINE) {
     if ($line =~ /^(.+)(.git\/objects\/\w\w\/.*)$/) {
         my ($prefix, $object) = ($1, $2);
@@ -78,8 +78,8 @@ for my $line (@LINE) {
     } elsif ($line =~ /^(.+).git\/objects\/pack\/pack-(.*)$/) {
         my ($prefix, $object) = ($1, $2);
         print $fh "$prefix\[pack\]\t$object\n";
-    } elsif ($line =~ /logs/) {
-        $LOG = $line;
+    } elsif ($line !~ /\/$/ && $line =~ /logs/) {
+        $LOG_FILES .= "$line\n";
     } elsif ($line !~ /\/$/ && $line !~ /tags/) {
         if ($line =~ /index/) {
             $INDEX = $line;
@@ -134,13 +134,9 @@ if ($OPT{L}) {
             system "tail -n $OPT{L} $file";
         }
     }
-} elsif ($LOG) {
+} elsif ($LOG_FILES) {
     print "\n";
-    for my $line (@LINE) {
-        if ($line =~ /logs/ && $line !~ /\/$/) {
-            print "$line\n";
-        }
-    }
+    print "$LOG_FILES\n";
 }
 
 ################################################################################
