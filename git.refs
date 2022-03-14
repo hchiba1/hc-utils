@@ -5,10 +5,14 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
+-o: show object IDs
+-s: sort by date time and type
+-t: align_column
+-L NUM: tail -n NUM logfiles
 ";
 
 my %OPT;
-getopts('stL:', \%OPT);
+getopts('ostL:', \%OPT);
 
 my $fh;
 if ($OPT{s} && $OPT{t}) {
@@ -68,16 +72,26 @@ my $LEN;
 my $LOG_FILES;
 for my $line (@LINE) {
     if ($line =~ /^(.+)(.git\/objects\/\w\w\/.*)$/) {
-        my ($prefix, $object) = ($1, $2);
+        my ($prefix, $suffix) = ($1, $2);
+        my $object = $suffix;
         $object =~ s|^.git/objects/||;
         $object =~ s|/||;
         my $type = get_type($object);
         print $fh "$prefix\[$type\]\t";
-        print_object($fh, $object);
+        if ($OPT{o}) {
+            print $fh "$object";
+        } else {
+            print $fh "$suffix";
+        }
+        print_object_refs($fh, $object);
         print $fh "\n";
-    } elsif ($line =~ /^(.+).git\/objects\/pack\/pack-(.*)$/) {
-        my ($prefix, $object) = ($1, $2);
-        print $fh "$prefix\[pack\]\t$object\n";
+    } elsif ($line =~ /^(.+)(.git\/objects\/pack\/pack-(.*))$/) {
+        my ($prefix, $suffix, $object) = ($1, $2, $3);
+        if ($OPT{o}) {
+            print $fh "$prefix\[pack\]\t$object\n";
+        } else {
+            print $fh "$prefix\[pack\]\t$suffix\n";
+        }
     } elsif ($line !~ /\/$/ && $line =~ /logs/) {
         $LOG_FILES .= "$line\n";
     } elsif ($line !~ /\/$/ && $line !~ /tags/) {
@@ -183,10 +197,9 @@ sub add_ref {
     }
 }
 
-sub print_object {
+sub print_object_refs {
     my ($fh, $object) = @_;
 
-    print $fh "$object";
     if ($REFS{$object}) {
         my @ref = @{$REFS{$object}};
         my $refs = join(", ", @ref);
