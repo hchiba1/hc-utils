@@ -107,8 +107,8 @@ for my $line (@LINE) {
             if ($contents) {
                 my @content = split("\n", $contents);
                 my $content = $content[0];
+                $content =~ s/\t/    /g;
                 if (@content == 1) {
-                    $content =~ s/\t/    /g;
                     print $fh "\t$content";
                 } else {
                     print $fh "\t\"$content\" ...";
