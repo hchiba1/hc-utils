@@ -1,0 +1,26 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('', \%OPT);
+
+my @obj = `ls .git/objects/??/* 2>/dev/null`;
+my @pack = `ls .git/objects/pack/*.pack`;
+if (@obj == 0 && @pack == 1) {
+    chomp(@pack);
+    if ($pack[0] =~ /^.git\/objects\/pack\/(\S+.pack)$/) {
+        my $pack_file = $1;
+        system "cp .git/objects/pack/*.pack .";
+        unlink(glob(".git/objects/pack/*")) || die;
+        system "cat $pack_file | git unpack-objects";
+        unlink("$pack_file") || die;
+    }
+} else {
+    print scalar(@obj), " objects, ", scalar(@pack), " pack files\n";
+}
