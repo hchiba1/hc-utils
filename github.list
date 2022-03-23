@@ -1,0 +1,50 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('', \%OPT);
+
+open(PIPE, "gh repo list @ARGV -L1000 |") || die;
+my @line = <PIPE>;
+close(PIPE);
+chomp(@line);
+
+my $max_repo_len = 0;
+my $max_descr_len = 0;
+for my $line (@line) {
+    my @f = split("\t", $line);
+    if (@f != 4) {
+        die;
+    }
+    my ($repo, $descr) = @f;
+    if (length($repo) > $max_repo_len) {
+        $max_repo_len = length($repo);
+    }
+    if (length($descr) > $max_descr_len) {
+        $max_descr_len = length($descr);
+    }
+}
+if ($max_descr_len > 100) {
+    $max_descr_len = 100;
+}
+
+for my $line (@line) {
+    my @f = split("\t", $line);
+    my ($repo, $descr, $public, $datetime) = @f;
+    my $pad_len = $max_repo_len - length($repo);
+    my $pad_len_2 = 0;
+    if (length($descr) < $max_descr_len) {
+        $pad_len_2 = $max_descr_len - length($descr);
+    }
+    my $pad_len_3 = 0;
+    if (length($public) < 12) {
+        $pad_len_3 = 12 - length($public);
+    }
+    print $repo, " " x ($pad_len + 2), $descr, " " x ($pad_len_2 + 2), $public, " " x ($pad_len_3 + 2), $datetime, "\n";
+}
