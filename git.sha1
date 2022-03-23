@@ -1,0 +1,26 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('ct', \%OPT);
+
+my $TYPE = "blob";
+if ($OPT{c}) {
+    $TYPE = "commit";
+} elsif ($OPT{t}) {
+    $TYPE = "tree";
+}
+
+my @CONTENT = <>;
+my $CONTENT = join("", @CONTENT);
+my $LEN = length($CONTENT);
+
+open(PIPE, "| shasum") || die;
+print PIPE "$TYPE $LEN\0$CONTENT";
+close(PIPE);
