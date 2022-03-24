@@ -1,0 +1,47 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('', \%OPT);
+
+print "[fetch]\n";
+system "git fetch";
+my $diff_exit_code = system("git diff HEAD..FETCH_HEAD --exit-code --quiet") >> 8;
+if ($diff_exit_code) {
+    print "\n";
+    print "[merge]\n";
+    my $pull_exit_code = system("git merge") >> 8;
+    if ($pull_exit_code) {
+        die "merge failed.\n";
+    } else {
+        print "OK\n";
+    }
+    print "\n";
+} else {
+    print "OK\n";
+    print "\n";
+}
+
+print "[commit]\n";
+my @modified = `git ls-files --modified`;
+chomp(@modified);
+my $commit_exit_code = system("git commit -am 'Update @modified'") >> 8;
+if ($commit_exit_code) {
+    die "commit failed.\n";
+} else {
+    print "OK\n";
+}
+
+print "[push]\n";
+my $push_exit_code = system("git push origin HEAD") >> 8;
+if ($push_exit_code) {
+    die "push failed.\n";
+} else {
+    print "OK\n";
+}
