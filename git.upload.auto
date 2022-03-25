@@ -4,12 +4,15 @@ use File::Basename;
 use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM
+"Usage: $PROGRAM [MESSAGE ...]
+fetch, merge, add, commit, push
 -a: add untracked files
 ";
 
 my %OPT;
 getopts('a', \%OPT);
+
+my $MESSAGE = "@ARGV";
 
 print "[fetch]\n";
 system "git fetch";
@@ -17,8 +20,8 @@ my $diff_exit_code = system("git diff HEAD..FETCH_HEAD --exit-code --quiet") >> 
 if ($diff_exit_code) {
     print "\n";
     print "[merge]\n";
-    my $pull_exit_code = system("git merge") >> 8;
-    if ($pull_exit_code) {
+    my $merge_exit_code = system("git merge") >> 8;
+    if ($merge_exit_code) {
         die "merge failed.\n";
     } else {
         print "OK\n";
@@ -29,31 +32,31 @@ if ($diff_exit_code) {
     print "\n";
 }
 
-print "[commit]\n";
-my @file;
+my @FILE;
 if ($OPT{a}) {
-    @file = `git ls-files --others`;
-    chomp(@file);
+    @FILE = `git ls-files --others`;
+    chomp(@FILE);
     print "[add]\n";
-    my $add_exit_code = system("git add @file") >> 8;
+    my $add_exit_code = system("git add @FILE") >> 8;
     if ($add_exit_code) {
         die "add failed.\n";
     } else {
-        print "@file\n";
+        print "@FILE\n";
         print "OK\n";
     }
     print "\n";
 } else {
-    @file = `git ls-files --modified`;
-    chomp(@file);
+    @FILE = `git ls-files --modified`;
+    chomp(@FILE);
 }
-my $MESSAGE = "@ARGV";
 if ($MESSAGE) {
 } elsif ($OPT{a}) {
-    $MESSAGE = "Add @file";
+    $MESSAGE = "Add @FILE";
 } else {
-    $MESSAGE = "Update @file";
+    $MESSAGE = "Update @FILE";
 }
+
+print "[commit]\n";
 my $commit_exit_code = system("git commit -am '$MESSAGE'") >> 8;
 if ($commit_exit_code) {
     die "commit failed.\n";
@@ -61,6 +64,7 @@ if ($commit_exit_code) {
     print "OK\n";
 }
 
+print "\n";
 print "[push]\n";
 my $push_exit_code = system("git push origin HEAD") >> 8;
 if ($push_exit_code) {

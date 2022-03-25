@@ -4,9 +4,9 @@ use File::Basename;
 use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM file message ...
-git pull, add, commit and push
--a: commit message is 'add new_file'
+"Usage: $PROGRAM FILE [MESSAGE ...]
+fetch, merge, add, commit, push
+-a: commit message is 'Add FILE' instead of 'Update FILE'
 -c: commit but not push
 ";
 
@@ -26,7 +26,6 @@ if (@ARGV == 1) {
     print STDERR $USAGE;
     exit 1;
 }
-
 if (!$OPT{c}) {
     print "[fetch]\n";
     system "git fetch";
@@ -34,8 +33,8 @@ if (!$OPT{c}) {
     if ($diff_exit_code) {
         print "\n";
         print "[merge]\n";
-        my $pull_exit_code = system("git merge") >> 8;
-        if ($pull_exit_code) {
+        my $merge_exit_code = system("git merge") >> 8;
+        if ($merge_exit_code) {
             die "merge failed.\n";
         } else {
             print "OK\n";
