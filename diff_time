@@ -7,6 +7,7 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [OPTION] 'DATE_TIME_BEFORE' ['DATE_TIME_AFTER']
 OPTION
+ -s: print in seconds
  -m: print in minutes
  -h: print in hours
  -d: print in days
@@ -17,7 +18,7 @@ Examples
 ";
 
 my %OPT;
-getopts('mhdv', \%OPT);
+getopts('smhdv', \%OPT);
 
 my ($TIME1, $TIME2) = @ARGV;
 
@@ -38,6 +39,15 @@ if (! str2time($TIME1) or ! str2time($TIME2)) {
 my $total_sec = str2time($TIME2) - str2time($TIME1);
 if ($total_sec < 0) {
     die "ERROR: specify DATE_TIME_BEFORE < DATE_TIME_AFTER\n";
+}
+
+if ($OPT{s}) {
+    print "$total_sec";
+    if ($OPT{v}) {
+	print " sec";
+    }
+    print "\n";
+    exit;
 }
 
 my $sec = $total_sec % 60;
