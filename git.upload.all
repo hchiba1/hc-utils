@@ -8,7 +8,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('', \%OPT);
+getopts('a', \%OPT);
 
 print "[fetch]\n";
 system "git fetch";
@@ -29,9 +29,31 @@ if ($diff_exit_code) {
 }
 
 print "[commit]\n";
-my @modified = `git ls-files --modified`;
-chomp(@modified);
-my $commit_exit_code = system("git commit -am 'Update @modified'") >> 8;
+my @file;
+if ($OPT{a}) {
+    @file = `git ls-files --others`;
+    chomp(@file);
+    print "[add]\n";
+    my $add_exit_code = system("git add @file") >> 8;
+    if ($add_exit_code) {
+        die "add failed.\n";
+    } else {
+        print "@file\n";
+        print "OK\n";
+    }
+    print "\n";
+} else {
+    @file = `git ls-files --modified`;
+    chomp(@file);
+}
+my $MESSAGE = "@ARGV";
+if ($MESSAGE) {
+} elsif ($OPT{a}) {
+    $MESSAGE = "Add @file";
+} else {
+    $MESSAGE = "Update @file";
+}
+my $commit_exit_code = system("git commit -am '$MESSAGE'") >> 8;
 if ($commit_exit_code) {
     die "commit failed.\n";
 } else {
