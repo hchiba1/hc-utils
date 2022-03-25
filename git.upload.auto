@@ -12,8 +12,6 @@ fetch, merge, add, commit, push
 my %OPT;
 getopts('a', \%OPT);
 
-my $MESSAGE = "@ARGV";
-
 print "[fetch]\n";
 system "git fetch";
 my $diff_exit_code = system("git diff HEAD..FETCH_HEAD --exit-code --quiet") >> 8;
@@ -49,7 +47,11 @@ if ($OPT{a}) {
     @FILE = `git ls-files --modified`;
     chomp(@FILE);
 }
-if ($MESSAGE) {
+my $MESSAGE;
+if (@ARGV == 1) {
+    $MESSAGE = "@ARGV @FILE";
+} elsif (@ARGV) {
+    $MESSAGE = "@ARGV";
 } elsif ($OPT{a}) {
     $MESSAGE = "Add @FILE";
 } else {
