@@ -1,0 +1,168 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+use POSIX;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM [options] file
+  -b N   N is the beginning of class
+  -w N   N is the width of class
+  -W N   N is the weight of *
+  -m N   multiply each input number by N
+  -n     show only frequencies
+  -p     hide percentage
+  -j     juxtapose bar and number
+  -h     help
+";
+
+my %opt;
+getopts('hnjb:w:m:W:', \%opt);
+$opt{h} and die $USAGE;
+
+# Settings
+my $MAX_BAR_HEIGHT = 50;
+
+
+#################
+### Read data ###
+#################
+
+my (@numbers, $min, $max);
+
+-t && !@ARGV and die $USAGE;
+while(<>){
+    chomp;
+    if (/^-?\d+(\.\d+)?$/) {
+	if (@numbers) {
+	    $_ < $min and $min = $_;
+	    $_ > $max and $max = $_;
+	}
+	else {
+	    ($min, $max) = ($_, $_);
+	}
+	push(@numbers, $_);
+    }
+    else {
+	print STDERR "$_: Not a number.\n";
+    }
+}
+
+# If -m option is not specified, multiply each number by $opt{m}.
+if ($opt{m}) {
+    for (@numbers){
+	$_ *= $opt{m};
+    }
+}
+
+
+####################
+### Analyze data ###
+####################
+
+
+# If -w option is not specified, the width of the class is calculated automatically.
+# width = range / ceil(log2(n)+ 1)
+my $width = $opt{w} || ceil( ($max-$min) / ceil(log(@numbers) / log(2) + 1) );
+$width ||= 1;
+
+my $begin = defined($opt{b}) ? $opt{b} : floor($min);
+if ($begin>$max) {
+    print STDERR "$begin: Too large value for the beginning of class.\n";
+    exit(1);
+}
+
+
+# Determine the width of the colum 1 (the colum of representitive numbers)
+my $max_of_abs = ($max > -$min) ? $max : -$min;
+my $col1_wid = ceil(log10 $max_of_abs) + 1; # one more space for munus sign;
+
+
+# Count frequencies in each class
+my @freq;
+foreach (@numbers) {
+    $freq[int(($_-$begin)/$width)]++;
+}
+for (my $i=0; $i<@freq; $i++) {
+    if (! $freq[$i]) {
+	$freq[$i] = 0;
+    }
+}
+
+
+# Determine the width of the colum 2 (frequencies)
+my $max_freq = $freq[0];
+foreach (@freq) {
+    $_ > $max_freq and $max_freq = $_;
+}
+my $col2_wid=ceil(log10 $max_freq);
+# Determine how many frequencies a asterisk represents
+my $waster = $opt{W} || ceil($max_freq/$MAX_BAR_HEIGHT);
+
+
+
+####################
+### Print result ###
+####################
+
+# Print summary of input data
+
+print("total freqency = ",$#numbers+1,"\n");
+printf("(multiplied all numbers by %s)\n", $opt{m}) if ($opt{m});
+printf("min   = %${col1_wid}d\n",$min);
+printf("max   = %${col1_wid}d\n",$max);
+printf("width = %${col1_wid}d\n",$width);
+
+# print("(multiplied all numbers by $opt{m}\n") if ($opt{m});
+# print("total frequency = ",$#numbers+1,"\n");
+# print("min = $min, ");
+# print("max = $max\n");
+# print("class width = $width\n");
+
+# print("total_frequency=", $#numbers+1, ", ");
+# print "min=$min, max=$max, ";
+# print "width=$width, ";
+# print "\n";
+
+
+# Print frequency destribution.
+my $cum = 0;
+my $repres=$begin;
+if ($opt{n}) {
+    # If -n option is spesified, print only frequencies.
+    foreach (@freq) {
+	$cum += $_;
+	printf("%${col1_wid}d-: %${col2_wid}d %5.1f%% %5.1f%%\n", $repres, $_, $_/@numbers*100, $cum/@numbers*100);
+	$repres += $width;
+    }
+    printf("%${col1_wid}d :\n", $repres);
+}
+else {
+    print(" " x ($col1_wid + 4), "*:$waster\n");
+    foreach (@freq) {
+	$cum += $_;
+	my $naster = ceil($_/$waster);
+
+	# Print freqency and percentage
+	printf("%${col1_wid}d- |", $repres);
+	print '*'x $naster;
+	if (!$opt{j}) {
+	    print ' 'x ($MAX_BAR_HEIGHT - $naster + 1);
+	    if (!$opt{p}) {
+		printf("%${col2_wid}d",$_) if $_;
+		printf(" %5.1f%% %5.1f%%", $_/@numbers*100, $cum/@numbers*100) if $_;
+	    }
+	}
+	else {
+	    printf("%d",$_) if $_;
+	    if (!$opt{p}) {
+		print ' 'x ($MAX_BAR_HEIGHT + floor(log10 $max_freq) - ($naster + floor(log10 $_)));
+		printf(" %5.1f%% %5.1f%%", $_/@numbers*100 ,$cum/@numbers*100) if $_;
+	    }
+	}
+
+	print("\n");
+	$repres += $width;
+    }
+    printf("%${col1_wid}d  |\n", $repres);
+}
