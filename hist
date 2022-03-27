@@ -23,13 +23,10 @@ $opt{h} and die $USAGE;
 # Settings
 my $MAX_BAR_HEIGHT = 50;
 
-
 #################
 ### Read data ###
 #################
-
 my (@numbers, $min, $max);
-
 -t && !@ARGV and die $USAGE;
 while(<>){
     chomp;
@@ -37,30 +34,22 @@ while(<>){
 	if (@numbers) {
 	    $_ < $min and $min = $_;
 	    $_ > $max and $max = $_;
-	}
-	else {
+	} else {
 	    ($min, $max) = ($_, $_);
-	}
-	push(@numbers, $_);
-    }
-    else {
+	} push(@numbers, $_);
+    } else {
 	print STDERR "$_: Not a number.\n";
     }
 }
-
-# If -m option is not specified, multiply each number by $opt{m}.
 if ($opt{m}) {
     for (@numbers){
 	$_ *= $opt{m};
     }
 }
 
-
 ####################
 ### Analyze data ###
 ####################
-
-
 # If -w option is not specified, the width of the class is calculated automatically.
 # width = range / ceil(log2(n)+ 1)
 my $width = $opt{w} || ceil( ($max-$min) / ceil(log(@numbers) / log(2) + 1) );
@@ -72,11 +61,9 @@ if ($begin>$max) {
     exit(1);
 }
 
-
 # Determine the width of the colum 1 (the colum of representitive numbers)
 my $max_of_abs = ($max > -$min) ? $max : -$min;
 my $col1_wid = ceil(log10 $max_of_abs) + 1; # one more space for munus sign;
-
 
 # Count frequencies in each class
 my @freq;
@@ -89,7 +76,6 @@ for (my $i=0; $i<@freq; $i++) {
     }
 }
 
-
 # Determine the width of the colum 2 (frequencies)
 my $max_freq = $freq[0];
 foreach (@freq) {
@@ -99,14 +85,11 @@ my $col2_wid=ceil(log10 $max_freq);
 # Determine how many frequencies a asterisk represents
 my $waster = $opt{W} || ceil($max_freq/$MAX_BAR_HEIGHT);
 
-
-
 ####################
 ### Print result ###
 ####################
 
 # Print summary of input data
-
 print("total freqency = ",$#numbers+1,"\n");
 printf("(multiplied all numbers by %s)\n", $opt{m}) if ($opt{m});
 printf("min   = %${col1_wid}d\n",$min);
@@ -136,8 +119,7 @@ if ($opt{n}) {
 	$repres += $width;
     }
     printf("%${col1_wid}d :\n", $repres);
-}
-else {
+} else {
     print(" " x ($col1_wid + 4), "*:$waster\n");
     foreach (@freq) {
 	$cum += $_;
@@ -152,8 +134,7 @@ else {
 		printf("%${col2_wid}d",$_) if $_;
 		printf(" %5.1f%% %5.1f%%", $_/@numbers*100, $cum/@numbers*100) if $_;
 	    }
-	}
-	else {
+	} else {
 	    printf("%d",$_) if $_;
 	    if (!$opt{p}) {
 		print ' 'x ($MAX_BAR_HEIGHT + floor(log10 $max_freq) - ($naster + floor(log10 $_)));
