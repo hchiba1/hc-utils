@@ -50,12 +50,26 @@ if ($opt{m}) {
 ####################
 ### Analyze data ###
 ####################
-# If -w option is not specified, the width of the class is calculated automatically.
+# The class width is calculated automatically, by default.
 # width = range / ceil(log2(n)+ 1)
-my $width = $opt{w} || ceil( ($max-$min) / ceil(log(@numbers) / log(2) + 1) );
+my $width = ($max-$min) / ceil(log(@numbers) / log(2) + 1);
+if ($width < 1) {
+    $width = 0.1;
+} else {
+    $width = ceil($width);
+}
+if ($opt{w}) {
+    $width = $opt{w};
+}
 $width ||= 1;
 
-my $begin = defined($opt{b}) ? $opt{b} : floor($min);
+my $begin = floor($min);
+if ($width < 1) {
+    $begin = 0;
+}
+if (defined $opt{b}) {
+    $begin = $opt{b};
+}
 if ($begin>$max) {
     print STDERR "$begin: Too large value for the beginning of class.\n";
     exit(1);
@@ -64,6 +78,11 @@ if ($begin>$max) {
 # Determine the width of the colum 1 (the colum of representitive numbers)
 my $max_of_abs = ($max > -$min) ? $max : -$min;
 my $col1_wid = ceil(log10 $max_of_abs) + 1; # one more space for munus sign;
+my $col1_f;
+if ($width < 1) {
+    $col1_wid = length(sprintf("%s", $width));
+    $col1_f = $col1_wid - 2;
+}
 
 # Count frequencies in each class
 my @freq;
@@ -92,9 +111,9 @@ my $waster = $opt{W} || ceil($max_freq/$MAX_BAR_HEIGHT);
 # Print summary of input data
 print("total freqency = ",$#numbers+1,"\n");
 printf("(multiplied all numbers by %s)\n", $opt{m}) if ($opt{m});
-printf("min   = %${col1_wid}d\n",$min);
-printf("max   = %${col1_wid}d\n",$max);
-printf("width = %${col1_wid}d\n",$width);
+printf("min   = %${col1_wid}s\n",$min);
+printf("max   = %${col1_wid}s\n",$max);
+printf("width = %${col1_wid}s\n",$width);
 
 # print("(multiplied all numbers by $opt{m}\n") if ($opt{m});
 # print("total frequency = ",$#numbers+1,"\n");
@@ -126,7 +145,11 @@ if ($opt{n}) {
 	my $naster = ceil($_/$waster);
 
 	# Print freqency and percentage
-	printf("%${col1_wid}d- |", $repres);
+        if ($width < 1) {
+            printf("%.${col1_f}f- |", $repres);
+        } else {
+            printf("%${col1_wid}s- |", $repres);
+        }
 	print '*'x $naster;
 	if (!$opt{j}) {
 	    print ' 'x ($MAX_BAR_HEIGHT - $naster + 1);
@@ -145,5 +168,5 @@ if ($opt{n}) {
 	print("\n");
 	$repres += $width;
     }
-    printf("%${col1_wid}d  |\n", $repres);
+    printf("%${col1_wid}s  |\n", $repres);
 }
