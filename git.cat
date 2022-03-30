@@ -1,0 +1,35 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my @line = `git cat-file -p @ARGV`;
+chomp(@line);
+for my $line (@line) {
+    if ($line =~ /^(author|committer) (.* <\S+>) (\d+) (\S+)$/) {
+        my $head = $1;
+        my $name = $2;
+        my $unix_time = $3;
+        my $time_zone = $4;
+        my $date = date_from_unix($unix_time);
+        printf "%-9s $name $date $time_zone\n", $head;
+    } else {
+        print $line, "\n";
+    }
+}
+
+################################################################################
+### Function ###################################################################
+################################################################################
+
+sub date_from_unix {
+    my ($unix) = @_;
+
+    my $date = `date --date "\@$unix" "+%F %T"`;
+    chomp($date);
+
+    return $date;
+}
