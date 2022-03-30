@@ -1,0 +1,49 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM [MESSAGE ...]
+add, commit
+-a: add untracked files
+";
+
+my %OPT;
+getopts('a', \%OPT);
+
+my @FILE;
+if ($OPT{a}) {
+    @FILE = `git ls-files --others`;
+    chomp(@FILE);
+    print "[add]\n";
+    my $add_exit_code = system("git add @FILE") >> 8;
+    if ($add_exit_code) {
+        die "add failed.\n";
+    } else {
+        print "@FILE\n";
+        print "OK\n";
+    }
+    print "\n";
+} else {
+    @FILE = `git ls-files --modified`;
+    chomp(@FILE);
+}
+my $MESSAGE;
+if (@ARGV == 1) {
+    $MESSAGE = "@ARGV @FILE";
+} elsif (@ARGV) {
+    $MESSAGE = "@ARGV";
+} elsif ($OPT{a}) {
+    $MESSAGE = "Add @FILE";
+} else {
+    $MESSAGE = "Update @FILE";
+}
+
+print "[commit]\n";
+my $commit_exit_code = system("git commit -am '$MESSAGE'") >> 8;
+if ($commit_exit_code) {
+    die "commit failed.\n";
+} else {
+    print "OK\n";
+}
