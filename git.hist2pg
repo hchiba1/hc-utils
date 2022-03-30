@@ -1,0 +1,97 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my @LINE = `ls .git/objects/*/*`;
+chomp(@LINE);
+
+my %OBJ = ();
+for my $line (@LINE) {
+    if ($line =~ /^.git\/objects\/(\w\w)\/(.*)$/) {
+        my ($prefix, $suffix) = ($1, $2);
+        my $object = $prefix . $suffix;
+        my $type = get_type($object);
+        if ($type eq "history") {
+            print_hist($object);
+        }
+    }
+}
+
+################################################################################
+### Functions ##################################################################
+################################################################################
+sub print_hist {
+    my ($object) = @_;
+
+    my $obj = short_obj($object);
+
+    my @line = `git cat-file -p $obj`;
+    chomp(@line);
+
+    my $name;
+    my $message;
+    my $time;
+    for my $line (@line) {
+        if ($line =~ /^parent ([0-9a-f]{7})[0-9a-f]{33}$/) {
+            my $par = $1;
+            print "$obj -> $par :parent\n";
+        } elsif ($line =~ /^author (.*) <\S+> (\d+) \S+$/) {
+            ($name, $time) = ($1, $2);
+        } elsif ($line =~ /^committer /) {
+        } elsif ($line =~ /^tree /) {
+        } elsif ($line =~ /^$/) {
+        } else {
+            $message = $line;
+        }
+    }
+
+    if ($name) {
+        my ($sec, $min, $hour, $mday, $mon, $year) = localtime($time);
+        $year += 1900;
+        $mon += 1;
+        my $date = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ", $year ,$mon, $mday, $hour, $min, $sec);
+        print "$obj :Commit name:\"$name\" start:\"$date\" end:\"$date\" message:\"$message\"\n";
+    } else {
+        die;
+    }
+}
+
+sub short_obj {
+    my ($object) = @_;
+
+    if ($object =~ /^([0-9a-f]{7})[0-9a-f]{33}$/) {
+        my $obj = $1;
+        if ($OBJ{$obj}) {
+            die $obj;
+        } else {
+            $OBJ{$obj} = 1;
+        }
+        return $obj;
+    } else {
+        die $object;
+    }
+}
+
+sub get_type {
+    my ($object) = @_;
+
+    my $type = `git cat-file -t $object`;
+    chomp($type);
+
+    if ($type eq "blob") {
+        return "file";
+    } elsif ($type eq "tree") {
+        return "directory";
+    } elsif ($type eq "commit") {
+        return "history";
+    } elsif ($type eq "tag") {
+        return "tag";
+    } else {
+        return "";
+    }
+}
