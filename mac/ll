@@ -1,0 +1,22 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use HTTP::Date;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my @LINE = `ls -lFT @ARGV`;
+chomp(@LINE);
+for my $line (@LINE) {
+    if ($line =~ /(\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s+(\S+\s+\S+\s+\S+\s+\S+)\s+(.*)/) {
+        my ($prefix, $time_date, $filename) = ($1, $2, $3);
+        my $unix_time = str2time($time_date);
+        my $date_time = `date -r $unix_time "+%F %T"`;
+        chomp($date_time);
+        print "${prefix} $date_time $filename\n";
+    } else {
+        print $line, "\n";
+    }
+}
