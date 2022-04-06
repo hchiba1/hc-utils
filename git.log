@@ -10,8 +10,7 @@ my $USAGE=
 -S: --stat option original
 ";
 
-###           hash [date] subj <mail>
-my $FORMAT = "%h%x09[%ai] %s%x09<%ae>";
+my $FORMAT = "%h"; # commit hash
 
 my $OPT_CONVERT = 0;
 for (my $i=0; $i<@ARGV; $i++) {
@@ -21,10 +20,12 @@ for (my $i=0; $i<@ARGV; $i++) {
         }
         splice(@ARGV, $i, 1);
         unshift(@ARGV, "--stat");
-        $FORMAT = "(%h)%x09[%ai] %s%x09<%ae>";
+        $FORMAT = "(%h)";
         last;
     }
 }
+
+$FORMAT .= "%x09[%ai] %s%x09<%ae>"; # _ [date] subj _ <mail>
 
 my $OPT_TAB = 0;
 for (my $i=0; $i<@ARGV; $i++) {
