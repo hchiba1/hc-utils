@@ -11,12 +11,10 @@ my $USAGE= "Usage: $PROGRAM [options] file
   -n     show only frequencies
   -p     hide percentage
   -j     juxtapose bar and number
-  -h     help
 ";
 
 my %opt;
-getopts('hnjb:w:W:', \%opt);
-$opt{h} and die $USAGE;
+getopts('njb:w:W:', \%opt);
 
 my $MAX_BAR_HEIGHT = 50;
 
