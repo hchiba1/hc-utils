@@ -10,8 +10,7 @@ my $USAGE=
 -S: --stat option original
 ";
 
-###         hash [date](desc)subj <mail>name
-# my $FORMAT = "%h%x09[%ai]%d %s%x09<%ae>";
+###           hash [date] subj <mail>
 my $FORMAT = "%h%x09[%ai] %s%x09<%ae>";
 
 my $OPT_CONVERT = 0;
@@ -22,7 +21,6 @@ for (my $i=0; $i<@ARGV; $i++) {
         }
         splice(@ARGV, $i, 1);
         unshift(@ARGV, "--stat");
-        # $FORMAT = "(%h)%x09[%ai]%d %s%x09<%ae>";
         $FORMAT = "(%h)%x09[%ai] %s%x09<%ae>";
         last;
     }
@@ -40,12 +38,12 @@ for (my $i=0; $i<@ARGV; $i++) {
 for (my $i=0; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq "-n") {
         splice(@ARGV, $i, 1);
-        $FORMAT .= " %an";
+        $FORMAT .= " %an"; # full name
         last;
     }
 }
 
-$FORMAT .= "%d";
+$FORMAT .= "%d"; # (desc)
 
 my $COMMAND = "git log --graph --format='$FORMAT' @ARGV";
 if ($OPT_CONVERT && $OPT_TAB) {
