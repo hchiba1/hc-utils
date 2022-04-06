@@ -4,11 +4,10 @@ use File::Basename;
 use Getopt::Std;
 use POSIX;
 my $PROGRAM = basename $0;
-my $USAGE=
-"Usage: $PROGRAM [options] file
-  -b N   N is the beginning of class
-  -w N   N is the width of class
-  -W N   N is the weight of *
+my $USAGE= "Usage: $PROGRAM [options] file
+  -b N   beginning of class
+  -w N   width of class
+  -W N   weight of *
   -m N   multiply each input number by N
   -n     show only frequencies
   -p     hide percentage
@@ -20,12 +19,8 @@ my %opt;
 getopts('hnjb:w:m:W:', \%opt);
 $opt{h} and die $USAGE;
 
-# Settings
 my $MAX_BAR_HEIGHT = 50;
 
-#################
-### Read data ###
-#################
 my (@numbers, $min, $max);
 -t && !@ARGV and die $USAGE;
 while(<>){
@@ -47,9 +42,6 @@ if ($opt{m}) {
     }
 }
 
-####################
-### Analyze data ###
-####################
 # The class width is calculated automatically, by default.
 # width = range / ceil(log2(n)+ 1)
 my $width = ($max-$min) / ceil(log(@numbers) / log(2) + 1);
@@ -104,9 +96,6 @@ my $col2_wid=ceil(log10 $max_freq);
 # Determine how many frequencies a asterisk represents
 my $waster = $opt{W} || ceil($max_freq/$MAX_BAR_HEIGHT);
 
-####################
-### Print result ###
-####################
 
 # Print summary of input data
 print("total freqency = ",$#numbers+1,"\n");
