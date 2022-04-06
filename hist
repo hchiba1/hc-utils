@@ -59,13 +59,11 @@ if ($begin>$max) {
     exit(1);
 }
 
-# Determine the width of the colum 1 (the colum of representitive numbers)
+# Determine the length to display representitive numbers
 my $max_of_abs = ($max > -$min) ? $max : -$min;
-my $col1_wid = ceil(log10 $max_of_abs) + 1; # one more space for munus sign;
-my $col1_f;
+my $num_len = ceil(log10 $max_of_abs) + 1; # one more space for munus sign;
 if ($width < 1) {
-    $col1_wid = length(sprintf("%s", $width));
-    $col1_f = $col1_wid - 2;
+    $num_len = length(sprintf("%s", $width));
 }
 
 # Count frequencies in each class
@@ -79,21 +77,21 @@ for (my $i=0; $i<@freq; $i++) {
     }
 }
 
-# Determine the width of the colum 2 (frequencies)
+# Determine the length to display frequencies
 my $max_freq = $freq[0];
 foreach (@freq) {
     $_ > $max_freq and $max_freq = $_;
 }
-my $col2_wid=ceil(log10 $max_freq);
+my $freq_len=ceil(log10 $max_freq);
 # Determine how many frequencies a asterisk represents
 my $waster = $opt{W} || ceil($max_freq/$MAX_BAR_HEIGHT);
 
 
 # Print summary of input data
 print("total freqency = ",$#numbers+1,"\n");
-printf("min   = %${col1_wid}s\n",$min);
-printf("max   = %${col1_wid}s\n",$max);
-printf("width = %${col1_wid}s\n",$width);
+printf("min   = %${num_len}s\n",$min);
+printf("max   = %${num_len}s\n",$max);
+printf("width = %${num_len}s\n",$width);
 
 # print("total frequency = ",$#numbers+1,"\n");
 # print("min = $min, ");
@@ -113,27 +111,28 @@ if ($opt{n}) {
     # If -n option is spesified, print only frequencies.
     foreach (@freq) {
 	$cum += $_;
-	printf("%${col1_wid}d-: %${col2_wid}d %5.1f%% %5.1f%%\n", $repres, $_, $_/@numbers*100, $cum/@numbers*100);
+	printf("%${num_len}d-: %${freq_len}d %5.1f%% %5.1f%%\n", $repres, $_, $_/@numbers*100, $cum/@numbers*100);
 	$repres += $width;
     }
-    printf("%${col1_wid}d :\n", $repres);
+    printf("%${num_len}d :\n", $repres);
 } else {
-    print(" " x ($col1_wid + 4), "*:$waster\n");
+    print(" " x ($num_len + 4), "*:$waster\n");
     foreach (@freq) {
 	$cum += $_;
 	my $naster = ceil($_/$waster);
 
 	# Print freqency and percentage
         if ($width < 1) {
-            printf("%.${col1_f}f- |", $repres);
+            my $after_point = $num_len - 2;
+            printf("%.${after_point}f- |", $repres);
         } else {
-            printf("%${col1_wid}s- |", $repres);
+            printf("%${num_len}s- |", $repres);
         }
 	print '*'x $naster;
 	if (!$opt{j}) {
 	    print ' 'x ($MAX_BAR_HEIGHT - $naster + 1);
 	    if (!$opt{p}) {
-		printf("%${col2_wid}d",$_) if $_;
+		printf("%${freq_len}d",$_) if $_;
 		printf(" %5.1f%% %5.1f%%", $_/@numbers*100, $cum/@numbers*100) if $_;
 	    }
 	} else {
@@ -147,5 +146,5 @@ if ($opt{n}) {
 	print("\n");
 	$repres += $width;
     }
-    printf("%${col1_wid}s  |\n", $repres);
+    printf("%${num_len}s  |\n", $repres);
 }
