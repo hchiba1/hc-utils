@@ -8,7 +8,6 @@ my $USAGE= "Usage: $PROGRAM [options] file
   -b N   beginning of class
   -w N   width of class
   -W N   weight of *
-  -m N   multiply each input number by N
   -n     show only frequencies
   -p     hide percentage
   -j     juxtapose bar and number
@@ -16,7 +15,7 @@ my $USAGE= "Usage: $PROGRAM [options] file
 ";
 
 my %opt;
-getopts('hnjb:w:m:W:', \%opt);
+getopts('hnjb:w:W:', \%opt);
 $opt{h} and die $USAGE;
 
 my $MAX_BAR_HEIGHT = 50;
@@ -34,11 +33,6 @@ while(<>){
 	} push(@numbers, $_);
     } else {
 	print STDERR "$_: Not a number.\n";
-    }
-}
-if ($opt{m}) {
-    for (@numbers){
-	$_ *= $opt{m};
     }
 }
 
@@ -99,12 +93,10 @@ my $waster = $opt{W} || ceil($max_freq/$MAX_BAR_HEIGHT);
 
 # Print summary of input data
 print("total freqency = ",$#numbers+1,"\n");
-printf("(multiplied all numbers by %s)\n", $opt{m}) if ($opt{m});
 printf("min   = %${col1_wid}s\n",$min);
 printf("max   = %${col1_wid}s\n",$max);
 printf("width = %${col1_wid}s\n",$width);
 
-# print("(multiplied all numbers by $opt{m}\n") if ($opt{m});
 # print("total frequency = ",$#numbers+1,"\n");
 # print("min = $min, ");
 # print("max = $max\n");
