@@ -22,13 +22,14 @@ my (@numbers, $min, $max);
 -t && !@ARGV and die $USAGE;
 while(<>){
     chomp;
-    if (/^-?\d+(\.\d+)?$/) {
+    if (/^-?\d+(\.\d+)?$/) { # integer or decimal (optionally with minus sign)
 	if (@numbers) {
 	    $_ < $min and $min = $_;
 	    $_ > $max and $max = $_;
 	} else {
 	    ($min, $max) = ($_, $_);
-	} push(@numbers, $_);
+	}
+        push(@numbers, $_);
     } else {
 	print STDERR "$_: Not a number.\n";
     }
