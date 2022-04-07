@@ -9,10 +9,11 @@ my $USAGE=
 -s: sort by date time and type
 -t: align_column
 -L NUM: tail -n NUM logfiles
+-m: show commit message
 ";
 
 my %OPT;
-getopts('ostL:', \%OPT);
+getopts('ostL:m', \%OPT);
 
 my $fh;
 if ($OPT{s} && $OPT{t}) {
@@ -88,6 +89,9 @@ for my $line (@LINE) {
             print $fh "$suffix";
         }
         print_object_refs($fh, $object);
+        if ($OPT{m} and $type eq "history") {
+            print_commit_message($fh, $object);
+        }
         print $fh "\n";
     } elsif ($line =~ /^(.+)(.git\/objects\/pack\/pack-(.*))$/) {
         my ($prefix, $suffix, $object) = ($1, $2, $3);
@@ -217,6 +221,20 @@ sub print_object_refs {
     if ($NAME{$object}) {
         my $name = $NAME{$object};
         print $fh " $name";
+    }
+}
+
+sub print_commit_message {
+    my ($fh, $object) = @_;
+
+    my @line = `git cat-file -p $object`;
+    chomp(@line);
+    my $PREV_LINE;
+    for my $line (@line) {
+        if (defined $PREV_LINE and $PREV_LINE eq "") {
+            print $fh " \'$line\'";
+        }
+        $PREV_LINE = $line;
     }
 }
 
