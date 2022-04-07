@@ -7,20 +7,20 @@ my $USAGE=
 "Usage: $PROGRAM
 -o: show object IDs
 -s: sort by date time and type
--t: align_column
+-c: align_column
 -L NUM: tail -n NUM logfiles
 -m: show commit message
 ";
 
 my %OPT;
-getopts('ostL:m', \%OPT);
+getopts('oscL:m', \%OPT);
 
 my $fh;
-if ($OPT{s} && $OPT{t}) {
+if ($OPT{s} && $OPT{c}) {
     open($fh, "| sort -k6,7 -k8.5,8.5 | align_column") || die;
 } elsif ($OPT{s}) {
     open($fh, "| sort -k6,7 -k8.5,8.5") || die;
-} elsif ($OPT{t}) {
+} elsif ($OPT{c}) {
     open($fh, "| align_column") || die;
 } else {
     $fh = *STDOUT;
@@ -127,14 +127,14 @@ for my $line (@LINE) {
     }
 }
 
-if ($OPT{t} || $OPT{s}) {
+if ($OPT{c} || $OPT{s}) {
     close($fh);
 }
 
 if ($INDEX) {
     print "\n";
     print $INDEX;
-    if ($OPT{t}) {
+    if ($OPT{c}) {
         my $pad_len = 0;
         if ($LEN > length($INDEX)) {
             $pad_len = $LEN - length($INDEX);
