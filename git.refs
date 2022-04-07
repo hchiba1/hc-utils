@@ -10,10 +10,11 @@ my $USAGE=
 -c: align_column
 -L NUM: tail -n NUM logfiles
 -m: show commit message
+-a: show all object names
 ";
 
 my %OPT;
-getopts('oscL:m', \%OPT);
+getopts('oscL:ma', \%OPT);
 
 my $fh;
 if ($OPT{s} && $OPT{c}) {
@@ -58,6 +59,8 @@ chomp(@LINE);
 my %REFS = ();
 my %CHECK_REFS = ();
 my %HEAD;
+my %OBJ_NAME = ();
+my %COMMIT_TREE = ();
 for my $line (@LINE) {
     if ($line !~ /\/$/ && $line !~ /tags/ && $line !~ /index/ && $line !~ /objects/ && $line !~ /logs/) {
         my @f = split(/\s+/, $line);
@@ -68,6 +71,20 @@ for my $line (@LINE) {
             my @content = split("\n", $contents);
             my @col = split(/\t/, $content[0]);
             add_ref($col[0], $file);
+        }
+    }
+    if ($OPT{a}) {
+        if ($line =~ /^(.+)(.git\/objects\/\w\w\/.*)$/) {
+            my ($prefix, $suffix) = ($1, $2);
+            my $object = $suffix;
+            $object =~ s|^.git/objects/||;
+            $object =~ s|/||;
+            my $type = get_type($object);
+            if ($type eq "directory") {
+                get_directory_content($object);
+            } elsif ($type eq "history") {
+                parse_commit_object($object);
+            }
         }
     }
 }
@@ -89,8 +106,20 @@ for my $line (@LINE) {
             print $fh "$suffix";
         }
         print_object_refs($fh, $object);
-        if ($OPT{m} and $type eq "history") {
-            print_commit_message($fh, $object);
+        if ($COMMIT_TREE{$object}) {
+            $OPT{a} and print $fh " ($COMMIT_TREE{$object})/";
+        }
+        if ($NAME{$object}) {
+            if ($OPT{a}) {
+                print $fh "*$NAME{$object}";
+            } else {
+                print $fh " $NAME{$object}";
+            }
+        } elsif ($OBJ_NAME{$object}) {
+            $OPT{a} and print $fh " $OBJ_NAME{$object}";
+        }
+        if ($type eq "history") {
+            $OPT{m} and print_commit_message($fh, $object);
         }
         print $fh "\n";
     } elsif ($line =~ /^(.+)(.git\/objects\/pack\/pack-(.*))$/) {
@@ -218,10 +247,6 @@ sub print_object_refs {
             }
         }
     }
-    if ($NAME{$object}) {
-        my $name = $NAME{$object};
-        print $fh " $name";
-    }
 }
 
 sub print_commit_message {
@@ -235,6 +260,43 @@ sub print_commit_message {
             print $fh " \'$line\'";
         }
         $PREV_LINE = $line;
+    }
+}
+
+sub get_directory_content {
+    my ($object) = @_;
+
+    my @line = `git cat-file -p $object`;
+    chomp(@line);
+    for my $line (@line) {
+        my @f = split(/\t/, $line);
+        if (@f != 2) {
+            die;
+        }
+        my $name = $f[1];
+        @f = split(/ /, $f[0]);
+        if (@f != 3) {
+            die;
+        }
+        my $type = $f[1];
+        my $hash = $f[2];
+        if ($type eq "tree") {
+            $name .= "/";
+        }
+        $OBJ_NAME{$hash} = $name;
+    }
+}
+
+sub parse_commit_object {
+    my ($commit_obj) = @_;
+
+    my @line = `git cat-file -p $commit_obj`;
+    chomp(@line);
+    for my $line (@line) {
+        if ($line =~ /^tree (\S+)$/) {
+            my $tree_obj = $1;
+            $COMMIT_TREE{$tree_obj} = substr($commit_obj, 0, 7);
+        }
     }
 }
 
