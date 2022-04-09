@@ -8,7 +8,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('asu', \%OPT);
+getopts('su', \%OPT);
 
 my $COMMAND = "df -h";
 if ($^O eq "linux") {
@@ -78,7 +78,6 @@ sub change_columns {
 	$device_col =~ s/ +$//;
 
 	$line[$i] = "$mounted_col$padd $size_col$used_col ";
-	$line[$i] .= "$avail_col " if $OPT{a};
 	$line[$i] .= "$others_col$device_col\n";
     }
 
