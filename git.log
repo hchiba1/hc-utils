@@ -46,7 +46,7 @@ for (my $i=0; $i<@ARGV; $i++) {
 
 $FORMAT .= "%d"; # (desc)
 
-my $COMMAND = "git log --graph --format='$FORMAT' @ARGV";
+my $COMMAND = "git log --graph --format='$FORMAT' @ARGV 2>/dev/null";
 if ($OPT_CONVERT && $OPT_TAB) {
     $COMMAND .= " | convert_log.pl -t | align_column";
 } else {
