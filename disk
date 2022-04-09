@@ -10,13 +10,8 @@ my $USAGE=
 my %OPT;
 getopts('asu', \%OPT);
 
-# my $OS = `uname`;
-# chomp($OS);
-my $OS = $^O;
-
 my $COMMAND = "df -h";
-# if ($OS ne "Darwin") {
-if ($OS eq "linux") {
+if ($^O eq "linux") {
     $COMMAND .= " -T"
 }
 
