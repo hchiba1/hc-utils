@@ -57,7 +57,8 @@ sub sort_by_size {
 	push @out, $line[$i];
     }
 
-    return change_columns($max_len, $min_pref_len, $size_pos, @out);
+    # return change_columns($max_len, $min_pref_len, $size_pos, @out);
+    return join("\n", @out) . "\n";
 }
 
 sub change_columns {
