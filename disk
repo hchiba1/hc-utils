@@ -8,7 +8,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('su', \%OPT);
+getopts('', \%OPT);
 
 my $COMMAND = "df -h";
 if ($^O eq "linux") {
