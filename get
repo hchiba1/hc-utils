@@ -82,8 +82,10 @@ if ($URL =~ /\/$/) {
 
 ### get file contents
 if ($OPT{p}) {
-    if ($URL =~ /^(.+)\/.+$/) {
-        my $directory = $1;
+    my $directory;
+    my $file;
+    if ($URL =~ /^(.+)\/(.+)$/) {
+        ($directory, $file) = ($1, $2);
         if (-f $directory) {
             rmtree($directory);
         }
@@ -92,7 +94,17 @@ if ($OPT{p}) {
         }
         chdir($directory) || die "$directory: $!";
     }
-    exec_command("$COMMAND -OR $URL");
+    if ($directory and $file eq "*") {
+        my @line = retrieve_cache(get_cache_file("$directory/"));
+        for my $line (@line) {
+            my @f = split(/\s+/, $line);
+            my $name = $f[8];
+            print "$directory/$name\n";
+            exec_command("$COMMAND -OR $directory/$name");
+        }
+    } else {
+        exec_command("$COMMAND -OR $URL");
+    }
 } elsif ($OPT{f}) {
     exec_command("$COMMAND -OR $URL");
 } elsif ($OPT{o}) {
