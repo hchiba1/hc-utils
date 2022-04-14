@@ -107,7 +107,7 @@ for my $line (@LINE) {
         }
         print_object_refs($fh, $object);
         if ($COMMIT_TREE{$object}) {
-            $OPT{a} and print $fh " ($COMMIT_TREE{$object})/";
+            $OPT{a} and print $fh " [$COMMIT_TREE{$object}]/";
         }
         if ($NAME{$object}) {
             if ($OPT{a}) {
