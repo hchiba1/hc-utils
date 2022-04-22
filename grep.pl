@@ -7,11 +7,12 @@ my $USAGE=
 "Usage: $PROGRAM REGEXP [FILE]
 -i: ignore case
 -v: invert match
--h: output 1st line as header
+-1: output 1st line as header
+-2: output 2nd line as header
 ";
 
 my %OPT;
-getopts('ivh', \%OPT);
+getopts('iv12', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -21,10 +22,11 @@ if (!@ARGV) {
 my $PATTERN = shift @ARGV;
 
 while (<>) {
-    if ($OPT{h}) {
-        if ($. == 1) {
-            print;
-        }
+    if ($OPT{1} && $. == 1) {
+        print;
+    }
+    if ($OPT{2} && $. == 2) {
+        print;
     }
 
     if (isMatched($_, $PATTERN)) {
