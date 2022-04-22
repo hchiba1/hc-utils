@@ -21,6 +21,7 @@ if (!@ARGV) {
 
 my $PATTERN = shift @ARGV;
 
+STDOUT->autoflush;
 while (<>) {
     if ($OPT{1} && $. == 1) {
         print;
