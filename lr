@@ -20,10 +20,15 @@ my $USAGE=
 -L L: limit levels
 -v: verbose
 -c: classical format
+-h: help
 ";
 
 my %OPT;
-getopts('pugbshfDdltrN:L:vc', \%OPT);
+getopts('pugbsfDdltrN:L:vch', \%OPT);
+if ($OPT{h}) {
+    print STDERR $USAGE;
+    exit(1);
+}
 
 my $OPTIONS = '-F';
 
@@ -39,7 +44,7 @@ if ($OPT{g}) {
 if ($OPT{b}) {
     $OPTIONS .= ' -s --du';
 }
-if ($OPT{s} || $OPT{h}) {
+if ($OPT{s}) {
     $OPTIONS .= ' -h --du';
 }
 if ($OPT{f}) {
