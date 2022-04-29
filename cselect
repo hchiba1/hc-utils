@@ -1,0 +1,95 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM COL_NAME ...
+";
+
+if (!@ARGV) {
+    print STDERR $USAGE;
+    exit 1;
+}
+my ($PATTERN) = @ARGV;
+
+my $FIRST = <STDIN>;
+if ($FIRST) {
+} else {
+    die;
+}
+chomp($FIRST);
+$FIRST =~ s/^#//;
+my @COL_NAME = split("\t", $FIRST);
+my %COL_NAME = ();
+for (my $i=0; $i<@COL_NAME; $i++) {
+    my $name = $COL_NAME[$i];
+    $COL_NAME{$name} = $i;
+}
+
+my %SELECT = ();
+my %UNSELECT = ();
+for my $pattern (@ARGV) {
+    my $ind = find_col_name($pattern);
+    if ($pattern =~ /^-/) {
+        $UNSELECT{$ind} = 1;
+    } else {
+        $SELECT{$ind} = 1;
+    }
+}
+unless (%SELECT) {
+    for (my $i=0; $i<@COL_NAME; $i++) {
+        $SELECT{$i} = 1;
+    }    
+}
+
+STDOUT->autoflush;
+print_columns($FIRST);
+while (<STDIN>) {
+    chomp;
+    print_columns($_);
+}
+
+################################################################################
+### Function ###################################################################
+################################################################################
+
+sub print_columns {
+    my ($line) = @_;
+
+    my @f = split(/\t/, $line);
+    my @out = ();
+    for (my $i=0; $i<@f; $i++) {
+        if ($UNSELECT{$i}) {
+        } elsif ($SELECT{$i}) {
+            push @out, $f[$i];
+        }
+    }
+    print join("\t", @out), "\n";
+}
+
+sub find_col_name {
+    my ($key) = @_;
+
+    $key =~ s/^-//;
+    if (defined $COL_NAME{$key}) {
+        return $COL_NAME{$key};
+    }
+
+    my @hit = ();
+    for (my $i=0; $i<@COL_NAME; $i++) {
+        if ($COL_NAME[$i] =~ /^$key/i) {
+            push @hit, $i;
+        }
+    }
+    if (@hit == 1) {
+        return $hit[0];
+    } elsif (@hit == 0) {
+        die "cannot find column\n";
+    } else {
+        my @name = ();
+        for my $h (@hit) {
+            push @name, $COL_NAME[$h];
+        }
+        die "cannot identify column from: @name\n";
+    }
+}
