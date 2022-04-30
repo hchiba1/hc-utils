@@ -26,8 +26,6 @@ my $sep = $opt{d} || "\n>";
 if ($opt{D}) {
     $sep = <>;
 }
-# my ($newlines, $without_newlines) = $sep =~ /^(\n*)(.*)$/;
-my ($newlines) = ($sep =~ /^(\n*)/);
 (my $without_newlines = $sep) =~ s/^\n*//;
 
 $/= $sep;
@@ -44,7 +42,11 @@ while(<>){
     my $matched = $opt{w} ? /\b$pattern\b/ : /$pattern/;
     if ($matched && !$opt{v}||
 	!$matched && $opt{v}) {
-	print "$without_newlines$_$newlines";
+        if (/\n$/) {
+            print "$without_newlines$_";
+        } else {
+            print "$without_newlines$_\n";
+        }
 	$count ++;
     }
 }
