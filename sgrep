@@ -1,0 +1,66 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('', \%OPT);
+
+if (!@ARGV) {
+    print STDERR $USAGE;
+    exit 1;
+}
+my ($PATTERN) = @ARGV;
+
+my $FIRST = <STDIN>;
+if ($FIRST) {
+} else {
+    die;
+}
+chomp($FIRST);
+$FIRST =~ s/^#//;
+my @COL_NAME = split("\t", $FIRST);
+my %COL_NAME = ();
+for (my $i=0; $i<@COL_NAME; $i++) {
+    my $name = $COL_NAME[$i];
+    $COL_NAME{$name} = $i;
+}
+print "$FIRST\n";
+
+my ($KEY, $VAL) = split("=", $PATTERN);
+my $COL_IND = find_col_name($KEY);
+
+while (<STDIN>) {
+    chomp;
+    my @f = split(/\t/, $_);
+    if ($f[$COL_IND] eq $VAL) {
+        print $_, "\n";
+    }
+}
+
+################################################################################
+### Function ###################################################################
+################################################################################
+
+sub find_col_name {
+    my ($key) = @_;
+
+    if (defined $COL_NAME{$key}) {
+        return $COL_NAME{$key};
+    }
+
+    my $hit;
+    for (my $i=0; $i<@COL_NAME; $i++) {
+        if ($COL_NAME[$i] =~ /^$key/) {
+            if (defined($hit)) {
+                die "$key: cannot identify column name\n";
+            }
+            $hit = $i;
+        }
+    }
+    return $hit;
+}
