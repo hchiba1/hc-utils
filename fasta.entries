@@ -1,0 +1,40 @@
+#!/usr/bin/perl -w
+use strict;
+use Getopt::Std;
+use File::Basename;
+my $program = basename $0;
+
+my $usage = 
+"Usage: $program [FILE ...]
+If file not specified, read from STDIN.
+-d DELIM : delimiter ('>' by default)
+-D : use 1st line as delimiter
+";
+
+my %opt;
+getopts('d:Dp:',\%opt);
+
+my $sep = $opt{d} || "\n>";
+if ($opt{D}) {
+    $sep = <>;
+}
+$/= $sep;
+
+STDOUT->autoflush;
+my $count = 0;
+my $first_line = 1;
+(my $without_newlines = $sep) =~ s/^\n*//;
+while(<>){
+    chomp;
+    if ($first_line) {
+	s/^$without_newlines//;
+	$first_line = 0;
+    }
+    if (!$opt{p} || /$opt{p}/) {
+        my @line = split("\n", $_);
+        print $line[0], "\n";
+        $count ++;
+    }
+}
+
+exit $count;
