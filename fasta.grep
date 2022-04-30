@@ -5,11 +5,12 @@ use File::Basename;
 my $program = basename $0;
 
 my $usage = 
-"Usage: $program [-vd DELIM] PATTERN [FILE ...]
+"Usage: $program PATTERN [FILE ...]
 If file not specified, read from STDIN.
-Default delimiter is '>'.
--v  inverse
--w  word match
+-d DELIM : delimiter ('>' by default)
+-D : use 1st line as delimiter
+-v : inverse
+-w : word match
 ";
 
 my %opt;
@@ -25,8 +26,6 @@ my $sep = $opt{d} || "\n>";
 if ($opt{D}) {
     $sep = <>;
 }
-# my $sep_lstripped = $sep;
-# $sep_lstripped =~ s/^\n+//;
 # my ($newlines, $without_newlines) = $sep =~ /^(\n*)(.*)$/;
 my ($newlines) = ($sep =~ /^(\n*)/);
 (my $without_newlines = $sep) =~ s/^\n*//;
@@ -38,18 +37,13 @@ while(<>){
     chomp;
     # If first line, remove the separator at the beginning of the line.
     if ($first_line) {
-# 	s/^$sep_lstripped//;
 	s/^$without_newlines//;
 	$first_line = 0;
     }
 
-    # Matching
     my $matched = $opt{w} ? /\b$pattern\b/ : /$pattern/;
-    
-    # Print
     if ($matched && !$opt{v}||
 	!$matched && $opt{v}) {
-# 	print "$sep_lstripped$_\n";
 	print "$without_newlines$_$newlines";
 	$count ++;
     }
