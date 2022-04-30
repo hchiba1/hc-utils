@@ -1,0 +1,57 @@
+#!/usr/bin/perl -w
+use strict;
+use Getopt::Std;
+use File::Basename;
+my $program = basename $0;
+
+my $usage = 
+"Usage: $program [-vd DELIM] PATTERN [FILE ...]
+If file not specified, read from STDIN.
+Default delimiter is '>'.
+-v  inverse
+-w  word match
+";
+
+my %opt;
+getopts('vd:Dw',\%opt);
+
+# Get pattern
+!@ARGV and print($usage), exit(1);
+my $pattern = shift @ARGV;
+!@ARGV && -t and print($usage), exit(1);
+
+# Set delimiter.
+my $sep = $opt{d} || "\n>";
+if ($opt{D}) {
+    $sep = <>;
+}
+# my $sep_lstripped = $sep;
+# $sep_lstripped =~ s/^\n+//;
+# my ($newlines, $without_newlines) = $sep =~ /^(\n*)(.*)$/;
+my ($newlines) = ($sep =~ /^(\n*)/);
+(my $without_newlines = $sep) =~ s/^\n*//;
+
+$/= $sep;
+my $count = 0;
+my $first_line = 1;
+while(<>){
+    chomp;
+    # If first line, remove the separator at the beginning of the line.
+    if ($first_line) {
+# 	s/^$sep_lstripped//;
+	s/^$without_newlines//;
+	$first_line = 0;
+    }
+
+    # Matching
+    my $matched = $opt{w} ? /\b$pattern\b/ : /$pattern/;
+    
+    # Print
+    if ($matched && !$opt{v}||
+	!$matched && $opt{v}) {
+# 	print "$sep_lstripped$_\n";
+	print "$without_newlines$_$newlines";
+	$count ++;
+    }
+}
+exit $count;
