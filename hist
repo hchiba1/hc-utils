@@ -49,7 +49,7 @@ if ($opt{w}) {
 $width ||= 1;
 
 my $begin = floor($min);
-if ($width < 1) {
+if ($begin > 0 && $width < 1) {
     $begin = 0;
 }
 if (defined $opt{b}) {
