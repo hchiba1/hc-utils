@@ -97,7 +97,7 @@ if ($STATUS == 0){
     if ($CONVERT and -f $SOURCE 
 	and -M $SOURCE <= 0
 	) {
-	system "$CONVERT", "$SOURCE", "$TARGET";
+	system "$CONVERT", "$SOURCE", "-colorspace", "RGB", "$TARGET";
     }
     if ($OPT{g} and $VIEW and -f $IMAGE
 	and -M $IMAGE <= 0
