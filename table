@@ -8,6 +8,7 @@ my $USAGE=
 -k N: key field in TABLE1 (1 by defalut)
 -v N: value filed in TABLE2 (all after 2nd field, by default)
 -s SEP: separater ('\\t' by default)
+-b: binary output mode (1 or NOT_FOUND)
 
 TABLE1:
 KEY1  STRING1...
@@ -30,7 +31,7 @@ KEY2  STRING2...  NOT_FOUND
 
 ### Options and arguments ###
 my %OPT;
-getopts('k:v:s:ef', \%OPT);
+getopts('k:v:s:bef', \%OPT);
 
 my $KEY_FIELD = $OPT{k} || 1;
 $KEY_FIELD --; # Adjust to 0 start
@@ -54,6 +55,10 @@ open(TABLE2, $TABLE2) || die "$TABLE2: $!";
 my %HASH = ();
 while(<TABLE2>){
     chomp;
+    if ($OPT{b}) {
+        $HASH{$_} = 1;
+        next;
+    }
     my ($key, $value);
     if ($VALUE_FIELD) {
 	my @f = split($SEP, $_);
@@ -66,9 +71,9 @@ while(<TABLE2>){
 	next;
     }
     if (! defined($HASH{$key})) {
-	$HASH{$key} = [$value];
+        $HASH{$key} = [$value];
     } else {
-	push @{$HASH{$key}}, $value;
+        push @{$HASH{$key}}, $value;
     }
 }
 close(TABLE2);
@@ -91,7 +96,11 @@ while(my $line = <STDIN>){
 	    print $line, "\n";
 	}
     } elsif (defined($HASH{$key})) {
-        print $line, "\t", join(",",@{$HASH{$key}}), "\n";
+        if ($OPT{b}) {
+            print $line, "\t1\n";
+        } else {
+            print $line, "\t", join(",",@{$HASH{$key}}), "\n";
+        }
     } else {
         print $line, "\t", "NOT_FOUND", "\n";
     }
