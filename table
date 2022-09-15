@@ -90,11 +90,9 @@ while(my $line = <STDIN>){
 	} else {
 	    print $line, "\n";
 	}
+    } elsif (defined($HASH{$key})) {
+        print $line, "\t", join(",",@{$HASH{$key}}), "\n";
     } else {
-	if (defined($HASH{$key})) {
-	    print $line, "\t", join(",",@{$HASH{$key}}), "\n";
-	} else {
-	    print $line, "\t", "NOT_FOUND", "\n";
-	}
+        print $line, "\t", "NOT_FOUND", "\n";
     }
 }
