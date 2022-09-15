@@ -1,0 +1,100 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: cat TABLE1 | $PROGRAM [OPTION] TABLE2
+-k N: key field in TABLE1 (1 by defalut)
+-v N: value filed in TABLE2 (all after 2nd field, by default)
+-s SEP: separater ('\\t' by default)
+
+TABLE1:
+KEY1  STRING1...
+KEY2  STRING2...
+
+TABLE2:
+KEY1  VALUE1...
+KEY1  VALUE2...
+
+OUTPUT:
+KEY1  STRING1...  VALUE1...,VALUE2...
+KEY2  STRING2...  NOT_FOUND
+";
+# -e: expanded output mode
+# OUTPUT:
+# KEY1  STRING1...  VALUE1...
+# KEY1  STRING1...  VALUE2...
+# KEY2  STRING2...
+# -f: first colum is value
+
+### Options and arguments ###
+my %OPT;
+getopts('k:v:s:ef', \%OPT);
+
+my $KEY_FIELD = $OPT{k} || 1;
+$KEY_FIELD --; # Adjust to 0 start
+
+my $VALUE_FIELD = $OPT{v};
+$VALUE_FIELD and $VALUE_FIELD--; # Adjust to 0 start
+
+my $SEP = "\t";
+if (defined $OPT{s}) {
+    $SEP = $OPT{s};
+}
+
+if (@ARGV != 1) {
+    print STDERR $USAGE;
+    exit 1;
+}
+my $TABLE2 = shift @ARGV;
+
+### Make hash ###
+open(TABLE2, $TABLE2) || die "$TABLE2: $!";
+my %HASH = ();
+while(<TABLE2>){
+    chomp;
+    my ($key, $value);
+    if ($VALUE_FIELD) {
+	my @f = split($SEP, $_);
+	$key = $f[0];
+	$value = $f[$VALUE_FIELD];
+    } else {
+	($key, $value) = /^(.+?)$SEP(.+)$/;
+    }
+    unless (defined($key) && defined($value)) {
+	next;
+    }
+    if (! defined($HASH{$key})) {
+	$HASH{$key} = [$value];
+    } else {
+	push @{$HASH{$key}}, $value;
+    }
+}
+close(TABLE2);
+
+### Parse STDIN ###
+while(my $line = <STDIN>){
+    chomp($line);
+    my @f = split("\t", $line);
+    my $key = $f[$KEY_FIELD];
+    if ($OPT{e}) {
+	if (defined($HASH{$key})) {
+	    for my $value (@{$HASH{$key}}) {
+		if ($OPT{f}) {
+		    print $value, "\t", $line, "\n";
+		} else {
+		    print $line, "\t", $value, "\n";
+		}
+	    }
+	} else {
+	    print $line, "\n";
+	}
+    } else {
+	if (defined($HASH{$key})) {
+	    print $line, "\t", join(",",@{$HASH{$key}}), "\n";
+	} else {
+	    print $line, "\t", "NOT_FOUND", "\n";
+	}
+    }
+}
