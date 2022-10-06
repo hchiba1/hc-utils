@@ -1,0 +1,42 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM
+";
+
+my %OPT;
+getopts('', \%OPT);
+
+my @M = ();
+
+!@ARGV && -t and die $USAGE;
+my $i = 0;
+while (<>) {
+    chomp;
+    my @x = split(/\t/, $_);
+    for (my $j=0; $j<@x; $j++) {
+	$M[$i][$j] = $x[$j];
+    }
+    $i ++;
+}
+
+# for (my $i=0; $i<@M; $i++) {
+#     for (my $j=0; $j<@{$M[0]}; $j++) {
+# 	print $M[$i][$j];
+# 	print "\t";
+#     }
+#     print "\n";
+# }
+
+for (my $j=0; $j<@{$M[0]}; $j++) {
+    my @line = ();
+    for (my $i=0; $i<@M; $i++) {
+# 	if (defined $M[$i][$j]) {
+	    push @line, $M[$i][$j];
+# 	}
+    }
+    print join("\t", @line), "\n";
+}
