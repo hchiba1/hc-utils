@@ -6,11 +6,12 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
 -L LIMIT: limit lines to read
--i
+-i : output index for original columns
+-c : align columns
 ";
 
 my %OPT;
-getopts('L:i', \%OPT);
+getopts('L:ic', \%OPT);
 
 my @M = ();
 
@@ -36,6 +37,7 @@ while (<>) {
 #     print "\n";
 # }
 
+my $OUT = "";
 for (my $j=0; $j<@{$M[0]}; $j++) {
     my @line = ();
     if ($OPT{i}) {
@@ -43,8 +45,15 @@ for (my $j=0; $j<@{$M[0]}; $j++) {
     }
     for (my $i=0; $i<@M; $i++) {
 # 	if (defined $M[$i][$j]) {
-	    push @line, $M[$i][$j];
+        push @line, $M[$i][$j];
 # 	}
     }
-    print join("\t", @line), "\n";
+    $OUT .= join("\t", @line) . "\n";
+}
+if ($OPT{c}) {
+    open(PIPE, "|align_column|less -S") || die "$!";
+    print PIPE $OUT;
+    close(PIPE);
+} else {
+    print $OUT;
 }
