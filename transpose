@@ -7,11 +7,12 @@ my $USAGE=
 "Usage: $PROGRAM
 -L LIMIT: limit lines to read
 -i : output index for original columns
+-n : output No. for original columns
 -c : align columns
 ";
 
 my %OPT;
-getopts('L:ic', \%OPT);
+getopts('L:inc', \%OPT);
 
 my @M = ();
 
@@ -41,7 +42,10 @@ my $OUT = "";
 for (my $j=0; $j<@{$M[0]}; $j++) {
     my @line = ();
     if ($OPT{i}) {
-        push @line, $j;
+        push @line, "[$j]";
+    }
+    if ($OPT{n}) {
+        push @line, $j+1;
     }
     for (my $i=0; $i<@M; $i++) {
 # 	if (defined $M[$i][$j]) {
