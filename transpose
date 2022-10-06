@@ -5,10 +5,12 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
+-L LIMIT: limit lines to read
+-i
 ";
 
 my %OPT;
-getopts('', \%OPT);
+getopts('L:i', \%OPT);
 
 my @M = ();
 
@@ -21,6 +23,9 @@ while (<>) {
 	$M[$i][$j] = $x[$j];
     }
     $i ++;
+    if ($OPT{L} && $i > $OPT{L} - 1) {
+        last;
+    }
 }
 
 # for (my $i=0; $i<@M; $i++) {
@@ -33,6 +38,9 @@ while (<>) {
 
 for (my $j=0; $j<@{$M[0]}; $j++) {
     my @line = ();
+    if ($OPT{i}) {
+        push @line, $j;
+    }
     for (my $i=0; $i<@M; $i++) {
 # 	if (defined $M[$i][$j]) {
 	    push @line, $M[$i][$j];
