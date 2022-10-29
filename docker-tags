@@ -22,7 +22,6 @@ done
 # output usage.
 function _usage() {
   cat << __EOF__
-
 Usage:
   ${PROGRA_NAME} [-n|--num PAGE_LIMIT] [-v|--verbose] [-h|--help] [IMAGE]
 
@@ -34,7 +33,6 @@ Options:
   -n --num         By default, all pages are obtained.
   -v --verbose     Show internal status.
   -h --help        Show help message.
-
 __EOF__
 }
 
@@ -71,7 +69,7 @@ done
 
 # Check main(image name)parameter.
 if [ $# -ne 1 ]; then
-    output_error "Required docker image name(There is only one)."
+    output_error "Specify a docker image name"
     _usage
     exit 1
 fi
