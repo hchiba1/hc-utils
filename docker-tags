@@ -1,0 +1,143 @@
+#!/bin/bash
+
+PROGRA_NAME="$( basename $0 )"
+
+# print to stderr at red letters.
+function output_error() {
+    echo -e "\e[31m$@\e[m" >&2
+    # For Mac terminal
+    # echo $'\e[31m'"$@"$'\e[0m' >&2
+}
+
+# Check install modules.
+NECESSARY_LIST=("curl" "jq")
+for cmd in ${NECESSARY_LIST[@]}; do
+    if ! `which ${cmd} > /dev/null 2>&1`; then
+        output_error "This program needs \"${cmd}\".Plese install yum|apt|apk etc.."
+        exit 1
+    fi
+done
+
+
+# output usage.
+function _usage() {
+  cat << __EOF__
+
+Usage:
+  ${PROGRA_NAME} [-n|--num PAGE_LIMIT] [-v|--verbose] [-h|--help] [IMAGE]
+
+Description:
+   Output tag list of specified Docker image.
+   Only one image can be specified.
+
+Options:
+  -n --num         By default, all pages are obtained.
+  -v --verbose     Show internal status.
+  -h --help        Show help message.
+
+__EOF__
+}
+
+# Set default option value.
+IS_VERBOSE=false
+PAGE_LIMIT=
+
+# Analyze parameter, because getopts is unsupported long name option.
+while [ $# -gt 0 ]; do
+    OPT_NAME=$(printf "%s" $1 | sed 's/^-\{1,2\}//')
+    case "${OPT_NAME}" in
+        'n' | 'num' )
+            PAGE_LIMIT=$2
+            shift 2
+            ;;
+        'v' | 'verbose' )
+            IS_VERBOSE=true
+            shift 1
+            ;;
+        'h' | 'help' )
+            _usage
+            exit 0
+            ;;
+        * )
+            if [[ "$1" =~ ^- ]]; then
+                output_error "${PROGRA_NAME}: illegal option -- '${OPT_NAME}'"
+                _usage
+                exit 1
+            fi
+            break
+            ;;
+    esac
+done
+
+# Check main(image name)parameter.
+if [ $# -ne 1 ]; then
+    output_error "Required docker image name(There is only one)."
+    _usage
+    exit 1
+fi
+IMAGE=$1
+
+##########################################
+# Main process.
+##########################################
+
+TARGET_URL="https://registry.hub.docker.com/v2/repositories"
+if [[ ! "${IMAGE}" =~ ^.+/.+$ ]]; then
+    # For official images.
+    TARGET_URL="${TARGET_URL}/library"
+fi
+TARGET_URL="${TARGET_URL}/${IMAGE}/tags/"
+
+PAGE_NO=1
+while [ "${TARGET_URL}" != "null" ]; do
+    response=$(curl -LsS ${TARGET_URL})
+    STATUS=$?
+    if [ ${STATUS} -ne 0 ]; then
+        output_error "Could not get tag list from docker hub."
+        echo $response
+        exit ${STATUS}
+    fi
+
+    if "${IS_VERBOSE}"; then
+        # Print command and response
+        echo "curl -LsS ${TARGET_URL}"
+        echo $response | jq .
+    else
+        tsv=$(echo "$response" | jq -r ".results | map({tag: .name, size: .full_size, last_updated: .last_updated}) | .[] | [.last_updated, .size, .tag] | @tsv" 2> /dev/null)
+        STATUS=$?
+        if [ ${STATUS} -ne 0 ]; then
+            # Error in parsing results
+            echo "curl -LsS ${TARGET_URL}"
+            echo "$response" | jq .
+            exit ${STATUS}
+        fi
+        if [ $PAGE_NO -eq 1 ]; then
+            # Print header
+            echo -e "last_updated\ttag\tsize"
+        else
+            # Pagination
+            echo
+        fi
+        echo "$tsv" | sed 's/T/ /; s/\.[0-9]\+Z//'
+    fi
+
+    if [ -n "$PAGE_LIMIT" ]; then
+        if [ $PAGE_NO -ge $PAGE_LIMIT ]; then
+            exit
+        fi
+    fi
+
+    # Get the next page from response json.
+    TARGET_URL=$(echo $response | jq -r .next)
+    STATUS=$?
+    if [ ${STATUS} -ne 0 -o -z "${TARGET_URL}" ]; then
+        output_error "Failure getting next page url."
+        echo $response
+        exit ${STATUS}
+    fi
+    PAGE_NO=$(echo ${TARGET_URL} | sed -e 's/^\(http.\+\)\(\?\)\(\page=\)\([[:digit:]]\+\)$/\4/')
+    # For GNU
+    # PAGE_NO=$(echo ${TARGET_URL} | sed -E -e 's|^https?://.+\?page=([[:digit:]]+)$|\1|')
+done
+
+exit 0
