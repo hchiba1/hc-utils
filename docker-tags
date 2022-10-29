@@ -2,8 +2,8 @@
 
 PROGRA_NAME="$( basename $0 )"
 
-# print to stderr at red letters.
 function output_error() {
+    # print error messages to stderr in red
     echo -e "\e[31m$@\e[m" >&2
     # For Mac terminal
     # echo $'\e[31m'"$@"$'\e[0m' >&2
@@ -18,8 +18,6 @@ for cmd in ${NECESSARY_LIST[@]}; do
     fi
 done
 
-
-# output usage.
 function _usage() {
   cat << __EOF__
 Usage:
