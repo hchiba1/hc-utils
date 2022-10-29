@@ -77,12 +77,12 @@ IMAGE=$1
 # Main process.
 ##########################################
 
-TARGET_URL="https://registry.hub.docker.com/v2/repositories"
+# Official image exists under library/
 if [[ ! "${IMAGE}" =~ ^.+/.+$ ]]; then
-    # For official images.
-    TARGET_URL="${TARGET_URL}/library"
+    IMAGE="library/${IMAGE}"
 fi
-TARGET_URL="${TARGET_URL}/${IMAGE}/tags/"
+
+TARGET_URL="https://registry.hub.docker.com/v2/repositories/${IMAGE}/tags/"
 
 PAGE_NO=1
 while [ "${TARGET_URL}" != "null" ]; do
