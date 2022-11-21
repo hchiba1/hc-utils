@@ -109,7 +109,7 @@ while [ "${TARGET_URL}" != "null" ]; do
         fi
         if [ $PAGE_NO -eq 1 ]; then
             # Print header
-            echo -e "last_updated\ttag\tsize"
+            echo -e "last_updated\tsize\ttag"
         else
             # Pagination
             echo
