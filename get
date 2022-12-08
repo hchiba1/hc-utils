@@ -193,6 +193,7 @@ sub format_list {
     my @other_file = ();
 
     my %size = ();
+    my %time = ();
 
     ### find max length for each column
     my $f1_len_max = 0;
@@ -203,9 +204,10 @@ sub format_list {
     for my $line (@list) {
         my @f = split(/\s+/, $line);
         my $name = $f[8];
-        if ($line =~ /^.*? +(\d+) +(\S+) +(\S+) +(\d+) +.*/) {
-            my ($f1, $group, $user, $f2) = ($1, $2, $3, $4);
+        if ($line =~ /^.*? +(\d+) +(\S+) +(\S+) +(\d+) +(\S+ +\S+ +\S+).*/) {
+            my ($f1, $group, $user, $f2, $date) = ($1, $2, $3, $4, $5);
             $size{$i} = $f2;
+            $time{$i} = time2iso(str2time($date, "GMT"));
             my $f1_len = length($f1);
             if ($f1_len > $f1_len_max) {
                 $f1_len_max = $f1_len;
@@ -243,6 +245,10 @@ sub format_list {
         for my $i (sort {$size{$b} <=> $size{$a}} keys(%size)) {
             $result .= format_line($all[$i], $group_len_max, $user_len_max, $f1_len_max, $f2_len_max);
         }
+    } elsif ($OPT{t}) {
+        for my $i (sort {$time{$a} cmp $time{$b}} keys(%time)) {
+            $result .= format_line($all[$i], $group_len_max, $user_len_max, $f1_len_max, $f2_len_max);
+        }
     } else {
         # output in the following order:
         # UCASE_FILE
@@ -273,10 +279,8 @@ sub format_line {
         if ($line =~ /^d/) {
             $name .= "/";
         }
-        if ($OPT{t}) {
-            $date = time2iso(str2time($date, "GMT"));
-            $date =~ s/:00$//;
-        }
+        $date = time2iso(str2time($date, "GMT"));
+        $date =~ s/:00$//;
         return "$perm $num $group $user  $size  $date $name\n";
     } else {
         return "";
