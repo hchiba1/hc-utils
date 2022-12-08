@@ -4,7 +4,7 @@ use File::Basename;
 use Getopt::Std;
 use File::Path;
 use Digest::SHA 'sha256_hex';
-use HTTP::Date;
+use HTTP::Date 'str2time', 'time2iso';
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [OPTIONS] URL
@@ -19,6 +19,7 @@ my $USAGE=
 -l: list filename only
 -s: output in original order
 -S: sort by size
+-t: format in local time
 ";
 
 my $CACHE_TIME_LIMIT = 21600; # 6 hours
@@ -29,7 +30,7 @@ my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('fo:pqdnvrlsS', \%OPT);
+getopts('fo:pqdnvrlsSt', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
@@ -260,8 +261,8 @@ sub format_list {
 sub format_line {
     my ($line, $group_len_max, $user_len_max, $f1_len_max, $f2_len_max) = @_;
 
-    if ($line =~ /^(.*?) +(\d+) +(\S+) +(\S+) +(\d+)( +.*)/) {
-        my ($perm, $num, $group, $user, $size, $name) = ($1, $2, $3, $4, $5, $6);
+    if ($line =~ /^(.*?) +(\d+) +(\S+) +(\S+) +(\d+) (\S+ +\S+ +\S+)( +.*)/) {
+        my ($perm, $num, $group, $user, $size, $date, $name) = ($1, $2, $3, $4, $5, $6, $7);
         $size = format_size($size);
         $group .= " " x ($group_len_max - length($group));
         $user .= " " x ($user_len_max - length($user));
@@ -272,7 +273,11 @@ sub format_line {
         if ($line =~ /^d/) {
             $name .= "/";
         }
-        return "$perm $num $group $user  $size $name\n";
+        if ($OPT{t}) {
+            $date = time2iso(str2time($date, "GMT"));
+            $date =~ s/:00$//;
+        }
+        return "$perm $num $group $user  $size  $date $name\n";
     } else {
         return "";
     }
