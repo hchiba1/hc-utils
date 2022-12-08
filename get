@@ -17,6 +17,7 @@ my $USAGE=
 -v: verbose
 -r: recursive
 -l: list filename only
+-h: human readable sizes
 -s: output in original order
 -S: sort by size
 -t: format in local time
@@ -30,7 +31,7 @@ my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('fo:pqdnvrlsSt', \%OPT);
+getopts('fo:pqdnvrlhsSt', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
@@ -205,14 +206,17 @@ sub format_list {
         my @f = split(/\s+/, $line);
         my $name = $f[8];
         if ($line =~ /^.*? +(\d+) +(\S+) +(\S+) +(\d+) +(\S+ +\S+ +\S+).*/) {
-            my ($f1, $group, $user, $f2, $date) = ($1, $2, $3, $4, $5);
-            $size{$i} = $f2;
+            my ($f1, $group, $user, $size, $date) = ($1, $2, $3, $4, $5);
+            $size{$i} = $size;
             $time{$i} = time2iso(str2time($date, "GMT"));
             my $f1_len = length($f1);
             if ($f1_len > $f1_len_max) {
                 $f1_len_max = $f1_len;
             }
-            my $f2_len = length(format_size($f2));
+            if ($OPT{h}) {
+                $size = format_size($size);
+            }
+            my $f2_len = length($size);
             if ($f2_len > $f2_len_max) {
                 $f2_len_max = $f2_len;
             }
@@ -269,7 +273,9 @@ sub format_line {
 
     if ($line =~ /^(.*?) +(\d+) +(\S+) +(\S+) +(\d+) (\S+ +\S+ +\S+)( +.*)/) {
         my ($perm, $num, $group, $user, $size, $date, $name) = ($1, $2, $3, $4, $5, $6, $7);
-        $size = format_size($size);
+        if ($OPT{h}) {
+            $size = format_size($size);
+        }
         $group .= " " x ($group_len_max - length($group));
         $user .= " " x ($user_len_max - length($user));
         my $pad1 = " " x ($f1_len_max - length($num));
