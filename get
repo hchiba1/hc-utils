@@ -20,7 +20,7 @@ my $USAGE=
 -h: human readable sizes
 -s: output in original order
 -S: sort by size
--t: format in local time
+-t: sort by time
 -P: pattern of files to save (use -q to check)
 ";
 
