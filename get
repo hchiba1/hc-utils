@@ -21,6 +21,7 @@ my $USAGE=
 -s: output in original order
 -S: sort by size
 -t: format in local time
+-P: pattern of files to save (use -q to check)
 ";
 
 my $CACHE_TIME_LIMIT = 21600; # 6 hours
@@ -31,7 +32,7 @@ my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('fo:pqdnvrlhsSt', \%OPT);
+getopts('fo:pqdnvrlhsStP', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
@@ -60,6 +61,22 @@ my $CACHE_FILE_PATH = get_cache_file($URL);
 my $CURRENT_TIME = localtime;
 
 ### get directory contents
+if ($OPT{P}) {
+    my @file = `ls $TREE_DIR/$URL`;
+    chomp(@file);
+    my $status = $? >> 8;
+    if ($status) {
+        exit $status;
+    }
+    for my $file (@file) {
+        $file =~ s/^$TREE_DIR\///;
+        print "get -f $file &\n";
+        if (!$OPT{d} and !$OPT{q}) {
+            system "get -f $file &";
+        }
+    }
+    exit;
+}
 if ($URL =~ /\/$/) {
     if ($OPT{r}) {
         system "lr $TREE_DIR/$URL";
