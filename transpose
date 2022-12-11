@@ -30,14 +30,6 @@ while (<>) {
     }
 }
 
-# for (my $i=0; $i<@M; $i++) {
-#     for (my $j=0; $j<@{$M[0]}; $j++) {
-# 	print $M[$i][$j];
-# 	print "\t";
-#     }
-#     print "\n";
-# }
-
 my $OUT = "";
 for (my $j=0; $j<@{$M[0]}; $j++) {
     my @line = ();
@@ -48,9 +40,7 @@ for (my $j=0; $j<@{$M[0]}; $j++) {
         push @line, $j+1;
     }
     for (my $i=0; $i<@M; $i++) {
-# 	if (defined $M[$i][$j]) {
         push @line, $M[$i][$j];
-# 	}
     }
     $OUT .= join("\t", @line) . "\n";
 }
