@@ -33,7 +33,7 @@ while (<>) {
 	$M[$i][$j] = $x[$j];
     }
     $i ++;
-    if ($OPT{L} && $i > $OPT{L} - 1) {
+    if ($OPT{L} && $i >= $OPT{L}) {
         last;
     }
 }
