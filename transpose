@@ -18,9 +18,17 @@ my @M = ();
 
 !@ARGV && -t and die $USAGE;
 my $i = 0;
+my $col = 0;
 while (<>) {
     chomp;
-    my @x = split(/\t/, $_);
+    my @x = split(/\t/, $_, -1);
+    if ($col) {
+        if ($col != @x) {
+            die;
+        }
+    } else {
+        $col = @x;
+    }
     for (my $j=0; $j<@x; $j++) {
 	$M[$i][$j] = $x[$j];
     }
