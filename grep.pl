@@ -7,12 +7,13 @@ my $USAGE=
 "Usage: $PROGRAM REGEXP [FILE]
 -i: ignore case
 -v: invert match
+-w: match word
 -1: output 1st line as header
 -2: output 2nd line as header
 ";
 
 my %OPT;
-getopts('iv12', \%OPT);
+getopts('ivw12', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -44,6 +45,10 @@ while (<>) {
 
 sub isMatched {
     my ($str, $pattern) = @_;
+
+    if ($OPT{w}) {
+        $pattern = '\b' . $pattern . '\b';
+    }
 
     my $bool = 0;
     if ($OPT{i}) {
