@@ -5,10 +5,12 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
+-o: other disks (tmpfs and squashfs)
+-a: all
 ";
 
 my %OPT;
-getopts('', \%OPT);
+getopts('oa', \%OPT);
 
 my $COMMAND = "df -h";
 if ($^O eq "linux") {
@@ -57,8 +59,7 @@ sub sort_by_size {
 	push @out, $line[$i];
     }
 
-    # return change_columns($max_len, $min_pref_len, $size_pos, @out);
-    return join("\n", @out) . "\n";
+    return change_columns($max_len, $min_pref_len, $size_pos, @out);
 }
 
 sub change_columns {
@@ -68,6 +69,7 @@ sub change_columns {
     my $avail_pos = get_column_end_pos($line[0], "Avail");
     my $mounted_pos = get_column_start_pos($line[0], "Mounted on");
 
+    my @out = ();
     for (my $i=0; $i<@line; $i++) {
 	my $device_col = substr($line[$i], 0, $min_pref_len);
 	my $size_col = substr($line[$i], $min_pref_len, $size_pos - $min_pref_len);
@@ -77,12 +79,20 @@ sub change_columns {
 	my $mounted_col = substr($line[$i], $mounted_pos);
 	my $padd = " " x ($max_len - length($line[$i]));
 	$device_col =~ s/ +$//;
-
-	$line[$i] = "$mounted_col$padd $size_col$used_col ";
-	$line[$i] .= "$others_col$device_col\n";
+        if (!$OPT{a} && !$OPT{o}) {
+            if ($device_col =~ /tmpfs|squashfs/) {
+                next;
+            }
+        }
+        if ($OPT{o}) {
+            if ($device_col !~ /tmpfs|squashfs/ && $device_col !~ /^Filesystem/) {
+                next;
+            }
+        }
+	push @out, "$mounted_col$padd $size_col$used_col $others_col$device_col\n";
     }
 
-    return @line;
+    return @out;
 }
 
 sub get_column_start_pos {
@@ -135,6 +145,8 @@ sub get_multiplied_size {
 	$multiple *= $base ** 3
     } elsif ($unit =~ /T/) {
 	$multiple *= $base ** 4
+    } elsif ($unit =~ /P/) {
+	$multiple *= $base ** 5
     }
 
     return $num * $multiple;
