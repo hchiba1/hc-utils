@@ -29,20 +29,19 @@ print change_columns(sort_by_size(@line));
 sub sort_by_size {
     my @line = @_;
 
-    my $pos = get_column_end_pos($line[0], "Size");
-    my $mounted_pos = get_column_start_pos($line[0], "Mounted on");
     my @size = (0);
     my $i_root = 0;
+    my $size_pos = get_column_end_pos($line[0], "Size");
+    my $mounted_pos = get_column_start_pos($line[0], "Mounted on");
     for (my $i=1; $i<@line; $i++) {
-	my $columns = substr($line[$i], 0, $pos);
+	my $columns = substr($line[$i], 0, $size_pos);
 	my $mounted = substr($line[$i], $mounted_pos);
         if ($mounted eq "/") {
             $i_root = $i;
             next;
         }
 	if ($columns =~ /.* (\S+)$/) {
-	    my $size = $1;
-	    push @size, get_size($size, 1024);
+	    push @size, get_size($1, 1024);
 	} else {
 	    die;
 	}
@@ -86,14 +85,14 @@ sub change_columns {
     }
 
     my @out = ();
-    for (my $i=0; $i<@line; $i++) {
-	my $device = substr($line[$i], 0, $device_len);
-	my $size = substr($line[$i], $device_len, $size_pos - $device_len);
-	my $used = substr($line[$i], $size_pos, $used_pos - $size_pos);
-	my $avail = substr($line[$i], $used_pos, $avail_pos - $used_pos);
-	my $percent = substr($line[$i], $avail_pos, $mounted_pos - $avail_pos);
-	my $mounted = substr($line[$i], $mounted_pos);
-	my $padd = " " x ($max_len - length($line[$i]) + 1);
+    for my $line (@line) {
+	my $device = substr($line, 0, $device_len);
+	my $size = substr($line, $device_len, $size_pos - $device_len);
+	my $used = substr($line, $size_pos, $used_pos - $size_pos);
+	my $avail = substr($line, $used_pos, $avail_pos - $used_pos);
+	my $percent = substr($line, $avail_pos, $mounted_pos - $avail_pos);
+	my $mounted = substr($line, $mounted_pos);
+	my $padd = " " x ($max_len - length($line) + 1);
 	$device =~ s/ +$//;
         if (!$OPT{a} && !$OPT{o}) {
             if ($device =~ /tmpfs|squashfs/) {
