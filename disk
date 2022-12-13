@@ -67,7 +67,6 @@ sub change_columns {
     my $avail_pos = get_column_end_pos($line[0], "Avail");
     my $mounted_pos = get_column_start_pos($line[0], "Mounted on");
 
-    my $max_len = length($line[1]);
     my $device_len = length($line[1]);
     for (my $i=1; $i<@line; $i++) {
 	my $columns = substr($line[$i], 0, $size_pos);
@@ -76,24 +75,15 @@ sub change_columns {
 	    if (length($pref) < $device_len) {
 		$device_len = length($pref);
 	    }
-	    if (length($line[$i]) > $max_len) {
-		$max_len = length($line[$i]);
-	    }
 	} else {
 	    die;
 	}
     }
 
-    my @out = ();
+    my @filtered = ();
+    my $max_len = length($line[0]);
     for my $line (@line) {
 	my $device = substr($line, 0, $device_len);
-	my $size = substr($line, $device_len, $size_pos - $device_len);
-	my $used = substr($line, $size_pos, $used_pos - $size_pos);
-	my $avail = substr($line, $used_pos, $avail_pos - $used_pos);
-	my $percent = substr($line, $avail_pos, $mounted_pos - $avail_pos);
-	my $mounted = substr($line, $mounted_pos);
-	my $padd = " " x ($max_len - length($line) + 1);
-	$device =~ s/ +$//;
         if (!$OPT{a} && !$OPT{o}) {
             if ($device =~ /tmpfs|squashfs/) {
                 next;
@@ -104,7 +94,24 @@ sub change_columns {
                 next;
             }
         }
-	push @out, "${mounted}${padd}${size}${used}${percent}${device}\n";
+        if (length($line) > $max_len) {
+            $max_len = length($line);
+        }
+	push @filtered, $line;
+    }
+
+    my @out = ();
+    for my $line (@filtered) {
+	my $device = substr($line, 0, $device_len);
+	my $size = substr($line, $device_len, $size_pos - $device_len);
+	my $used = substr($line, $size_pos, $used_pos - $size_pos);
+	# my $avail = substr($line, $used_pos, $avail_pos - $used_pos);
+	my $percent = substr($line, $avail_pos, $mounted_pos - $avail_pos);
+	my $mounted = substr($line, $mounted_pos);
+	my $padd = " " x ($max_len - length($line) + 1);
+        my $out = "${mounted}${padd} ${size}${used}${percent} ${device}";
+	$out =~ s/ +$//;
+	push @out, "$out\n";
     }
 
     return @out;
