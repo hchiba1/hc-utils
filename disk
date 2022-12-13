@@ -30,21 +30,29 @@ sub sort_by_size {
     my @line = @_;
 
     my $pos = get_column_end_pos($line[0], "Size");
-
-    my @size = ();
+    my $mounted_pos = get_column_start_pos($line[0], "Mounted on");
+    my @size = (0);
+    my $i_root = 0;
     for (my $i=1; $i<@line; $i++) {
 	my $columns = substr($line[$i], 0, $pos);
+	my $mounted = substr($line[$i], $mounted_pos);
+        if ($mounted eq "/") {
+            $i_root = $i;
+            next;
+        }
 	if ($columns =~ /.* (\S+)$/) {
 	    my $size = $1;
-	    $size[$i] = get_size($size, 1024);
+	    push @size, get_size($size, 1024);
 	} else {
 	    die;
 	}
     }
 
+    my @out = ($line[0]);
+    push @out, splice(@line, $i_root, 1);
+
     my @order = sort { $size[$b]<=>$size[$a] } 1..$#line;
     
-    my @out = ($line[0]);
     for my $i (@order) {
 	push @out, $line[$i];
     }
