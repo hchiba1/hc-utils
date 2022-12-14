@@ -72,8 +72,9 @@ sub change_columns {
     my $min_pos = length($line[0]);
     for my $line (@line) {
 	my $fs_info = substr($line, 0, $size_pos);
+	my $mounted = substr($line, $mounted_pos);
         if (!$OPT{a} && !$OPT{o}) {
-            if ($fs_info =~ /tmpfs|squashfs/) {
+            if ($fs_info =~ /tmpfs|squashfs/ && $mounted ne "/dev/shm") {
                 next;
             }
         }
