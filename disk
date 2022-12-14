@@ -20,7 +20,20 @@ if ($^O eq "linux") {
 my @line = `$COMMAND @ARGV`;
 chomp(@line);
     
-print change_columns(sort_by_size(@line));
+my @out =  change_columns(sort_by_size(@line));
+if (!$OPT{a} && !$OPT{o}) {
+    my @last = ();
+    for my $out (@out) {
+        if ($out =~ /\/dev\/shm/) {
+            push @last, $out;
+        } else {
+            print $out;
+        }
+    }
+    print @last;
+} else {
+    print @out;
+}
 
 ################################################################################
 ### Functions ##################################################################
