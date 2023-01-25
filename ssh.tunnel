@@ -1,0 +1,30 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM HOST:PORT
+-p port: port of localhost
+";
+
+my %OPT;
+getopts('p:', \%OPT);
+
+if (!@ARGV) {
+    print STDERR $USAGE;
+    exit 1;
+}
+my ($TARGET) = @ARGV;
+
+if ($TARGET =~ /^(\S+):(\d+)$/) {
+    my ($HOST, $PORT) = ($1, $2);
+    my $port = $PORT;
+    if ($OPT{p}) {
+        $port = $OPT{p};
+    }
+    print "ssh -L $port:localhost:$PORT $HOST\n";
+    system "ssh -L $port:localhost:$PORT $HOST";
+} else {
+    die $USAGE;
+}
