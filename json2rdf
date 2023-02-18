@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+import argparse
+from rdflib import Graph, plugin
+
+parser = argparse.ArgumentParser(description='Convert JSON-LD to RDF.')
+parser.add_argument('input', help='Input file')
+args = parser.parse_args()
+
+with open(args.input) as f:
+    jsonld = f.read()
+    # g = Graph().parse(data=jsonld, format='json-ld')
+    g = Graph().parse(data=jsonld, format='json-ld', context='https://spang.dbcls.jp/sparql-formatter.jsonld')
+    print(g.serialize(format='n3'), end="")
