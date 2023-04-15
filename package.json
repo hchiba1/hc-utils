@@ -9,7 +9,8 @@
   "dependencies": {
     "columnify": "^1.5.4",
     "commander": "^6.2.1",
-    "csv-parse": "^4.14.2"
+    "csv-parse": "^4.14.2",
+    "zx": "^4.3.0"
   },
   "devDependencies": {
     "chai": "^4.3.7",
