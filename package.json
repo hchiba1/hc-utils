@@ -3,12 +3,18 @@
   "version": "0.0.1",
   "author": "Hirokazu Chiba",
   "license": "MIT",
+  "scripts": {
+    "test": "mocha"
+  },
   "dependencies": {
     "columnify": "^1.5.4",
     "commander": "^6.2.1",
     "csv-parse": "^4.14.2"
   },
   "devDependencies": {
+    "chai": "^4.3.7",
+    "chai-fs": "^2.0.0",
+    "mocha": "^10.2.0",
     "prettier": "^2.2.1"
   }
 }
