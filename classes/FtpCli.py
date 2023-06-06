@@ -56,3 +56,15 @@ class FtpCli:
     def __get_remote_datetime(self, path):
         info = self.ftp.voidcmd(f'MDTM {path}')
         return dateutil.parser.parse(info[4:])
+
+    def print_list(self, path):
+        # outputs list to stdout
+        # returns status
+        return self.ftp.retrlines(f'LIST {path}')
+
+    def get_list(self, path):
+        list = self.ftp.nlst(path)
+        return list
+
+    def close(self):
+        self.ftp.close()

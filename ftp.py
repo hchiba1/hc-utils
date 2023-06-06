@@ -22,9 +22,11 @@ if args.verbose:
 cli = FtpCli(server)
 
 if args.list:
-    print(cli.ftp.retrlines(f'LIST {path}'), file=sys.stderr)
+    status = cli.print_list(path)
+    if status:
+        print(status, file=sys.stderr)
 elif args.ls:
-    list = cli.ftp.nlst(path)
+    list = cli.get_list(path)
     print("\n".join(list))
 
-cli.ftp.close()
+cli.close()
