@@ -24,6 +24,7 @@ cli = FtpCli(server)
 if args.list:
     print(cli.ftp.retrlines(f'LIST {path}'), file=sys.stderr)
 elif args.ls:
-    print(cli.ftp.nlst(path))
+    list = cli.ftp.nlst(path)
+    print("\n".join(list))
 
 cli.ftp.close()
