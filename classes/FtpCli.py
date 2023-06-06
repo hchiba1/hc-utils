@@ -16,7 +16,7 @@ class FtpCli:
         local_utime = os.path.getmtime(local_name)
         local_datetime = datetime.datetime.fromtimestamp(local_utime)
         remote_size = self.ftp.size(path)
-        remote_date = self.__get_remote_datetime(path)
+        remote_date = self.get_remote_datetime(path)
         if local_size == remote_size and local_datetime == remote_date:
             return True
         print(f'difference in {local_name}', file=sys.stderr, flush=True)
@@ -28,7 +28,7 @@ class FtpCli:
 
     def get(self, remote_path, outfile):
         remote_size = self.ftp.size(remote_path)
-        remote_date = self.__get_remote_datetime(remote_path)
+        remote_date = self.get_remote_datetime(remote_path)
         remote_utime = remote_date.timestamp()
         fp = open(outfile, 'wb')
         self.ftp.retrbinary(f'RETR {remote_path}', fp.write)
@@ -53,7 +53,7 @@ class FtpCli:
         in_fp.close()
         out_fp.close()
 
-    def __get_remote_datetime(self, path):
+    def get_remote_datetime(self, path):
         info = self.ftp.voidcmd(f'MDTM {path}')
         return dateutil.parser.parse(info[4:])
 
