@@ -4,7 +4,7 @@ import argparse
 from classes.FtpCli import FtpCli
 import dateutil.parser
 
-parser = argparse.ArgumentParser(description='submit FTP command')
+parser = argparse.ArgumentParser(description='submit FTP command', add_help=False)
 parser.add_argument('path', help='file path on the server')
 parser.add_argument('--list', action='store_true', help='LIST')
 parser.add_argument('--ls', action='store_true', help='ls')
