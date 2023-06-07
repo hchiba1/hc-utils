@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import sys
 import argparse
 from classes.FtpCli import FtpCli
@@ -26,7 +27,9 @@ if args.verbose:
 cli = FtpCli(server)
 
 if args.time:
-    print(cli.get_remote_datetime(path))
+    datetime = cli.get_remote_datetime(path)
+    filename = os.path.basename(path)
+    print(f'{datetime}\t{filename}')
 else:
     status = cli.print_list(path)
     if status:
