@@ -22,6 +22,11 @@ if (!@ARGV) {
 
 my $PATTERN = shift @ARGV;
 
+my $FLG_FILENAME = 0;
+if (@ARGV >= 2) {
+    $FLG_FILENAME = 1;
+}
+
 STDOUT->autoflush;
 while (<>) {
     if ($OPT{1} && $. == 1) {
@@ -32,7 +37,7 @@ while (<>) {
     }
 
     if (isMatched($_, $PATTERN)) {
-        if (@ARGV >= 2) {
+        if ($FLG_FILENAME) {
             print "$ARGV:";
         }
         print;
