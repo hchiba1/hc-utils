@@ -1,0 +1,50 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM NAME
+-q: print url and quit
+";
+
+my %OPT;
+getopts('q', \%OPT);
+
+if (!@ARGV) {
+    print STDERR $USAGE;
+    exit 1;
+}
+my $NAME = $ARGV[0];
+
+my %NICKNAME2URL;
+get_nickname2url();
+
+if ($NICKNAME2URL{$NAME}) {
+    if ($OPT{q}) {
+        print "curl -sSf $NICKNAME2URL{$NAME}\n";
+    } else {
+        system "curl -sSf $NICKNAME2URL{$NAME}";
+    }
+}
+
+################################################################################
+### Function ###################################################################
+################################################################################
+
+sub get_nickname2url {
+    open(NICKNAME2URL, "$ENV{HOME}/.http") || die "$!";
+    while (<NICKNAME2URL>) {
+        chomp;
+        if (/^\s*#/ || /^\s*$/) {
+            next;
+        }
+        my @f = split;
+        if (@f != 2) {
+            die;
+        }
+        my ($nickname, $url) = @f;
+        $NICKNAME2URL{$nickname} = $url;
+    }
+    close(NICKNAME2URL);
+}
