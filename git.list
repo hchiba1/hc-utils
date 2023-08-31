@@ -1,8 +1,10 @@
 #!/bin/bash
 
-cd ~/github
-for i in *; do
-    echo \[$i\];
-    ls $i | cat;
-    echo;
-done
+if [ -d ~/github ]; then
+    cd ~/github
+    for i in *; do
+        echo \[$i\];
+        ls $i | cat;
+        echo;
+    done
+fi
