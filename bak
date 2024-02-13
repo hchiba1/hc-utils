@@ -78,7 +78,7 @@ sub get_new_name {
 
     my $core_name = $file;
     my $ext = '';
-    if ($file =~ /^(.*)(\.[a-z]{2,3})$/) {
+    if ($file =~ /^(.*)(\.[a-z]{2,5})$/) {
         $core_name = $1;
         $ext = $2;
     }
