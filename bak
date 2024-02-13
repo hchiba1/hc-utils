@@ -76,7 +76,17 @@ sub get_new_name {
         die;
     }
 
-    my $new_name = sprintf("$file.%04d-%02d-%02d", $year, $month, $day);
+    my $core_name = $file;
+    my $ext = '';
+    if ($file =~ /^(.*)(\.[a-z]{2,3})$/) {
+        $core_name = $1;
+        $ext = $2;
+    }
+
+    my $new_name = sprintf("${core_name}.%04d-%02d-%02d", $year, $month, $day);
+    if ($ext) {
+        $new_name .= $ext;
+    }
     if ($OPT{e}) {
         $new_name = "$file$OPT{e}";
     }
