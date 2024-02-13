@@ -31,7 +31,37 @@ for my $file (@ARGV) {
     if ($file =~ /\/$/) {
         $file =~ s/\/$//;
     }
-    
+
+    my $new_name = get_new_name($file);
+
+    if (! $OPT{f}) {
+        if (-e $new_name) {
+            print STDERR "Destination exists: $new_name\n";
+            next;
+        }
+    }
+
+    my $command_line = "mv $file $new_name";
+    if ($OPT{c}) {
+        $command_line = "cp -a $file $new_name";
+    }
+    print "> $command_line\n";
+    if (!$OPT{d}) {
+        my $ret = system($command_line);
+        $ret = $ret >> 8;
+        if ($ret != 0) {
+            die;
+        }
+    }
+}
+
+################################################################################
+### Function ###################################################################
+################################################################################
+
+sub get_new_name {
+    my ($file) = @_;
+
     my @date = localtime((stat($file))[9]);
     my $year = $date[5] + 1900;
     my $month = $date[4] + 1;
@@ -59,23 +89,5 @@ for my $file (@ARGV) {
             $new_name = sprintf("$prefix.%04d-%02d-%02d.$suffix", $year, $month, $day);
         }
     }
-    if (! $OPT{f}) {
-        if (-e $new_name) {
-            print STDERR "Destination exists: $new_name\n";
-            next;
-        }
-    }
-
-    my $command_line = "mv $file $new_name";
-    if ($OPT{c}) {
-        $command_line = "cp -a $file $new_name";
-    }
-    print "> $command_line\n";
-    if (!$OPT{d}) {
-        my $ret = system($command_line);
-        $ret = $ret >> 8;
-        if ($ret != 0) {
-            die;
-        }
-    }
+    return $new_name;
 }
