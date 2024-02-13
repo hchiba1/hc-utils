@@ -23,8 +23,8 @@ if ($TARGET =~ /^(\S+):(\d+)$/) {
     if ($OPT{p}) {
         $port = $OPT{p};
     }
-    system "open http://localhost:$port &";
     print "ssh -L $port:localhost:$PORT $HOST\n";
+    print "open http://localhost:$port &";
     system "ssh -L $port:localhost:$PORT $HOST";
 } else {
     die $USAGE;
