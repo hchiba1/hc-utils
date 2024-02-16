@@ -9,12 +9,11 @@ my $USAGE=
     -1: print in one line
     -l FILE: list of IDs
     -R: RefSeq only
-    -t: tabular output
     -q: print command and quit
 ";
 
 my %OPT;
-getopts('1l:Rtq', \%OPT);
+getopts('1l:Rq', \%OPT);
 
 my $COMMAND = "datasets summary genome";
 my $ID = "";
@@ -43,34 +42,7 @@ if ($OPT{q}) {
     exit 1;
 }
 
-if ($OPT{t}) {
-    my @line = `$COMMAND $ID`;
-    chomp(@line);
-    my @header = qw(
-        accession
-        organism_name
-        common_name
-        complete 
-        assembly_level
-        sequencing_tech
-        release_date submitter
-        );
-    print join("\t", @header), "\n";
-    for my $line (@line) {
-        my $json = decode_json($line);
-        my @out = (
-            $json->{accession},
-            $json->{organism}{organism_name},
-            $json->{organism}{common_name},
-            $json->{annotation_info}{busco}{complete},
-            $json->{assembly_info}{assembly_level},
-            $json->{assembly_info}{sequencing_tech} || "",
-            $json->{assembly_info}{release_date},
-            $json->{assembly_info}{submitter},
-            );
-        print join("\t", @out), "\n";
-    }
-} elsif ($OPT{1}) {
+if ($OPT{1}) {
     system "$COMMAND $ID | less -S";
 } else {
     system "$COMMAND $ID | jq -C | less -R";
