@@ -16,17 +16,14 @@ my %OPT;
 getopts('1l:Rq', \%OPT);
 
 my $COMMAND = "datasets summary genome";
-my $ID = "";
 
 if ($OPT{l}) {
     $COMMAND .= " accession --inputfile $OPT{l}";
 } elsif (@ARGV) {
     if ($ARGV[0] =~ /^GC[AF]_/) {
         $COMMAND .= " accession";
-        $ID = $ARGV[0];
     } else {
         $COMMAND .= " taxon";
-        $ID = $ARGV[0];
     }
 } else {
     print STDERR $USAGE;
@@ -38,10 +35,10 @@ if ($OPT{R}) {
 }
 
 if ($OPT{q}) {
-    print STDERR "> $COMMAND $ID\n";
+    print STDERR "> $COMMAND @ARGV\n";
     exit 1;
 } elsif ($OPT{1}) {
-    system "$COMMAND $ID | less -S";
+    system "$COMMAND @ARGV | less -S";
 } else {
-    system "$COMMAND $ID | jq -C | less -R";
+    system "$COMMAND @ARGV | jq -C | less -R";
 }
