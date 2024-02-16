@@ -40,9 +40,7 @@ if ($OPT{R}) {
 if ($OPT{q}) {
     print STDERR "> $COMMAND $ID\n";
     exit 1;
-}
-
-if ($OPT{1}) {
+} elsif ($OPT{1}) {
     system "$COMMAND $ID | less -S";
 } else {
     system "$COMMAND $ID | jq -C | less -R";
