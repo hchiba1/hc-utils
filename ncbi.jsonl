@@ -4,7 +4,7 @@ const program = require('commander');
 const readline = require('readline');
 
 program
-  .arguments('<jsonl_file>')
+  .arguments('[jsonl_file]')
   .option('--n50', 'N50 >= 1M')
   .parse(process.argv);
 
@@ -13,9 +13,16 @@ if (program.args.length === 0 && process.stdin.isTTY) {
 }
 const opts = program.opts();
 
-const rl = readline.createInterface({
-  input: fs.createReadStream(program.args[0], 'utf8')
-});
+let rl;
+if (!process.stdin.isTTY) {
+  rl = readline.createInterface({
+    input: process.stdin
+  });
+} else {
+  rl = readline.createInterface({
+    input: fs.createReadStream(program.args[0], 'utf8')
+  });
+}
 
 rl.on('line', (line) => {
   const obj = JSON.parse(line);
