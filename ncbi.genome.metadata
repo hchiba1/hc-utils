@@ -2,7 +2,6 @@
 use strict;
 use File::Basename;
 use Getopt::Std;
-use JSON;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [options] ID
