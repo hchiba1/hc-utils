@@ -8,13 +8,14 @@ program
   .option('--n50', 'N50 >= 1M')
   .parse(process.argv);
 
-if (program.args.length === 0) {
+if (program.args.length === 0 && process.stdin.isTTY) {
   program.help();
 }
 const opts = program.opts();
 
-const rs = fs.createReadStream(program.args[0], 'utf8');
-const rl = readline.createInterface({ input: rs });
+const rl = readline.createInterface({
+  input: fs.createReadStream(program.args[0], 'utf8')
+});
 
 rl.on('line', (line) => {
   const obj = JSON.parse(line);
