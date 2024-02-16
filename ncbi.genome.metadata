@@ -1,0 +1,63 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+use JSON;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM [options] ID
+    -1: print in one line
+    -R: RefSeq only
+    -t: tabular output
+";
+
+my %OPT;
+getopts('1Rt', \%OPT);
+
+if (!@ARGV) {
+    print STDERR $USAGE;
+    exit 1;
+}
+my ($ID) = @ARGV;
+
+my $COMMAND = "taxon";
+if ($ID =~ /^GCF_/) {
+    $COMMAND = "accession";
+}
+$COMMAND .= " --as-json-lines";
+if ($OPT{R}) {
+    $COMMAND .= " --assembly-source RefSeq";
+}
+
+if ($OPT{t}) {
+    my @line = `datasets summary genome $COMMAND $ID`;
+    chomp(@line);
+    my @header = qw(
+        accession
+        organism_name
+        common_name
+        complete 
+        assembly_level
+        sequencing_tech
+        release_date submitter
+        );
+    print join("\t", @header), "\n";
+    for my $line (@line) {
+        my $json = decode_json($line);
+        my @out = (
+            $json->{accession},
+            $json->{organism}{organism_name},
+            $json->{organism}{common_name},
+            $json->{annotation_info}{busco}{complete},
+            $json->{assembly_info}{assembly_level},
+            $json->{assembly_info}{sequencing_tech} || "",
+            $json->{assembly_info}{release_date},
+            $json->{assembly_info}{submitter},
+            );
+        print join("\t", @out), "\n";
+    }
+} elsif ($OPT{1}) {
+    system "datasets summary genome $COMMAND $ID | less -S";
+} else {
+    system "datasets summary genome $COMMAND $ID | jq -C | less -R";
+}
