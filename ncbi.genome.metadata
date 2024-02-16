@@ -7,30 +7,44 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [options] ID
     -1: print in one line
+    -l FILE: list of IDs
     -R: RefSeq only
     -t: tabular output
+    -q: print command and quit
 ";
 
 my %OPT;
-getopts('1Rt', \%OPT);
+getopts('1l:Rtq', \%OPT);
 
-if (!@ARGV) {
+my $COMMAND = "datasets summary genome";
+my $ID = "";
+
+if ($OPT{l}) {
+    $COMMAND .= " accession --inputfile $OPT{l}";
+} elsif (@ARGV) {
+    if ($ARGV[0] =~ /^GC[AF]_/) {
+        $COMMAND .= " accession";
+        $ID = $ARGV[0];
+    } else {
+        $COMMAND .= " taxon";
+        $ID = $ARGV[0];
+    }
+} else {
     print STDERR $USAGE;
     exit 1;
-}
-my ($ID) = @ARGV;
-
-my $COMMAND = "taxon";
-if ($ID =~ /^GCF_/) {
-    $COMMAND = "accession";
 }
 $COMMAND .= " --as-json-lines";
 if ($OPT{R}) {
     $COMMAND .= " --assembly-source RefSeq";
 }
 
+if ($OPT{q}) {
+    print STDERR "> $COMMAND $ID\n";
+    exit 1;
+}
+
 if ($OPT{t}) {
-    my @line = `datasets summary genome $COMMAND $ID`;
+    my @line = `$COMMAND $ID`;
     chomp(@line);
     my @header = qw(
         accession
@@ -57,7 +71,7 @@ if ($OPT{t}) {
         print join("\t", @out), "\n";
     }
 } elsif ($OPT{1}) {
-    system "datasets summary genome $COMMAND $ID | less -S";
+    system "$COMMAND $ID | less -S";
 } else {
-    system "datasets summary genome $COMMAND $ID | jq -C | less -R";
+    system "$COMMAND $ID | jq -C | less -R";
 }
