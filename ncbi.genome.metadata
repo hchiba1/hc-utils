@@ -8,11 +8,12 @@ my $USAGE=
     -1: print in one line
     -l FILE: list of IDs
     -R: RefSeq only
+    -G: GenBank only
     -q: print command and quit
 ";
 
 my %OPT;
-getopts('1l:Rq', \%OPT);
+getopts('1l:RGq', \%OPT);
 
 my $COMMAND = "datasets summary genome";
 
@@ -29,7 +30,9 @@ if ($OPT{l}) {
     exit 1;
 }
 $COMMAND .= " --as-json-lines";
-if ($OPT{R}) {
+if ($OPT{G}) {
+    $COMMAND .= " --assembly-source GenBank";
+} elsif ($OPT{R}) {
     $COMMAND .= " --assembly-source RefSeq";
 }
 
