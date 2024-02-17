@@ -5,7 +5,7 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [options] ID
-    -1: print in one line
+    -j: format JSON
     -l FILE: list of IDs
     -R: RefSeq only
     -G: GenBank only
@@ -13,7 +13,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('1l:RGq', \%OPT);
+getopts('jl:RGq', \%OPT);
 
 my $COMMAND = "datasets summary genome";
 
@@ -39,8 +39,8 @@ if ($OPT{G}) {
 if ($OPT{q}) {
     print STDERR "> $COMMAND @ARGV\n";
     exit 1;
-} elsif ($OPT{1}) {
-    system "$COMMAND @ARGV | less -S";
-} else {
+} elsif ($OPT{j}) {
     system "$COMMAND @ARGV | jq -C | less -R";
+} else {
+    system "$COMMAND @ARGV | less -S";
 }
