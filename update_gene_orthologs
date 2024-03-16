@@ -1,0 +1,149 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+use File::Path;
+use Digest::SHA 'sha256_hex';
+use HTTP::Date 'str2time', 'time2iso';
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM [OPTIONS] URL
+-q: print command and quit
+-d: debug
+-v: verbose
+-l: list filename only
+-h: human readable sizes
+";
+
+my $COMMAND = "curl --max-time 100000 -Lf";
+
+my %OPT;
+getopts('qdvlh', \%OPT);
+
+!$OPT{v} and $COMMAND .= "sS";
+
+### get URL
+if (@ARGV != 1) {
+    print STDERR $USAGE;
+    exit 1;
+}
+my ($URL) = @ARGV;
+$URL =~ s/^ftp:\/\///;
+
+if ($URL !~ /\//) {
+    exit;
+}
+
+my $DIR = $URL;
+my $FILE_NAME = "";
+my $LOCAL_FILE_NAME = "";
+if ($URL =~ /^(.*\/)(\S.+)$/) {
+    ($DIR, $FILE_NAME) = ($1, $2);
+    $LOCAL_FILE_NAME = $FILE_NAME;
+    $LOCAL_FILE_NAME =~ s/\.gz$//;
+}
+
+check_update();
+
+################################################################################
+### Function ###################################################################
+################################################################################
+
+sub check_update {
+
+    my $local_file_day = get_local_file_day($LOCAL_FILE_NAME);
+
+    my @list = `$COMMAND $DIR`;
+
+    if ($OPT{d}) {
+        print @list;
+        exit;
+    }
+
+    if ($OPT{l}) {
+        my $result = "";
+        for my $line (@list) {
+            my @f = split(/\s+/, $line);
+            my $name = $f[8];
+            $result .= $name . "\n";
+        }
+        print $result;
+        exit;
+    }
+
+    chomp(@list);
+    for my $line (@list) {
+        if ($line =~ /^(.*?) +(\d+) +(\S+) +(\S+) +(\d+) (\S+ +\S+ +\S+) (.*)/) {
+            my ($perm, $num, $group, $user, $size, $date, $name) = ($1, $2, $3, $4, $5, $6, $7);
+            if ($name ne $FILE_NAME) {
+                next;
+            }
+
+            my $day = "";
+            my $date_formatted = time2iso(str2time($date, "GMT"));
+            $date_formatted =~ s/:00$//;
+            if ($date_formatted =~ /^(\S+) \S+$/) {
+                $day = $1;
+            } else {
+                die $date_formatted;
+            }
+
+            if ($OPT{h}) {
+                $size = format_size($size);
+            }
+
+            if ($OPT{q}) {
+                print "$perm $num $group $user  $size  $date_formatted  $name\n";
+            } else {
+                if ($day eq $local_file_day) {
+                } else {
+                    update_file($URL, $FILE_NAME, $LOCAL_FILE_NAME);
+                }
+            }
+        }
+    }
+}
+
+sub update_file {
+    my ($url, $file_name, $local_file_name) = @_;
+
+    system "bak -f $local_file_name";
+    system "$COMMAND -OR $url";
+    system "gunzip $file_name";
+}
+
+sub get_local_file_day {
+    my ($file) = @_;
+
+    my @stat = stat $file;
+    my $time = time2iso($stat[9]);
+    my $day = "";
+    if ($time =~ /^(\S+) \S+$/) {
+        $day = $1;
+    } else {
+        die $time;
+    }
+
+    return $day;
+}
+
+sub format_size {
+    my ($byte) = @_;
+
+    if ($byte < 1024) {
+        return $byte;
+    }
+
+    my $kilo = $byte / 1024;
+    if ($kilo < 1024) {
+        return(sprintf("%.1f", $kilo) . "K");
+    }
+
+    my $mega = $kilo / 1024;
+    if ($mega < 1024) {
+        return(sprintf("%.1f", $mega) . "M");
+    }
+
+    my $giga = $mega / 1024;
+    return(sprintf("%.1f", $giga) . "G");
+}
