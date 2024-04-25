@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+import ftplib
+
+def list_ftp_directory(host, username, password, directory):
+    ftp = ftplib.FTP(host)
+    ftp.login(username, password)
+    ftp.cwd(directory)
+    
+    files = []
+    ftp.dir(files.append)
+    
+    for file in files:
+        print(file)
+    
+    ftp.quit()
+
+host = "ftp.ncbi.nlm.nih.gov"
+username = "anonymous"
+password = ""
+directory = "/"
+list_ftp_directory(host, username, password, directory)
