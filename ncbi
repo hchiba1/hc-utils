@@ -18,4 +18,9 @@ host = "ftp.ncbi.nlm.nih.gov"
 username = "anonymous"
 password = ""
 directory = "/"
-list_ftp_directory(host, username, password, directory)
+
+def main():
+    list_ftp_directory(host, username, password, directory)
+
+if __name__ == "__main__":
+    main()
