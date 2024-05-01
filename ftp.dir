@@ -13,13 +13,7 @@ def main():
     ftp = ftplib.FTP(host)
     ftp.login("anonymous", "")
     ftp.cwd(directory)
-    dir(ftp)
-    ftp.quit()
-
-def dir(ftp):
-    ftp.dir()
-
-def mlsd(ftp):
+    mlsd(ftp)
     files = ftp.mlsd()
     for file in files:
         filename = file[0]
@@ -29,6 +23,7 @@ def mlsd(ftp):
         if type == "dir":
             filename += "/"
         print(size, datetime.strptime(filetime, "%Y%m%d%H%M%S"), filename , sep="\t")
+    ftp.quit()
 
 if __name__ == "__main__":
     main()
