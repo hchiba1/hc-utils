@@ -7,9 +7,8 @@ def list_ftp_directory(host, username, password, directory):
     ftp.login(username, password)
     ftp.cwd(directory)
     
-    files = []
     files = ftp.mlsd()
-    
+
     for file in files:
         filename = file[0]
         filetime = file[1]["modify"]
