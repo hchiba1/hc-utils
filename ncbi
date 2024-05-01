@@ -3,20 +3,20 @@ import ftplib
 from datetime import datetime
 
 host = "ftp.ncbi.nlm.nih.gov"
-username = "anonymous"
-password = ""
 directory = "/"
 
 def main():
-    list_ftp_directory(host, username, password, directory)
-
-def list_ftp_directory(host, username, password, directory):
     ftp = ftplib.FTP(host)
-    ftp.login(username, password)
+    ftp.login("anonymous", "")
     ftp.cwd(directory)
-    
-    files = ftp.mlsd()
+    dir(ftp)
+    ftp.quit()
 
+def dir(ftp):
+    ftp.dir()
+
+def mlsd(ftp):
+    files = ftp.mlsd()
     for file in files:
         filename = file[0]
         filetime = file[1]["modify"]
@@ -25,8 +25,6 @@ def list_ftp_directory(host, username, password, directory):
         if type == "dir":
             filename += "/"
         print(size, datetime.strptime(filetime, "%Y%m%d%H%M%S"), filename , sep="\t")
-    
-    ftp.quit()
 
 if __name__ == "__main__":
     main()
