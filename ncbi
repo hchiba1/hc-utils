@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 import ftplib
 from datetime import datetime
+import sys
 
-host = "ftp.ncbi.nlm.nih.gov"
-directory = "/"
+if len(sys.argv) != 3:
+    print("Usage: python script.py <host> <directory>")
+    sys.exit(1)
+host = sys.argv[1]
+directory = sys.argv[2]
 
 def main():
     ftp = ftplib.FTP(host)
