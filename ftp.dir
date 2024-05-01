@@ -21,7 +21,7 @@ def main():
         size = file[1]["size"]
         if type == "dir":
             filename += "/"
-        print(size, datetime.strptime(filetime, "%Y%m%d%H%M%S"), filename , sep="\t")
+        print(filename, datetime.strptime(filetime, "%Y%m%d%H%M%S"), size, sep="\t")
     ftp.quit()
 
 if __name__ == "__main__":
