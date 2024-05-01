@@ -13,7 +13,6 @@ def main():
     ftp = ftplib.FTP(host)
     ftp.login("anonymous", "")
     ftp.cwd(directory)
-    mlsd(ftp)
     files = ftp.mlsd()
     for file in files:
         filename = file[0]
