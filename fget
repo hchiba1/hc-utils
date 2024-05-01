@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import requests
+import hashlib
+from datetime import datetime, timedelta
+from urllib.parse import urlparse
+from pathlib import Path
+
+parser = argparse.ArgumentParser(description="Fetch and cache web content.")
+parser.add_argument('url', help="URL to fetch")
+parser.add_argument('-n', '--no-cache', action='store_true', help="Do not use cache")
+args = parser.parse_args()
+
+cache_dir = os.path.expanduser("~/.get/cache")
+cache_time_limit = 21600  # 6 hours
+
+def main():
+    try:
+        content = fetch_url(args.url, cache_dir, cache_time_limit, not args.no_cache)
+        print(content)
+    except Exception as e:
+        print(f"Error fetching URL: {e}")
+
+def fetch_url(url, cache_dir, cache_time_limit, use_cache):
+    cache_file = get_cache_file(url, cache_dir)
+    if use_cache and os.path.exists(cache_file) and is_recent_file(cache_file, cache_time_limit):
+        print(f"Using cached result from {cache_file}")
+        return retrieve_cache(cache_file)
+    else:
+        response = requests.get(url)
+        if response.status_code == 200:
+            # save_cache(cache_file, response.text)
+            return response.text
+        else:
+            response.raise_for_status()
+
+def is_recent_file(file_path, cache_time_limit):
+    file_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+    if datetime.now() - file_time <= timedelta(seconds=cache_time_limit):
+        return True
+    return False
+
+def get_cache_file(url, cache_dir):
+    sha256 = hashlib.sha256(url.encode('utf-8')).hexdigest()
+    sub_dir = sha256[:3]
+    cache_sub_dir = os.path.join(cache_dir, sub_dir)
+    os.makedirs(cache_sub_dir, exist_ok=True)
+    return os.path.join(cache_sub_dir, sha256)
+
+def retrieve_cache(cache_file):
+    with open(cache_file, 'r') as f:
+        return f.read()
+
+def save_cache(cache_file, content):
+    with open(cache_file, 'w') as f:
+        f.write(content)
+
+if __name__ == "__main__":
+    main()
