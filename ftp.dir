@@ -6,6 +6,7 @@ import argparse
 parser = argparse.ArgumentParser(description='FTP file listing script')
 parser.add_argument('host', type=str, help='FTP host address')
 parser.add_argument('directory', type=str, help='FTP directory path')
+parser.add_argument('-F', '--folder', action='store_true', help="Append '/' to directories")
 parser.add_argument('-d', '--dir', action='store_true', help="Use 'dir' command instead of 'mlsd'")
 args = parser.parse_args()
 
@@ -22,7 +23,7 @@ def main():
         filetime = file[1]["modify"]
         type = file[1]["type"]
         size = file[1]["size"]
-        if type == "dir":
+        if type == "dir" and args.folder:
             filename += "/"
         print(filename, datetime.strptime(filetime, "%Y%m%d%H%M%S"), size, sep="\t")
     ftp.quit()
