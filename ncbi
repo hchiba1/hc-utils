@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import ftplib
+from datetime import datetime
 
 def list_ftp_directory(host, username, password, directory):
     ftp = ftplib.FTP(host)
@@ -7,10 +8,16 @@ def list_ftp_directory(host, username, password, directory):
     ftp.cwd(directory)
     
     files = []
-    ftp.dir(files.append)
+    files = ftp.mlsd()
     
     for file in files:
-        print(file)
+        filename = file[0]
+        filetime = file[1]["modify"]
+        type = file[1]["type"]
+        size = file[1]["size"]
+        if type == "dir":
+            filename += "/"
+        print(size, datetime.strptime(filetime, "%Y%m%d%H%M%S"), filename , sep="\t")
     
     ftp.quit()
 
