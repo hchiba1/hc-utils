@@ -60,6 +60,9 @@ my $CACHE_FILE_PATH = get_cache_file($URL);
 
 my $CURRENT_TIME = localtime;
 
+my %line_hash;
+my %time;
+
 ### get directory contents
 if ($OPT{P}) {
     my @file = `ls $TREE_DIR/$URL`;
@@ -88,12 +91,21 @@ if ($URL =~ /\/$/) {
     } else {
         my @retrieved = retrieve_cache($CACHE_FILE_PATH);
         if (@retrieved) {
-            print format_list(@retrieved);
+            my $result = format_new_list(@retrieved);
+            if ($result) {
+                if ($OPT{v}) {
+                    print "Detect a new format\n";
+                }
+                print $result;
+            } else {
+                print format_list(@retrieved);
+            }
         } else {
             touch_dir("$TREE_DIR/$URL");
-            my @list = `$COMMAND $URL`;
-            print format_list(@list);
-            save_cache($CACHE_FILE_PATH, join("", @list));
+            my @list = get_dir_time($URL);
+            my $result = format_list(@list);
+            print $result;
+            save_cache($CACHE_FILE_PATH, $result);
         }
     }
     exit;
@@ -151,6 +163,37 @@ if ($OPT{p}) {
 ### Functions ##################################################################
 ################################################################################
 
+sub get_dir_time {
+    my ($url) = @_;
+
+    my $host;
+    my $directory;
+    if ($url =~ /(.+?)(\/.*)/) {
+        ($host, $directory) = ($1, $2);
+    } else {
+        $host = $url;
+        $directory = "/";
+    }
+
+    my @line = `ftp.dir.time $host $directory`;
+    chomp(@line);
+
+    my @list;
+    for my $line (@line) {
+        my @f = split(/\t/, $line);
+        if (@f == 3) {
+            my ($name, $time) = @f;
+            $time{$name} = time2iso(str2time($time, "GMT"));
+        } elsif (@f == 1) {
+            push(@list, $line);
+        } else {
+            die;
+        }
+    }
+
+    return @list
+}
+
 sub search_bookmark {
     my ($input) = @_;
 
@@ -182,6 +225,109 @@ sub search_bookmark {
     return $input;
 }
 
+sub format_new_list {
+    my (@list) = @_;
+
+    if ($OPT{d}) {
+        print @list;
+        return;
+    }
+
+    if ($OPT{l}) {
+        my $result = "";
+        for my $line (@list) {
+            my @f = split(/\s+/, $line);
+            my $name = $f[8];
+            $result .= $name . "\n";
+        }
+        return $result;
+    }
+
+    chomp(@list);
+
+    my @all = ();
+    my @upper_file = ();
+    my @upper_dir = ();
+    my @lower_dir = ();
+    my @lower_file = ();
+    my @other_dir = ();
+    my @other_file = ();
+
+    my %size = ();
+
+    ### find max length for each column
+    my $f1_len_max = 0;
+    my $f2_len_max = 0;
+    my $group_len_max = 0;
+    my $user_len_max = 0;
+    my $i = 0;
+    for my $line (@list) {
+        my @f = split(/\s+/, $line);
+        if ($line =~ /^.*? +(\d+) +(\S+) +(\S+) +(\d+) +(\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d)  (\S+).*/) {
+            my ($f1, $group, $user, $size, $date, $name) = ($1, $2, $3, $4, $5, $6);
+            $size{$i} = $size;
+            $time{$name} = $date;
+            my $f1_len = length($f1);
+            if ($f1_len > $f1_len_max) {
+                $f1_len_max = $f1_len;
+            }
+            if ($OPT{h}) {
+                $size = format_size($size);
+            }
+            my $f2_len = length($size);
+            if ($f2_len > $f2_len_max) {
+                $f2_len_max = $f2_len;
+            }
+            my $group_len = length($group);
+            if ($group_len > $group_len_max) {
+                $group_len_max = $group_len;
+            }
+            my $user_len = length($user);
+            if ($user_len > $user_len_max) {
+                $user_len_max = $user_len;
+            }
+            push @all, "$line";
+            $line_hash{$name} = $line;
+            if ($line =~ /^d/ or $line =~ /^l/ && $line =~ /\/$/) {
+                push_upper_or_lower($line, $name, \@upper_dir, \@lower_dir, \@other_dir);
+                touch_dir("$TREE_DIR/$URL$name");
+            } else {
+                push_upper_or_lower($line, $name, \@upper_file, \@lower_file, \@other_file);
+                touch_file("$TREE_DIR/$URL$name");
+            }
+        }
+        $i ++;
+    }
+
+    my $result = "";
+    if ($OPT{s}) {
+        # $result = join("\n", @all) . "\n";
+        for my $line (@all) {
+            $result .= format_new_line($line, $group_len_max, $user_len_max, $f1_len_max, $f2_len_max);
+        }
+    } elsif ($OPT{S}) {
+        for my $i (sort {$size{$b} <=> $size{$a}} keys(%size)) {
+            $result .= format_new_line($all[$i], $group_len_max, $user_len_max, $f1_len_max, $f2_len_max);
+        }
+    } elsif ($OPT{t}) {
+        for my $name (sort {$time{$a} cmp $time{$b}} keys(%line_hash)) {
+            $result .= format_new_line($line_hash{$name}, $group_len_max, $user_len_max, $f1_len_max, $f2_len_max);
+        }
+    } else {
+        # output in the following order:
+        # UCASE_FILE
+        # USASE_DIR/
+        # Others
+        # lcase_dir/
+        # lcase_file
+        for my $line (@upper_file, @upper_dir, @lower_dir, @other_dir, @other_file, @lower_file) {
+            $result .= format_new_line($line, $group_len_max, $user_len_max, $f1_len_max, $f2_len_max);
+        }
+    }
+
+    return $result;
+}
+
 sub format_list {
     my (@list) = @_;
 
@@ -211,7 +357,6 @@ sub format_list {
     my @other_file = ();
 
     my %size = ();
-    my %time = ();
 
     ### find max length for each column
     my $f1_len_max = 0;
@@ -225,7 +370,12 @@ sub format_list {
         if ($line =~ /^.*? +(\d+) +(\S+) +(\S+) +(\d+) +(\S+ +\S+ +\S+).*/) {
             my ($f1, $group, $user, $size, $date) = ($1, $2, $3, $4, $5);
             $size{$i} = $size;
-            $time{$i} = time2iso(str2time($date, "GMT"));
+            if (! $time{$name}) {
+                $time{$name} = time2iso(str2time($date, "GMT"));
+                if ($OPT{v}) {
+                    print STDERR "Lacks precise time information: $date $name\n";
+                }
+            }
             my $f1_len = length($f1);
             if ($f1_len > $f1_len_max) {
                 $f1_len_max = $f1_len;
@@ -246,6 +396,7 @@ sub format_list {
                 $user_len_max = $user_len;
             }
             push @all, "$line";
+            $line_hash{$name} = $line;
             if ($line =~ /^d/ or $line =~ /^l/ && $line =~ /\/$/) {
                 push_upper_or_lower($line, $name, \@upper_dir, \@lower_dir, \@other_dir);
                 touch_dir("$TREE_DIR/$URL$name");
@@ -267,8 +418,8 @@ sub format_list {
             $result .= format_line($all[$i], $group_len_max, $user_len_max, $f1_len_max, $f2_len_max);
         }
     } elsif ($OPT{t}) {
-        for my $i (sort {$time{$a} cmp $time{$b}} keys(%time)) {
-            $result .= format_line($all[$i], $group_len_max, $user_len_max, $f1_len_max, $f2_len_max);
+        for my $name (sort {$time{$a} cmp $time{$b}} keys(%line_hash)) {
+            $result .= format_line($line_hash{$name}, $group_len_max, $user_len_max, $f1_len_max, $f2_len_max);
         }
     } else {
         # output in the following order:
@@ -285,11 +436,11 @@ sub format_list {
     return $result;
 }
 
-sub format_line {
+sub format_new_line {
     my ($line, $group_len_max, $user_len_max, $f1_len_max, $f2_len_max) = @_;
 
-    if ($line =~ /^(.*?) +(\d+) +(\S+) +(\S+) +(\d+) (\S+ +\S+ +\S+)( +.*)/) {
-        my ($perm, $num, $group, $user, $size, $date, $name) = ($1, $2, $3, $4, $5, $6, $7);
+    if ($line =~ /^(.*?) +(\d+) +(\S+) +(\S+) +(\d+) +(\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d)  (\S+)(.*)/) {
+        my ($perm, $num, $group, $user, $size, $date, $name, $rest) = ($1, $2, $3, $4, $5, $6, $7, $8);
         if ($OPT{h}) {
             $size = format_size($size);
         }
@@ -299,12 +450,32 @@ sub format_line {
         my $pad2 = " " x ($f2_len_max - length($size));
         $num = $pad1 . $num;
         $size = $pad2 . $size;
+        $date = $time{$name};
+        return "$perm $num $group $user  $size  $date  $name$rest\n";
+    } else {
+        return "";
+    }
+}
+
+sub format_line {
+    my ($line, $group_len_max, $user_len_max, $f1_len_max, $f2_len_max) = @_;
+
+    if ($line =~ /^(.*?) +(\d+) +(\S+) +(\S+) +(\d+) (\S+ +\S+ +\S+) +(\S+)(.*)/) {
+        my ($perm, $num, $group, $user, $size, $date, $name, $rest) = ($1, $2, $3, $4, $5, $6, $7, $8);
+        if ($OPT{h}) {
+            $size = format_size($size);
+        }
+        $group .= " " x ($group_len_max - length($group));
+        $user .= " " x ($user_len_max - length($user));
+        my $pad1 = " " x ($f1_len_max - length($num));
+        my $pad2 = " " x ($f2_len_max - length($size));
+        $num = $pad1 . $num;
+        $size = $pad2 . $size;
+        $date = $time{$name};
         if ($line =~ /^d/) {
             $name .= "/";
         }
-        $date = time2iso(str2time($date, "GMT"));
-        $date =~ s/:00$//;
-        return "$perm $num $group $user  $size  $date $name\n";
+        return "$perm $num $group $user  $size  $date  $name$rest\n";
     } else {
         return "";
     }
@@ -379,7 +550,7 @@ sub touch_file {
     }
     
     open(FILE, ">$file") || warn "$file: $!";
-    close(FILE) || warn $!;
+    close(FILE) || warn "$file: $!";
 }
 
 ### For caching ###
@@ -414,6 +585,9 @@ sub retrieve_cache {
     }
     
     if (-e $cache_file and is_recent_file($cache_file)) {
+        if ($OPT{v}) {
+            print "Retrieve cache $cache_file\n";
+        }
         open(CACHE_FILE, $cache_file) || die $!;
         my @result = <CACHE_FILE>;
         close(CACHE_FILE) || die $!;
