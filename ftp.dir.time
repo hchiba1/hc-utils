@@ -13,8 +13,8 @@ parser.add_argument('-j', '--json', action='store_true', help="MLSD results in J
 args = parser.parse_args()
 
 path = args.path
-if path.startswith("ftp://"):
-    path = path.replace("ftp://", "", 1)
+if path.startswith('ftp://'):
+    path = path.replace('ftp://', '', 1)
 if '/' in path:
     host, directory = path.split('/', 1)
 else:
@@ -31,30 +31,30 @@ def main():
 
 def dir():
     ftp = ftplib.FTP(host)
-    ftp.login("anonymous", "")
+    ftp.login('anonymous', '')
     ftp.cwd(directory)
     ftp.dir()
     ftp.quit()
 
 def time():
     ftp = ftplib.FTP(host)
-    ftp.login("anonymous", "")
+    ftp.login('anonymous', '')
     ftp.cwd(directory)
     files = ftp.mlsd()
     for file in files:
         filename = file[0]
-        filetime = file[1]["modify"]
-        type = file[1]["type"]
-        size = file[1]["size"]
+        filetime = file[1]['modify']
+        type = file[1]['type']
+        size = file[1]['size']
         if args.json:
             print(file)
         else:
-            if type == "dir" and args.folder:
-                filename += "/"
-            print(filename, datetime.strptime(filetime, "%Y%m%d%H%M%S"), size, sep="\t")
+            if type == 'dir' and args.folder:
+                filename += '/'
+            print(filename, datetime.strptime(filetime, '%Y%m%d%H%M%S'), size, sep='\t')
     ftp.quit()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     if args.dir:
         dir()
     elif args.time:
