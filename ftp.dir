@@ -7,6 +7,7 @@ parser = argparse.ArgumentParser(description='FTP file listing script')
 parser.add_argument('host', type=str, help='FTP host address')
 parser.add_argument('directory', type=str, help='FTP directory path')
 parser.add_argument('-F', '--folder', action='store_true', help="Append '/' to directories")
+parser.add_argument('-j', '--json', action='store_true', help="Output in JSON format")
 parser.add_argument('-d', '--dir', action='store_true', help="Use 'dir' command instead of 'mlsd'")
 args = parser.parse_args()
 
@@ -25,7 +26,10 @@ def main():
         size = file[1]["size"]
         if type == "dir" and args.folder:
             filename += "/"
-        print(filename, datetime.strptime(filetime, "%Y%m%d%H%M%S"), size, sep="\t")
+        if args.json:
+            print(file)
+        else:
+            print(filename, datetime.strptime(filetime, "%Y%m%d%H%M%S"), size, sep="\t")
     ftp.quit()
 
 if __name__ == "__main__":
