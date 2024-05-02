@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-import ftplib
-from datetime import datetime
 import argparse
 import threading
+import ftplib
+from datetime import datetime
 
 parser = argparse.ArgumentParser(description='FTP file listing script')
 parser.add_argument('path', type=str, help='file path on the server')
