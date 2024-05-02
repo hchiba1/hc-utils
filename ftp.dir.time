@@ -9,6 +9,21 @@ parser.add_argument('host', type=str, help='FTP host address')
 parser.add_argument('directory', type=str, help='FTP directory path')
 args = parser.parse_args()
 
+def main():
+    t1 = threading.Thread(target=dir)
+    t2 = threading.Thread(target=time)
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+
+def dir():
+    ftp = ftplib.FTP(args.host)
+    ftp.login("anonymous", "")
+    ftp.cwd(args.directory)
+    ftp.dir()
+    ftp.quit()
+
 def time():
     ftp = ftplib.FTP(args.host)
     ftp.login("anonymous", "")
@@ -22,17 +37,5 @@ def time():
         print(filename, datetime.strptime(filetime, "%Y%m%d%H%M%S"), size, sep="\t")
     ftp.quit()
 
-def dir():
-    ftp = ftplib.FTP(args.host)
-    ftp.login("anonymous", "")
-    ftp.cwd(args.directory)
-    ftp.dir()
-    ftp.quit()
-
 if __name__ == "__main__":
-    t1 = threading.Thread(target=time)
-    t2 = threading.Thread(target=dir)
-    t1.start()
-    t2.start()
-    t1.join()
-    t2.join()
+    main()
