@@ -5,13 +5,21 @@ import argparse
 import threading
 
 parser = argparse.ArgumentParser(description='FTP file listing script')
-parser.add_argument('host', type=str, help='FTP host address')
-parser.add_argument('directory', type=str, help='FTP directory path')
+parser.add_argument('path', type=str, help='file path on the server')
 parser.add_argument('-d', '--dir', action='store_true', help="Use ftp DIR command only")
 parser.add_argument('-t', '--time', action='store_true', help="Get time via MLSD command")
 parser.add_argument('-F', '--folder', action='store_true', help="Append '/' to directories")
 parser.add_argument('-j', '--json', action='store_true', help="MLSD results in JSON format")
 args = parser.parse_args()
+
+path = args.path
+if path.startswith("ftp://"):
+    path = path.replace("ftp://", "", 1)
+if '/' in path:
+    host, directory = path.split('/', 1)
+else:
+    host = path
+    directory = '/'
 
 def main():
     t1 = threading.Thread(target=dir)
@@ -22,16 +30,16 @@ def main():
     t2.join()
 
 def dir():
-    ftp = ftplib.FTP(args.host)
+    ftp = ftplib.FTP(host)
     ftp.login("anonymous", "")
-    ftp.cwd(args.directory)
+    ftp.cwd(directory)
     ftp.dir()
     ftp.quit()
 
 def time():
-    ftp = ftplib.FTP(args.host)
+    ftp = ftplib.FTP(host)
     ftp.login("anonymous", "")
-    ftp.cwd(args.directory)
+    ftp.cwd(directory)
     files = ftp.mlsd()
     for file in files:
         filename = file[0]
