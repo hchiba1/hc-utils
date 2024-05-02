@@ -6,9 +6,9 @@ from datetime import datetime
 
 parser = argparse.ArgumentParser(description='FTP file listing script')
 parser.add_argument('path', type=str, help='file path on the server')
-parser.add_argument('-d', '--dir', action='store_true', help="Use ftp DIR command only")
-parser.add_argument('-t', '--time', action='store_true', help="Get time via MLSD command")
-parser.add_argument('-F', '--folder', action='store_true', help="Append '/' to directories")
+parser.add_argument('-d', '--dir', action='store_true', help="use FTP DIR command only")
+parser.add_argument('-t', '--time', action='store_true', help="get time via MLSD command")
+parser.add_argument('-F', '--folder', action='store_true', help="append '/' to directories")
 parser.add_argument('-j', '--json', action='store_true', help="MLSD results in JSON format")
 args = parser.parse_args()
 
