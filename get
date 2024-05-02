@@ -166,16 +166,7 @@ if ($OPT{p}) {
 sub get_dir_time {
     my ($url) = @_;
 
-    my $host;
-    my $directory;
-    if ($url =~ /(.+?)(\/.*)/) {
-        ($host, $directory) = ($1, $2);
-    } else {
-        $host = $url;
-        $directory = "/";
-    }
-
-    my @line = `ftp.dir.time $host $directory`;
+    my @line = `ftp.dir.time $url`;
     chomp(@line);
 
     my @list;
