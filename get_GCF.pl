@@ -22,11 +22,11 @@ my ($URL) = @ARGV;
 $URL =~ s/^https:\/\///;
 
 if ($URL =~ /(GCF_\S+)$/) {
-    my $local_name = "${1}_protein.faa.gz";
-    if (-f $local_name) {
-        check_update($local_name);
+    my $filename = "${1}_protein.faa.gz";
+    if (-f $filename) {
+        check_update($filename);
     } else {
-        system "$COMMAND -OR $URL/$local_name";
+        system "$COMMAND -OR $URL/$filename";
     }
 } else {
     print STDERR "ERROR: $URL is not a valid GCF\n";
@@ -38,28 +38,28 @@ if ($URL =~ /(GCF_\S+)$/) {
 ################################################################################
 
 sub check_update {
-    my ($local_name) = @_;
+    my ($filename) = @_;
 
-    my $local_day = get_local_day($local_name);
-    my $local_size = get_local_size($local_name);
+    my $local_day = get_local_day($filename);
+    my $local_size = get_local_size($filename);
 
     my @list = `$COMMAND $URL/`;
     chomp(@list);
     for my $line (@list) {
         if ($line =~ /^(.*?) +(\d+) +(\S+) +(\S+) +(\d+) (\S+ +\S+ +\S+) (.*)/) {
             my ($perm, $num, $group, $user, $size, $date, $name) = ($1, $2, $3, $4, $5, $6, $7);
-            if ($local_name eq $name) {
+            if ($filename eq $name) {
                 my $day = get_day($date);
                 if ($local_day eq $day && $local_size eq $size) {
-                    print "Already updated: $local_name\n";
+                    print "Already updated: $filename\n";
                 } else {
                     if ($local_day ne $day) {
-                        print "Update $local_name: $local_day => new $day\n";
+                        print "Update $filename: $local_day => new $day\n";
                     }
                     if ($local_size ne $size) {
-                        print "Update $local_name: $local_size => new $size\n";
+                        print "Update $filename: $local_size => new $size\n";
                     }
-                    system "$COMMAND -OR $URL/$local_name";
+                    system "$COMMAND -OR $URL/$filename";
                 }
             }
         }
