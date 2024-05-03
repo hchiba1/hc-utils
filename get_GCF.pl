@@ -43,38 +43,25 @@ sub check_update {
     my $local_day = get_local_day($filename);
     my $local_size = get_local_size($filename);
 
-    my @list = `$COMMAND $URL/`;
-    chomp(@list);
-    for my $line (@list) {
-        if ($line =~ /^(.*?) +(\d+) +(\S+) +(\S+) +(\d+) (\S+ +\S+ +\S+) (.*)/) {
-            my ($perm, $num, $group, $user, $size, $date, $name) = ($1, $2, $3, $4, $5, $6, $7);
-            if ($filename eq $name) {
-                my $day = get_day($date);
-                if ($local_day eq $day && $local_size eq $size) {
-                    print "Already updated: $filename\n";
-                } else {
-                    if ($local_day ne $day) {
-                        print "Update $filename: $local_day => new $day\n";
-                    }
-                    if ($local_size ne $size) {
-                        print "Update $filename: $local_size => new $size\n";
-                    }
-                    system "$COMMAND -OR $URL/$filename";
-                }
-            }
-        }
+    my $ftp_time_size = `ftp.time $URL/ $filename`;
+    chomp($ftp_time_size);
+    my @ftp_time_size = split(/\t/, $ftp_time_size, -1);
+    if (@ftp_time_size != 2) {
+        print "ERROR: $ftp_time_size\n";
+        exit 1;
     }
-}
-
-sub get_day {
-    my ($date) = @_;
-
-    my $time = time2iso(str2time($date, "GMT"));
-    $time =~ s/:00$//;
-    if ($time =~ /^(\S+) \S+$/) {
-        return $1;
+    my ($day, $size) = @ftp_time_size;
+    $day = time2iso(str2time($day, "GMT"));
+    if ($local_day eq $day && $local_size eq $size) {
+        print "Already updated: $filename\n";
     } else {
-        die $time;
+        if ($local_day ne $day) {
+            print "Update $filename: $local_day => new $day\n";
+        }
+        if ($local_size ne $size) {
+            print "Update $filename: $local_size => new $size\n";
+        }
+        system "$COMMAND -OR $URL/$filename";
     }
 }
 
@@ -84,11 +71,7 @@ sub get_local_day {
     my @stat = stat $file;
     my $time = time2iso($stat[9]);
 
-    if ($time =~ /^(\S+) \S+$/) {
-        return $1;
-    } else {
-        die $time;
-    }
+    return $time;
 }
 
 sub get_local_size {
