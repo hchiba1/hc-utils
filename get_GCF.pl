@@ -25,6 +25,8 @@ if ($URL =~ /(GCF_\S+)$/) {
     my $local_name = "${1}_protein.faa.gz";
     if (-f $local_name) {
         check_update($local_name);
+    } else {
+        system "$COMMAND -OR $URL/$local_name";
     }
 } else {
     print STDERR "ERROR: $URL is not a valid GCF\n";
@@ -52,9 +54,10 @@ sub check_update {
                     print "Already updated: $local_name\n";
                 } else {
                     if ($local_day ne $day) {
-                        print "Day is different: $local_day => new $day $local_name\n";
-                    } elsif ($local_size ne $size) {
-                        print "Size is different: $local_size => new $size $local_name\n";
+                        print "Update $local_name: $local_day => new $day\n";
+                    }
+                    if ($local_size ne $size) {
+                        print "Update $local_name: $local_size => new $size\n";
                     }
                     system "$COMMAND -OR $URL/$local_name";
                 }
