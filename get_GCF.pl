@@ -40,7 +40,7 @@ if ($URL =~ /(GCF_\S+)$/) {
 sub check_update {
     my ($filename) = @_;
 
-    my $local_day = get_local_day($filename);
+    my $local_time = get_local_time($filename);
     my $local_size = get_local_size($filename);
 
     my $ftp_time_size = `ftp.time $URL/ $filename`;
@@ -50,22 +50,22 @@ sub check_update {
         print "ERROR: $ftp_time_size\n";
         exit 1;
     }
-    my ($day, $size) = @ftp_time_size;
-    $day = time2iso(str2time($day, "GMT"));
-    if ($local_day eq $day && $local_size eq $size) {
+    my ($ftp_time, $ftp_size) = @ftp_time_size;
+    $ftp_time = time2iso(str2time($ftp_time, "GMT"));
+    if ($local_time eq $ftp_time && $local_size eq $ftp_size) {
         print "Already updated: $filename\n";
     } else {
-        if ($local_day ne $day) {
-            print "Update $filename: $local_day => new $day\n";
+        if ($local_time ne $ftp_time) {
+            print "Update $filename: $local_time => new $ftp_time\n";
         }
-        if ($local_size ne $size) {
-            print "Update $filename: $local_size => new $size\n";
+        if ($local_size ne $ftp_size) {
+            print "Update $filename: $local_size => new $ftp_size\n";
         }
         system "$COMMAND -OR $URL/$filename";
     }
 }
 
-sub get_local_day {
+sub get_local_time {
     my ($file) = @_;
 
     my @stat = stat $file;
