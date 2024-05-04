@@ -6,12 +6,13 @@ use HTTP::Date 'str2time', 'time2iso';
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM URL
+-c: check only
 ";
 
 my $COMMAND = "curl --max-time 100000 -LfsS";
 
 my %OPT;
-getopts('', \%OPT);
+getopts('c', \%OPT);
 
 ### get URL
 if (!@ARGV) {
@@ -26,7 +27,10 @@ if ($URL =~ /(GCF_\S+)$/) {
     if (-f $filename) {
         check_update($filename);
     } else {
-        system "$COMMAND -OR $URL/$filename";
+        print "Download: $filename\n";
+        if (!$OPT{c}) {
+            system "$COMMAND -OR $URL/$filename";
+        }
     }
 } else {
     print STDERR "ERROR: $URL is not a valid GCF\n";
@@ -61,7 +65,9 @@ sub check_update {
         if ($local_size ne $ftp_size) {
             print "Update $filename: $local_size => new $ftp_size\n";
         }
-        system "$COMMAND -OR $URL/$filename";
+        if (!$OPT{c}) {
+            system "$COMMAND -OR $URL/$filename";
+        }
     }
 }
 
