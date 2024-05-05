@@ -5,7 +5,7 @@ use Getopt::Std;
 use HTTP::Date 'str2time', 'time2iso';
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM URL
+"Usage: $PROGRAM [assembly_summary.txt]
 -c: check only
 ";
 
@@ -14,14 +14,22 @@ my $COMMAND = "curl --max-time 100000 -LfsS";
 my %OPT;
 getopts('c', \%OPT);
 
-### get URL
-if (!@ARGV) {
-    print STDERR $USAGE;
-    exit 1;
+!@ARGV && -t and die $USAGE;
+if (@ARGV && $ARGV[0] =~ /(GCF_\S+)$/) {
+    my $url = $ARGV[0];
+    get_GCF($url);
+    exit;
 }
-my ($URL) = @ARGV;
 
-get_GCF($URL);
+while (<>) {
+    chomp;
+    if (/^#/) {
+        next;
+    }
+    my @f = split(/\t/, $_, -1);
+    my $url = $f[19];
+    get_GCF($url);
+}
 
 ################################################################################
 ### Function ###################################################################
