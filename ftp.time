@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+import argparse
+import ftplib
+from datetime import datetime
+
+parser = argparse.ArgumentParser(description='FTP file listing script')
+parser.add_argument('path', type=str, help='directory path on the server')
+parser.add_argument('filename', type=str, help='filename on the server')
+args = parser.parse_args()
+
+path = args.path
+if path.startswith('ftp://'):
+    path = path.replace('ftp://', '', 1)
+if '/' in path:
+    host, directory = path.split('/', 1)
+else:
+    host = path
+    directory = '/'
+
+filename = args.filename
+
+def time():
+    ftp = ftplib.FTP(host)
+    ftp.login('anonymous', '')
+    ftp.cwd(directory)
+    ftp_time = ftp.voidcmd("MDTM " + filename)[4:].strip()
+    ftp_timestamp = datetime.strptime(ftp_time, "%Y%m%d%H%M%S")
+    print(ftp_timestamp)
+    ftp.quit()
+
+if __name__ == '__main__':
+    time()
