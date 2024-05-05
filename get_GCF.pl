@@ -24,11 +24,11 @@ $URL =~ s/^https:\/\///;
 
 if ($URL =~ /(GCF_\S+)$/) {
     if (-f "${1}_protein.faa.gz") {
-        my $local_time = get_local_time("${1}_protein.faa.gz");
-        check_update("${1}_protein.faa.gz", $local_time);
+        my $local_file_time = get_local_file_time("${1}_protein.faa.gz");
+        check_update("${1}_protein.faa.gz", $local_file_time);
     } elsif (-f "${1}_protein.faa") {
-        my $local_time = get_local_time("${1}_protein.faa");
-        check_update("${1}_protein.faa.gz", $local_time);
+        my $local_file_time = get_local_file_time("${1}_protein.faa");
+        check_update("${1}_protein.faa.gz", $local_file_time);
     } else {
         print "Download: ${1}_protein.faa.gz\n";
         if (!$OPT{c}) {
@@ -45,22 +45,22 @@ if ($URL =~ /(GCF_\S+)$/) {
 ################################################################################
 
 sub check_update {
-    my ($filename, $local_time) = @_;
+    my ($filename, $local_file_time) = @_;
 
     my $ftp_time = `ftp.time $URL/ $filename`;
     chomp($ftp_time);
     $ftp_time = time2iso(str2time($ftp_time, "GMT"));
-    if ($local_time eq $ftp_time) {
+    if ($local_file_time eq $ftp_time) {
         print "Already updated: $filename\n";
     } else {
-        print "Update $filename: $local_time => new $ftp_time\n";
+        print "Update $filename: $local_file_time => new $ftp_time\n";
         if (!$OPT{c}) {
             system "$COMMAND -OR $URL/$filename";
         }
     }
 }
 
-sub get_local_time {
+sub get_local_file_time {
     my ($file) = @_;
 
     my @stat = stat $file;
@@ -69,7 +69,7 @@ sub get_local_time {
     return $time;
 }
 
-sub get_local_size {
+sub get_local_file_size {
     my ($file) = @_;
 
     my @stat = stat $file;
