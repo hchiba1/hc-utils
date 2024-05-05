@@ -23,13 +23,18 @@ my ($URL) = @ARGV;
 $URL =~ s/^https:\/\///;
 
 if ($URL =~ /(GCF_\S+)$/) {
-    my $filename = "${1}_protein.faa.gz";
-    if (-f $filename) {
-        check_update($filename);
+    if (-f "${1}_protein.faa.gz") {
+        my $local_time = get_local_time("${1}_protein.faa.gz");
+        my $local_size = get_local_size("${1}_protein.faa.gz");
+        check_update("${1}_protein.faa.gz", $local_time, $local_size);
+    } elsif (-f "${1}_protein.faa") {
+        my $local_time = get_local_time("${1}_protein.faa");
+        my $local_size = get_local_size("${1}_protein.faa");
+        check_update("${1}_protein.faa.gz", $local_time, $local_size);
     } else {
-        print "Download: $filename\n";
+        print "Download: ${1}_protein.faa.gz\n";
         if (!$OPT{c}) {
-            system "$COMMAND -OR $URL/$filename";
+            system "$COMMAND -OR $URL/${1}_protein.faa.gz";
         }
     }
 } else {
@@ -42,29 +47,15 @@ if ($URL =~ /(GCF_\S+)$/) {
 ################################################################################
 
 sub check_update {
-    my ($filename) = @_;
+    my ($filename, $local_time, $local_size) = @_;
 
-    my $local_time = get_local_time($filename);
-    my $local_size = get_local_size($filename);
-
-    my $ftp_time_size = `ftp.time $URL/ $filename`;
-    chomp($ftp_time_size);
-    my @ftp_time_size = split(/\t/, $ftp_time_size, -1);
-    if (@ftp_time_size != 2) {
-        print "ERROR: $ftp_time_size\n";
-        exit 1;
-    }
-    my ($ftp_time, $ftp_size) = @ftp_time_size;
+    my $ftp_time = `ftp.time $URL/ $filename`;
+    chomp($ftp_time);
     $ftp_time = time2iso(str2time($ftp_time, "GMT"));
-    if ($local_time eq $ftp_time && $local_size eq $ftp_size) {
+    if ($local_time eq $ftp_time) {
         print "Already updated: $filename\n";
     } else {
-        if ($local_time ne $ftp_time) {
-            print "Update $filename: $local_time => new $ftp_time\n";
-        }
-        if ($local_size ne $ftp_size) {
-            print "Update $filename: $local_size => new $ftp_size\n";
-        }
+        print "Update $filename: $local_time => new $ftp_time\n";
         if (!$OPT{c}) {
             system "$COMMAND -OR $URL/$filename";
         }
