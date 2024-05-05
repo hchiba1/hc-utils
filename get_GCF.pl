@@ -25,12 +25,10 @@ $URL =~ s/^https:\/\///;
 if ($URL =~ /(GCF_\S+)$/) {
     if (-f "${1}_protein.faa.gz") {
         my $local_time = get_local_time("${1}_protein.faa.gz");
-        my $local_size = get_local_size("${1}_protein.faa.gz");
-        check_update("${1}_protein.faa.gz", $local_time, $local_size);
+        check_update("${1}_protein.faa.gz", $local_time);
     } elsif (-f "${1}_protein.faa") {
         my $local_time = get_local_time("${1}_protein.faa");
-        my $local_size = get_local_size("${1}_protein.faa");
-        check_update("${1}_protein.faa.gz", $local_time, $local_size);
+        check_update("${1}_protein.faa.gz", $local_time);
     } else {
         print "Download: ${1}_protein.faa.gz\n";
         if (!$OPT{c}) {
@@ -47,7 +45,7 @@ if ($URL =~ /(GCF_\S+)$/) {
 ################################################################################
 
 sub check_update {
-    my ($filename, $local_time, $local_size) = @_;
+    my ($filename, $local_time) = @_;
 
     my $ftp_time = `ftp.time $URL/ $filename`;
     chomp($ftp_time);
