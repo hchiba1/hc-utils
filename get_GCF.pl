@@ -20,42 +20,49 @@ if (!@ARGV) {
     exit 1;
 }
 my ($URL) = @ARGV;
-$URL =~ s/^https:\/\///;
 
-if ($URL =~ /(GCF_\S+)$/) {
-    if (-f "${1}_protein.faa.gz") {
-        my $local_file_time = get_local_file_time("${1}_protein.faa.gz");
-        check_update("${1}_protein.faa.gz", $local_file_time);
-    } elsif (-f "${1}_protein.faa") {
-        my $local_file_time = get_local_file_time("${1}_protein.faa");
-        check_update("${1}_protein.faa.gz", $local_file_time);
-    } else {
-        print "Download: ${1}_protein.faa.gz\n";
-        if (!$OPT{c}) {
-            system "$COMMAND -OR $URL/${1}_protein.faa.gz";
-        }
-    }
-} else {
-    print STDERR "ERROR: $URL is not a valid GCF\n";
-    exit 1;
-}
+get_GCF($URL);
 
 ################################################################################
 ### Function ###################################################################
 ################################################################################
 
-sub check_update {
-    my ($filename, $local_file_time) = @_;
+sub get_GCF {
+    my ($url) = @_;
 
-    my $ftp_time = `ftp.time $URL/ $filename`;
+    $url =~ s/^https:\/\///;
+
+    if ($url =~ /(GCF_\S+)$/) {
+        if (-f "${1}_protein.faa.gz") {
+            check_update($url, "${1}_protein.faa.gz", "${1}_protein.faa.gz");
+        } elsif (-f "${1}_protein.faa") {
+            check_update($url, "${1}_protein.faa.gz", "${1}_protein.faa");
+        } else {
+            print "Download: ${1}_protein.faa.gz\n";
+            if (!$OPT{c}) {
+                system "$COMMAND -OR $url/${1}_protein.faa.gz";
+            }
+        }
+    } else {
+        print STDERR "ERROR: $url is not a valid GCF\n";
+        exit 1;
+    }
+}
+
+sub check_update {
+    my ($url, $filename, $local_filename) = @_;
+
+    my $ftp_time = `ftp.time $url/ $filename`;
     chomp($ftp_time);
     $ftp_time = time2iso(str2time($ftp_time, "GMT"));
+
+    my $local_file_time = get_local_file_time($local_filename);
     if ($local_file_time eq $ftp_time) {
         print "Already updated: $filename\n";
     } else {
         print "Update $filename: $local_file_time => new $ftp_time\n";
         if (!$OPT{c}) {
-            system "$COMMAND -OR $URL/$filename";
+            system "$COMMAND -OR $url/$filename";
         }
     }
 }
