@@ -2,6 +2,7 @@
 import argparse
 import ftplib
 from datetime import datetime
+import sys
 
 parser = argparse.ArgumentParser(description='FTP file listing script')
 parser.add_argument('path', type=str, help='directory path on the server')
@@ -29,4 +30,7 @@ def time():
     ftp.quit()
 
 if __name__ == '__main__':
-    time()
+    try:
+        time()
+    except KeyboardInterrupt:
+        sys.exit()
