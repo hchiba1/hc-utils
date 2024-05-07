@@ -21,6 +21,7 @@ my $USAGE=
 -s: output in original order
 -S: sort by size
 -t: sort by time
+-e: get exact time
 -P: pattern of files to save (use -q to check)
 ";
 
@@ -32,7 +33,7 @@ my $BOOKMARK = "$ENV{HOME}/.get/bookmarks";
 my $COMMAND = "curl --max-time 100000 -Lf";
 
 my %OPT;
-getopts('fo:pqdnvrlhsStP', \%OPT);
+getopts('fo:pqdnvrlhsStPe', \%OPT);
 
 !$OPT{v} and $COMMAND .= "sS";
 
@@ -45,6 +46,11 @@ my ($URL) = @ARGV;
 $URL =~ s/^ftp:\/\///;
 
 $URL = search_bookmark($URL);
+
+my $FLG_EXACT_TIME = 0;
+if ($OPT{e} or $URL =~ /^ftp.ncbi/) {
+    $FLG_EXACT_TIME = 1;
+}
 
 if ($URL !~ /\//) {
     $URL .= "/";
@@ -166,7 +172,13 @@ if ($OPT{p}) {
 sub get_dir_time {
     my ($url) = @_;
 
-    my @line = `ftp.dir.time $url`;
+    my $option;
+    if ($FLG_EXACT_TIME) {
+        $option = "";
+    } else {
+        $option = "-d";
+    }
+    my @line = `ftp.dir.time $option $url`;
     chomp(@line);
 
     my @list;
