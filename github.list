@@ -15,19 +15,27 @@ my @line = <PIPE>;
 close(PIPE);
 chomp(@line);
 
-my $max_repo_len = 0;
+my $max_repo_len = 30;
 my $max_descr_len = 0;
+my $max_tag_len = 12;
 for my $line (@line) {
     my @f = split("\t", $line);
     if (@f != 4) {
         die;
     }
-    my ($repo, $descr) = @f;
+    my ($repo, $descr, $tags) = @f;
+
     if (length($repo) > $max_repo_len) {
         $max_repo_len = length($repo);
     }
+
     if (length($descr) > $max_descr_len) {
         $max_descr_len = length($descr);
+    }
+
+    $tags = convert($tags);
+    if (length($tags) > $max_tag_len) {
+        $max_tag_len = length($tags);
     }
 }
 if ($max_descr_len > 100) {
@@ -37,14 +45,37 @@ if ($max_descr_len > 100) {
 for my $line (@line) {
     my @f = split("\t", $line);
     my ($repo, $descr, $public, $datetime) = @f;
+    my $tags = convert($public);
+    $tags .= " " x ($max_tag_len - length($tags));
     my $pad_len = $max_repo_len - length($repo);
-    my $pad_len_2 = 0;
-    if (length($descr) < $max_descr_len) {
-        $pad_len_2 = $max_descr_len - length($descr);
+    $repo .= " " x $pad_len;
+    my @out = ($tags, $repo, $descr);
+    print join("\t", @out), "\n";
+}
+
+################################################################################
+### Function ###################################################################
+################################################################################
+
+sub convert {
+    my ($tags) = @_;
+
+    if ($tags eq "public") {
+        $tags = "";
     }
-    my $pad_len_3 = 0;
-    if (length($public) < 12) {
-        $pad_len_3 = 12 - length($public);
+    if ($tags eq "public, fork") {
+        $tags = "fork";
+    } else {
+        $tags =~ s/(.+), fork/fork $1/;
     }
-    print $repo, " " x ($pad_len + 2), $descr, " " x ($pad_len_2 + 2), $public, " " x ($pad_len_3 + 2), $datetime, "\n";
+    if ($tags eq "public, archived") {
+        $tags = "archived";
+    } else {
+        $tags =~ s/(.+), archived/archived $1/;
+    }
+    if ($tags) {
+        $tags = "[$tags]";
+    }
+
+    return $tags;
 }
