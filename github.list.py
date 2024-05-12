@@ -4,30 +4,30 @@ import subprocess
 import threading
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('name', nargs='*', help='repository names', default=["orthordf", "bioal", "sparqling", "hchiba1", "dbcls", "togodx", "togoid", "g2glab", "gdbp", "mbgd-prj", "qfo"])
+parser.add_argument('names', nargs='*', help='repository names', default=["orthordf", "bioal", "sparqling", "hchiba1", "dbcls", "togodx", "togoid", "g2glab", "gdbp", "mbgd-prj", "qfo"])
 parser.add_argument('-t', '--time', action='store_true', help='sort by time')
 args = parser.parse_args()
 
-def repo_list(repo, results):
-    ret = subprocess.run(f'gh repo list {repo} -L1000', shell=True, stdout=subprocess.PIPE)
+def repo_list(name, results):
+    ret = subprocess.run(f'gh repo list {name} -L1000', shell=True, stdout=subprocess.PIPE)
     if ret.returncode == 0:
-        results[repo] = ret.stdout.decode()
+        results[name] = ret.stdout.decode()
 
 def main():
     results = dict()
     threads = []
-    for repo in args.name:
-        threads.append(threading.Thread(target=repo_list, args=(repo, results)))
+    for name in args.names:
+        threads.append(threading.Thread(target=repo_list, args=(name, results)))
     for thread in threads:
         thread.start()
     for thread in threads:
         thread.join()
-    for repo in args.name:
-        print_results(repo, results)
+    for name in args.names:
+        print_results(name, results)
 
-def print_results(repo, results):
-    print(f'==[ {repo} ]==')
-    lines = results[repo].split('\n')
+def print_results(name, results):
+    print(f'==[ {name} ]==')
+    lines = results[name].split('\n')
     out = dict()
     for line in lines:
         fields = line.split("\t")
