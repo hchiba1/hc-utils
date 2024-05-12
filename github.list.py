@@ -25,7 +25,7 @@ def main():
     for thread in threads:
         thread.join()
     for name in args.names:
-        out_txt, key = print_results(name, results)
+        out_txt, key = format_results(name, results)
         if args.time:
             out_dict[key] = out_txt
         else:
@@ -34,7 +34,7 @@ def main():
         for key in sorted(out_dict.keys()):
             print(out_dict[key])
 
-def print_results(name, results):
+def format_results(name, results):
     out_txt = f'==[ {name} ]==\n'
     lines = results[name].split('\n')
     out = dict()
@@ -49,8 +49,8 @@ def print_results(name, results):
             if args.time:
                 key = f'{datetime} {repo}'
             datetime_arr.append(datetime)
-            datetime = datetime.split("T")[0]
-            out[key] = "\t".join([f'{datetime}  {tags}', repo, descr])
+            date = datetime.split("T")[0]
+            out[key] = "\t".join([f'{date}  {tags}', repo, descr])
     for key in sorted(out.keys()):
         out_txt += out[key] + "\n"
     last_update = max(datetime_arr)
