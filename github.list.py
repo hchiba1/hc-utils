@@ -4,7 +4,7 @@ import subprocess
 import threading
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('names', nargs='*', help='repository names', default=["orthordf", "bioal", "sparqling", "hchiba1", "dbcls", "togodx", "togoid", "g2glab", "gdbp", "mbgd-prj", "qfo"])
+parser.add_argument('names', nargs='*', help='repository names', default=["orthordf", "bioal", "sparqling", "pg-format", "hchiba1", "dbcls", "togodx", "togoid", "g2glab", "gdbp", "mbgd-prj", "qfo"])
 parser.add_argument('-t', '--time', action='store_true', help='sort by time')
 args = parser.parse_args()
 
