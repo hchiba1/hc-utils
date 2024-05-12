@@ -37,7 +37,7 @@ def main():
 def format_results(name, results):
     out_txt = f'==[ {name} ]==\n'
     lines = results[name].split('\n')
-    out = dict()
+    repo_dict = dict()
     datetime_arr = []
     for line in lines:
         fields = line.split("\t")
@@ -50,9 +50,9 @@ def format_results(name, results):
                 key = f'{datetime} {repo}'
             datetime_arr.append(datetime)
             date = datetime.split("T")[0]
-            out[key] = "\t".join([f'{date}  {tags}', repo, descr])
-    for key in sorted(out.keys()):
-        out_txt += out[key] + "\n"
+            repo_dict[key] = "\t".join([f'{date}  {tags}', repo, descr])
+    for key in sorted(repo_dict.keys()):
+        out_txt += repo_dict[key] + "\n"
     last_update = max(datetime_arr)
     return out_txt, f'{last_update} {name}'
 
