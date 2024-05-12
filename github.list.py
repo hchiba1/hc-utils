@@ -49,7 +49,10 @@ def format_results(name, results):
             if args.time:
                 key = f'{datetime} {repo}'
             datetime_arr.append(datetime)
-            date = datetime.split("T")[0]
+            if args.time:
+                date = datetime.replace("T", " ").replace("Z", "")
+            else:
+                date = datetime.split("T")[0]
             repo_dict[key] = "\t".join([f'{date}  {tags}', repo, descr])
     if args.time:
         sorted_keys = sorted(repo_dict.keys(), reverse=True)
