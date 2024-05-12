@@ -31,7 +31,7 @@ def main():
         else:
             print(out_txt)
     if args.time:
-        for key in sorted(out_dict.keys()):
+        for key in sorted(out_dict.keys(), reverse=True):
             print(out_dict[key])
 
 def format_results(name, results):
@@ -51,7 +51,11 @@ def format_results(name, results):
             datetime_arr.append(datetime)
             date = datetime.split("T")[0]
             repo_dict[key] = "\t".join([f'{date}  {tags}', repo, descr])
-    for key in sorted(repo_dict.keys()):
+    if args.time:
+        sorted_keys = sorted(repo_dict.keys(), reverse=True)
+    else:
+        sorted_keys = sorted(repo_dict.keys())
+    for key in sorted_keys:
         out_txt += repo_dict[key] + "\n"
     last_update = max(datetime_arr)
     return out_txt, f'{last_update} {name}'
