@@ -8,6 +8,8 @@ parser.add_argument('names', nargs='*', help='repository names', default=["ortho
 parser.add_argument('-t', '--time', action='store_true', help='sort by time')
 args = parser.parse_args()
 
+out_dict = dict()
+
 def repo_list(name, results):
     ret = subprocess.run(f'gh repo list {name} -L1000', shell=True, stdout=subprocess.PIPE)
     if ret.returncode == 0:
@@ -23,12 +25,20 @@ def main():
     for thread in threads:
         thread.join()
     for name in args.names:
-        print_results(name, results)
+        out_txt, key = print_results(name, results)
+        if args.time:
+            out_dict[key] = out_txt
+        else:
+            print(out_txt)
+    if args.time:
+        for key in sorted(out_dict.keys()):
+            print(out_dict[key])
 
 def print_results(name, results):
-    print(f'==[ {name} ]==')
+    out_txt = f'==[ {name} ]==\n'
     lines = results[name].split('\n')
     out = dict()
+    datetime_arr = []
     for line in lines:
         fields = line.split("\t")
         if len(fields) == 4:
@@ -38,11 +48,13 @@ def print_results(name, results):
             key = f'{priority} {repo}'
             if args.time:
                 key = f'{datetime} {repo}'
+            datetime_arr.append(datetime)
             datetime = datetime.split("T")[0]
             out[key] = "\t".join([f'{datetime}  {tags}', repo, descr])
     for key in sorted(out.keys()):
-        print(out[key])
-    print()
+        out_txt += out[key] + "\n"
+    last_update = max(datetime_arr)
+    return out_txt, f'{last_update} {name}'
 
 def convert_priority(tags):
     priority = ""
