@@ -24,7 +24,7 @@ my ($TIME1, $TIME2) = @ARGV;
 
 if (@ARGV == 1) {
     ($TIME1) = @ARGV;
-    $TIME2 = `date`;
+    $TIME2 = `date "+%F %T"`;
     chomp($TIME2);
 } elsif (@ARGV == 2) {
     ($TIME1, $TIME2) = @ARGV;
