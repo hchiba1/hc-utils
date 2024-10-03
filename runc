@@ -6,10 +6,12 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM SOURCE.c [OPT...] [ARG...]
 Usage: $PROGRAM -e 'SOURCE' [OPT...] [ARG...]
+-o NAME: create binary
+-t: output time
 ";
 
 my %OPT;
-getopts('e:dO:W:o:', \%OPT);
+getopts('e:dO:W:o:t', \%OPT);
 
 ### Settings
 my $COMPILER = "gcc";
@@ -64,7 +66,11 @@ if ($OPT{o}) {
 system "$COMPILER -o $OBJECT_TMP $SOURCE_TMP -lm";
 my $EXIT_STATUS = $? >> 8;
 if ($EXIT_STATUS == 0) {
-    system "$OBJECT_TMP @ARGV";
+    if ($OPT{t}) {
+        system "time -f \"%e sec (%U user + %S system) %PCPU ((user+system)/elapsed)\n%M KB\ninput %I\noutput %O\npagefaults (%F major + %R minor)\nswaps %W\" $OBJECT_TMP @ARGV";
+    } else {
+        system "$OBJECT_TMP @ARGV";
+    }
     $EXIT_STATUS = $? >> 8;
 }
 exit($EXIT_STATUS);
