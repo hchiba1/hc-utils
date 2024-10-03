@@ -21,12 +21,14 @@ KEY1  VALUE2...
 OUTPUT:
 KEY1  STRING1...  VALUE1...,VALUE2...
 KEY2  STRING2...  NOT_FOUND
+
+-e: expanded output mode
+
+OUTPUT:
+KEY1  STRING1...  VALUE1...
+KEY1  STRING1...  VALUE2...
+KEY2  STRING2...  NOT_FOUND
 ";
-# -e: expanded output mode
-# OUTPUT:
-# KEY1  STRING1...  VALUE1...
-# KEY1  STRING1...  VALUE2...
-# KEY2  STRING2...
 # -f: first colum is value
 
 ### Options and arguments ###
@@ -93,15 +95,17 @@ while(my $line = <STDIN>){
 		}
 	    }
 	} else {
-	    print $line, "\n";
+            print $line, "\t", "NOT_FOUND", "\n";
 	}
-    } elsif (defined($HASH{$key})) {
-        if ($OPT{b}) {
-            print $line, "\t1\n";
-        } else {
-            print $line, "\t", join(",",@{$HASH{$key}}), "\n";
-        }
     } else {
-        print $line, "\t", "NOT_FOUND", "\n";
+        if (defined($HASH{$key})) {
+            if ($OPT{b}) {
+                print $line, "\t1\n";
+            } else {
+                print $line, "\t", join(",",@{$HASH{$key}}), "\n";
+            }
+        } else {
+            print $line, "\t", "NOT_FOUND", "\n";
+        }
     }
 }
