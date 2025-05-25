@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
 
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
-        // "." または ".." をスキップ
+        // skip "." and ".."
         if (entry->d_name[0] == '.' && entry->d_name[1] == '\0' ||
             entry->d_name[0] == '.' && entry->d_name[1] == '.' && entry->d_name[2] == '\0') {
             continue;
