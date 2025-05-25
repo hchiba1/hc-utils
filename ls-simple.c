@@ -2,9 +2,9 @@
 #include <dirent.h>
 
 int main(int argc, char *argv[]) {
-    const char *input_path = (argc > 1) ? argv[1] : ".";
+    const char *dir_path = (argc > 1) ? argv[1] : ".";
 
-    DIR *dir = opendir(input_path);
+    DIR *dir = opendir(dir_path);
     if (!dir) {
         perror("opendir");
         return 1;
