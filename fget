@@ -6,6 +6,7 @@ import hashlib
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 from pathlib import Path
+import ftplib
 
 parser = argparse.ArgumentParser(description="Fetch and cache web content.")
 parser.add_argument('url', help="URL to fetch")
@@ -15,12 +16,34 @@ args = parser.parse_args()
 cache_dir = os.path.expanduser("~/.get/cache")
 cache_time_limit = 21600  # 6 hours
 
+
 def main():
     try:
-        content = fetch_url(args.url, cache_dir, cache_time_limit, not args.no_cache)
-        print(content)
+        # content = fetch_url(args.url, cache_dir, cache_time_limit, not args.no_cache)
+        # print(content)
+        host = "ftp.ncbi.nlm.nih.gov"
+        directory = "/"
+        ftp = ftplib.FTP(host)
+        ftp.login("anonymous", "")
+        ftp.cwd(directory)
+        mlsd(ftp)
+        ftp.quit()
     except Exception as e:
         print(f"Error fetching URL: {e}")
+
+def dir(ftp):
+    ftp.dir()
+
+def mlsd(ftp):
+    files = ftp.mlsd()
+    for file in files:
+        filename = file[0]
+        filetime = file[1]["modify"]
+        type = file[1]["type"]
+        size = file[1]["size"]
+        if type == "dir":
+            filename += "/"
+        print(size, datetime.strptime(filetime, "%Y%m%d%H%M%S"), filename , sep="\t")
 
 def fetch_url(url, cache_dir, cache_time_limit, use_cache):
     cache_file = get_cache_file(url, cache_dir)

@@ -24,6 +24,26 @@ if (!process.stdin.isTTY) {
   });
 }
 
+console.log([
+  "accession",
+  "tax_id",
+  "organism_name",
+  "common_name",
+  "refseq_category",
+  "contig_n50",
+  "busco_lineage",
+  "busco_complete",
+  "gene_counts",
+  "sequence_length",
+  "assembly_level",
+  "number_of_chromosomes",
+  "sequencing_tech",
+  "assembly_method",
+  "release_date",
+  "submitter",
+  "sample"
+].join('\t'));
+
 rl.on('line', (line) => {
   const obj = JSON.parse(line);
 
@@ -54,7 +74,7 @@ rl.on('line', (line) => {
   if (tissue) {
     sample.push(tissue);
   }
-
+    
   const arr = [
     obj.accession,
     obj.organism.tax_id,
@@ -69,6 +89,7 @@ rl.on('line', (line) => {
     obj.assembly_info.assembly_level,
     obj.assembly_stats.total_number_of_chromosomes,
     obj.assembly_info.sequencing_tech,
+    obj.assembly_info.assembly_method,
     obj.assembly_info.release_date,
     obj.assembly_info.submitter,
     sample.join(', '),

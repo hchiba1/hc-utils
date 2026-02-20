@@ -36,15 +36,15 @@ if ($URL !~ /\//) {
 
 my $DIR = $URL;
 my $FILE_NAME = "";
-my $LOCAL_FILE_NAME = "";
+my $LOCAL_NAME = "";
 if ($URL =~ /^(.*\/)(\S.+)$/) {
     ($DIR, $FILE_NAME) = ($1, $2);
-    $LOCAL_FILE_NAME = $FILE_NAME;
-    $LOCAL_FILE_NAME =~ s/\.gz$//;
+    $LOCAL_NAME = $FILE_NAME;
+    $LOCAL_NAME =~ s/\.gz$//;
 }
 
 while (1) {
-    check_update();
+    check_update($DIR, $LOCAL_NAME);
     sleep 3600;
 }
 
@@ -53,10 +53,11 @@ while (1) {
 ################################################################################
 
 sub check_update {
+    my ($dir, $local_name) = @_;
 
-    my $local_file_day = get_local_file_day($LOCAL_FILE_NAME);
+    my $local_day = get_local_day($local_name);
 
-    my @list = `$COMMAND $DIR`;
+    my @list = `$COMMAND $dir`;
 
     if ($OPT{d}) {
         print @list;
@@ -98,36 +99,27 @@ sub check_update {
             if ($OPT{q}) {
                 print "$perm $num $group $user  $size  $date_formatted  $name\n";
             } else {
-                if ($day eq $local_file_day) {
+                if ($day eq $local_day) {
                 } else {
-                    update_file($URL, $FILE_NAME, $LOCAL_FILE_NAME);
+                    system "bak -f $local_name";
+                    system "$COMMAND -OR $URL";
+                    system "gunzip $FILE_NAME";
                 }
             }
         }
     }
 }
 
-sub update_file {
-    my ($url, $file_name, $local_file_name) = @_;
-
-    system "bak -f $local_file_name";
-    system "$COMMAND -OR $url";
-    system "gunzip $file_name";
-}
-
-sub get_local_file_day {
+sub get_local_day {
     my ($file) = @_;
 
     my @stat = stat $file;
     my $time = time2iso($stat[9]);
-    my $day = "";
     if ($time =~ /^(\S+) \S+$/) {
-        $day = $1;
+        return $1;
     } else {
         die $time;
     }
-
-    return $day;
 }
 
 sub format_size {
