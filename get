@@ -236,17 +236,17 @@ sub format_new_list {
         return;
     }
 
+    chomp(@list);
+
     if ($OPT{l}) {
         my $result = "";
         for my $line (@list) {
             my @f = split(/\s+/, $line);
-            my $name = $f[8];
+            my $name = $f[7];
             $result .= $name . "\n";
         }
         return $result;
     }
-
-    chomp(@list);
 
     my @all = ();
     my @upper_file = ();
@@ -339,17 +339,18 @@ sub format_list {
         return;
     }
 
+    chomp(@list);
+
     if ($OPT{l}) {
         my $result = "";
         for my $line (@list) {
+            print "$line\n";
             my @f = split(/\s+/, $line);
-            my $name = $f[8];
+            my $name = $f[7];
             $result .= $name . "\n";
         }
         return $result;
     }
-
-    chomp(@list);
 
     my @all = ();
     my @upper_file = ();
